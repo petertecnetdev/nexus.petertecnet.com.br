@@ -1,0 +1,122 @@
+/* =========================================================
+   INKAP — HomePage.css (FIX ESTABELECIMENTOS)
+   Correção de layout estranho do carousel
+   ========================================================= */
+
+/* ===================== WRAPPER ===================== */
+.hp-wrapper {
+  min-height: calc(100vh - 120px);
+  padding: clamp(1rem, 3vw, 2.5rem);
+  background:
+    radial-gradient(
+      1200px 600px at 50% -200px,
+      rgba(180, 108, 255, 0.12),
+      transparent 60%
+    ),
+    linear-gradient(
+      180deg,
+      var(--i-bg) 0%,
+      var(--i-bg-soft) 60%,
+      var(--i-bg) 100%
+    );
+  color: var(--i-text);
+}
+
+/* ===================== CAROUSEL CONTAINER ===================== */
+.hp-wrapper .global-carousel {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+
+  padding: 1.2rem 1.5rem 1.8rem;
+  border-radius: 22px;
+
+  background: linear-gradient(
+    160deg,
+    rgba(180, 108, 255, 0.08),
+    rgba(0, 0, 0, 0.35)
+  );
+
+  box-shadow:
+    inset 0 0 0 1px rgba(180, 108, 255, 0.12),
+    0 25px 70px rgba(0, 0, 0, 0.6);
+}
+
+/* REMOVE ÁREA VAZIA ESTRANHA */
+.hp-wrapper .global-carousel-track,
+.hp-wrapper .global-carousel-list {
+  display: flex;
+  align-items: stretch;
+}
+
+/* ===================== ITENS ===================== */
+.hp-wrapper .global-carousel-item {
+  flex: 0 0 auto;
+  width: 260px;
+  max-width: 260px;
+}
+
+/* ===================== TITULO ===================== */
+.hp-wrapper .global-carousel-title {
+  text-align: center;
+  margin-bottom: 1.2rem;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  color: var(--i-text);
+  text-transform: uppercase;
+}
+
+/* ===================== BOTÕES DE NAVEGAÇÃO ===================== */
+.hp-wrapper .carousel-nav {
+  opacity: 0.9;
+}
+
+.hp-wrapper .carousel-nav:hover {
+  opacity: 1;
+}
+
+/* ===================== LOADING / ERROR ===================== */
+.hp-centered {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hp-loading {
+  padding: 2rem 2.5rem;
+  border-radius: 18px;
+  background: linear-gradient(
+    145deg,
+    var(--i-surface),
+    var(--i-surface-2)
+  );
+  box-shadow:
+    0 0 0 1px rgba(180, 108, 255, 0.15),
+    0 25px 60px rgba(0, 0, 0, 0.55);
+  font-size: 1.05rem;
+  font-weight: 500;
+  color: var(--i-text-muted);
+}
+
+/* ===================== RESPONSIVO ===================== */
+@media (max-width: 992px) {
+  .hp-wrapper .global-carousel {
+    padding: 1rem;
+  }
+
+  .hp-wrapper .global-carousel-item {
+    width: 220px;
+    max-width: 220px;
+  }
+}
+
+@media (max-width: 576px) {
+  .hp-wrapper {
+    padding-bottom: 5.5rem;
+  }
+
+  .hp-wrapper .global-carousel-item {
+    width: 200px;
+    max-width: 200px;
+  }
+}

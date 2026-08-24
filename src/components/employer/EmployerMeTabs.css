@@ -1,0 +1,33 @@
+/* src/components/employer/EmployerMeTabs.css */
+
+.employer-me-tabs {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.employer-me-tabs .btn {
+  min-width: 150px;
+  font-weight: 600;
+  border-radius: 10px;
+  transition: all 0.2s ease-in-out;
+}
+
+.employer-me-tabs .btn-primary {
+  box-shadow: 0 4px 12px rgba(13, 110, 253, 0.35);
+}
+
+.employer-me-tabs .btn-outline-primary:hover {
+  background-color: rgba(13, 110, 253, 0.08);
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .employer-me-tabs {
+    flex-direction: column;
+  }
+
+  .employer-me-tabs .btn {
+    width: 100%;
+  }
+}

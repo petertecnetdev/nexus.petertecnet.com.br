@@ -1,0 +1,20 @@
+/* src/components/home/HomeEstablishments.css */
+.homeest-container {
+  background: #16181f;
+  padding: 20px;
+  border-radius: 14px;
+}
+.homeest-card {
+  margin-top: 20px;
+  padding: 20px;
+  background: #1a1c22;
+  border-radius: 14px;
+}
+.homeest-logo img {
+  width: 60px;
+  height: 60px;
+}
+.homeest-stats {
+  margin-top: 10px;
+  color: #00e0ff;
+}

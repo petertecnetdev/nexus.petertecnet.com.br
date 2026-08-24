@@ -1,0 +1,22 @@
+/* src/components/home/HomeQuickStats.css */
+.quickstats-container {
+  display: flex;
+  gap: 20px;
+}
+.quickstats-card {
+  background: #16181f;
+  padding: 20px 24px;
+  border-radius: 14px;
+  width: 160px;
+  text-align: center;
+  border: 1px solid #1f222a;
+}
+.quickstats-value {
+  font-size: 28px;
+  font-weight: 600;
+  color: #00e0ff;
+}
+.quickstats-label {
+  font-size: 14px;
+  color: #ffffffb3;
+}

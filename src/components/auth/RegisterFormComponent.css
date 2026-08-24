@@ -1,0 +1,120 @@
+/* src/components/auth/RegisterFormComponent.css */
+:root {
+  --bg-dark: #0f1116;
+  --bg-card: #1a1c22;
+  --text-light: #f2f4f8;
+  --primary: #007bff;
+  --radius: 0.8rem;
+}
+
+/* FORM CONTAINER */
+.register-form-component {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  text-align: center;
+}
+
+/* INPUTS */
+.neon-input {
+  background: var(--bg-card);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: var(--text-light);
+  border-radius: var(--radius);
+  padding: 0.9rem 1rem;
+  font-size: 1rem;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.neon-input::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.neon-input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 8px var(--primary);
+  background: #14161d;
+  color: #fff;
+}
+
+/* BUTTON */
+.neon-button {
+  background: var(--primary);
+  border: none;
+  color: #fff;
+  border-radius: var(--radius);
+  padding: 0.9rem;
+  font-weight: 600;
+  font-size: 1rem;
+  letter-spacing: 0.5px;
+  transition: all 0.25s ease;
+  text-transform: uppercase;
+}
+
+.neon-button:hover {
+  background: #0062cc;
+  transform: translateY(-1px);
+  box-shadow: 0 0 10px rgba(0, 123, 255, 0.6);
+}
+
+/* LINKS */
+.register-links {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.6);
+  margin-top: 0.5rem;
+  gap: 0.5rem;
+}
+
+.register-links a {
+  color: var(--primary);
+  font-weight: 500;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.register-links a:hover {
+  color: #339bff;
+  text-decoration: underline;
+}
+
+.register-links .sep {
+  color: rgba(255, 255, 255, 0.3);
+}
+
+/* SWEETALERT */
+.custom-swal {
+  background: var(--bg-card) !important;
+  color: var(--text-light) !important;
+  border-radius: var(--radius) !important;
+}
+
+.custom-swal-title {
+  color: var(--primary) !important;
+  font-weight: 700 !important;
+  text-transform: uppercase;
+}
+
+.custom-swal-text {
+  color: var(--text-light) !important;
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+  .neon-input {
+    font-size: 0.95rem;
+    padding: 0.8rem;
+  }
+
+  .neon-button {
+    font-size: 0.95rem;
+    padding: 0.8rem;
+  }
+
+  .register-links {
+    font-size: 0.85rem;
+  }
+}

@@ -1,0 +1,79 @@
+/* src/components/Global.css */
+
+/* Overlay global para loading */
+.global-container {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: radial-gradient(
+      circle at top,
+      rgba(59, 130, 246, 0.08),
+      transparent 60%
+    ),
+    linear-gradient(
+      180deg,
+      #06080f 0%,
+      #0a0d16 50%,
+      #06080f 100%
+    );
+
+  backdrop-filter: blur(4px);
+}
+
+/* Card central */
+.spinner-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+
+  padding: 26px 34px;
+  border-radius: 18px;
+
+  background: linear-gradient(
+    180deg,
+    #121726,
+    #0b0f1d
+  );
+
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.05),
+    0 10px 30px rgba(0, 0, 0, 0.6),
+    0 0 25px rgba(59, 130, 246, 0.25);
+
+  animation: globalFadeIn 0.35s ease-out;
+}
+
+/* Texto */
+.spinner-container span {
+  font-size: 14px;
+  letter-spacing: 0.3px;
+  color: #c7d2fe;
+  opacity: 0.9;
+}
+
+/* Spinner Bootstrap refinado */
+.spinner-border {
+  width: 48px;
+  height: 48px;
+  border-width: 3px;
+  color: #3b82f6;
+  box-shadow: 0 0 18px rgba(59, 130, 246, 0.6);
+}
+
+/* Animação de entrada */
+@keyframes globalFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}

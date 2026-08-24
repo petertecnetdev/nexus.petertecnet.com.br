@@ -1,0 +1,56 @@
+.gsection-root {
+  margin-bottom: 40px;
+}
+
+/* ==== Header da seção ==== */
+.gsection-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.gsection-title {
+  font-size: clamp(18px, 2.4vw, 22px);
+  font-weight: 900;
+  color: var(--dash-text);
+  margin: 0;
+  text-shadow: 0 0 10px rgba(0,0,0,0.4);
+}
+
+.gsection-icon {
+  font-size: 20px;
+  opacity: 0.75;
+  color: var(--dash-accent);
+}
+
+/* ==== Grid ==== */
+.iteml-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 18px;
+}
+
+/* ==== Mensagem vazia ==== */
+.gsection-empty {
+  grid-column: 1 / -1;
+  padding: 18px;
+  text-align: center;
+  background: linear-gradient(180deg, #17171a, #121214);
+  border: 1px dashed var(--dash-border);
+  border-radius: var(--dash-radius-sm);
+  color: var(--dash-muted);
+  font-size: 14px;
+}
+
+/* ==== Animação==== */
+.fade-in {
+  animation: fadeIn 0.35s ease-out forwards;
+  opacity: 0;
+}
+
+@keyframes fadeIn {
+  to {
+    opacity: 1;
+  }
+}

@@ -1,0 +1,73 @@
+.hp-card.hp-card--skeleton {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  background: #111;
+  border-radius: 16px;
+  overflow: hidden;
+  height: 260px;
+  box-shadow: 0 0 20px #00ffff11;
+  animation: skeletonPulse 1.6s ease-in-out infinite;
+}
+
+.hp-hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, #000a, transparent 60%);
+}
+
+.hp-logo-bubble.hp-logo-bubble--skeleton {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  background: #222;
+  box-shadow: 0 0 10px #00ffff22;
+}
+
+.hp-info {
+  position: relative;
+  padding: 16px;
+  z-index: 2;
+}
+
+.hp-skel-line {
+  display: block;
+  height: 10px;
+  border-radius: 4px;
+  background: #222;
+  margin-bottom: 10px;
+  width: 70%;
+}
+
+.hp-skel-line:nth-child(2) {
+  width: 50%;
+}
+
+.hp-badges {
+  display: flex;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.hp-skel-chip {
+  width: 40px;
+  height: 14px;
+  border-radius: 8px;
+  background: #222;
+}
+
+@keyframes skeletonPulse {
+  0% {
+    background-color: #151515;
+  }
+  50% {
+    background-color: #1f1f1f;
+  }
+  100% {
+    background-color: #151515;
+  }
+}

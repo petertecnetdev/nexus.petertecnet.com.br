@@ -1,0 +1,82 @@
+/* ============================================================
+   INVITE PAGE — Rasoio Neon Dark Glass UI
+============================================================ */
+
+/* Fundo da página */
+.invite-page-root {
+  min-height: 100vh;
+  width: 100%;
+  background: #0b0b0c;
+  padding-top: 90px;
+}
+
+/* Container central */
+.invite-container {
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: clamp(12px, 4vw, 28px);
+}
+
+/* Card da página */
+.invite-card {
+  background: rgba(15, 15, 17, 0.67);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(12px) saturate(160%);
+  border-radius: 16px !important;
+  padding: clamp(24px, 4vw, 34px);
+  box-shadow: 0 0 22px rgba(0, 234, 255, 0.08),
+              inset 0 0 0 1px rgba(255, 255, 255, 0.02);
+  transition: 0.25s ease;
+}
+
+/* Hover suave no card */
+.invite-card:hover {
+  border-color: rgba(0, 234, 255, 0.25);
+  box-shadow: 0 0 32px rgba(0, 234, 255, 0.18);
+}
+
+/* Título */
+.invite-title {
+  text-align: center;
+  color: #e5e5e5;
+  font-weight: 800;
+  font-size: clamp(20px, 3vw, 28px);
+  margin-bottom: 1.4rem;
+  text-shadow: 0 0 12px rgba(0, 234, 255, 0.25);
+}
+
+/* ------------------------------------------------------------
+   RESPONSIVIDADE TOTAL
+------------------------------------------------------------ */
+
+/* MOBILE PEQUENO */
+@media (max-width: 420px) {
+  .invite-card {
+    padding: 20px;
+    border-radius: 14px !important;
+  }
+
+  .invite-title {
+    font-size: 20px;
+  }
+}
+
+/* TABLETS */
+@media (min-width: 600px) and (max-width: 1024px) {
+  .invite-card {
+    padding: 30px;
+  }
+
+  .invite-title {
+    font-size: 26px;
+  }
+}
+
+/* DESKTOP E TV */
+@media (min-width: 1025px) {
+  .invite-card {
+    max-width: 460px;
+    margin: 0 auto;
+  }
+}

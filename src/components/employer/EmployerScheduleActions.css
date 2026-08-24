@@ -1,0 +1,36 @@
+/* src/components/employer/EmployerScheduleActions.css */
+
+.employer-schedule-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 24px;
+}
+
+.employer-schedule-actions .btn {
+  min-width: 180px;
+  height: 42px;
+  font-weight: 600;
+  border-radius: 10px;
+  transition: all 0.2s ease-in-out;
+}
+
+.employer-schedule-actions .btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.employer-schedule-actions .btn:not(:disabled):hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(13, 110, 253, 0.3);
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .employer-schedule-actions {
+    justify-content: center;
+  }
+
+  .employer-schedule-actions .btn {
+    width: 100%;
+  }
+}

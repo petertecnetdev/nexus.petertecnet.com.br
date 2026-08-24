@@ -1,0 +1,339 @@
+/* src/pages/employer/DashboardEmployer.css */
+
+/* ===========================
+   BASE STRUCTURE
+   =========================== */
+.dashboard-root {
+  min-height: 100vh;
+  background: radial-gradient(ellipse at top, #0b0b0c 0%, #050505 100%);
+  color: #e9e9ea;
+  font-family: "Poppins", "Roboto", sans-serif;
+  overflow-x: hidden;
+}
+
+.dashboard-main {
+  padding: 2rem 1.5rem;
+  animation: fadeIn 0.6s ease-in-out;
+}
+
+.dashboard-section-title {
+  font-weight: 600;
+  font-size: 1.4rem;
+  color: #0baff5;
+  letter-spacing: 0.5px;
+  text-shadow: 0 0 10px rgba(11, 175, 245, 0.4);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dashboard-section-title::before {
+  content: "⚡";
+  font-size: 1.1rem;
+}
+
+/* ===========================
+   KPI CARDS
+   =========================== */
+.kpi-card {
+  background: linear-gradient(145deg, #101012, #0c0c0d);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 0 12px rgba(11, 175, 245, 0.08);
+  border-radius: 12px;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.kpi-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 0 20px rgba(11, 175, 245, 0.25);
+}
+
+/* ===========================
+   EMPLOYER HEADER
+   =========================== */
+.dashboard-establishment-card {
+  background: linear-gradient(180deg, #121214 0%, #0b0b0c 100%);
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 1rem 1.2rem;
+}
+
+.dashboard-establishment-logo {
+  width: 68px;
+  height: 68px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #0baff5;
+  box-shadow: 0 0 15px rgba(11, 175, 245, 0.4);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.dashboard-establishment-logo:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 20px rgba(11, 175, 245, 0.7);
+}
+
+.dashboard-establishment-name {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #ffffff;
+  text-shadow: 0 0 10px rgba(11, 175, 245, 0.3);
+}
+
+/* ===========================
+   INFO CARDS
+   =========================== */
+.info-card {
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 0 10px rgba(11, 175, 245, 0.1);
+  transition: all 0.3s ease;
+}
+
+.info-card:hover {
+  box-shadow: 0 0 16px rgba(11, 175, 245, 0.3);
+  transform: translateY(-2px);
+}
+
+/* ===========================
+   APPOINTMENT CARDS
+   =========================== */
+.appointment-card {
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: linear-gradient(160deg, #121214, #0b0b0c);
+  box-shadow: 0 0 12px rgba(11, 175, 245, 0.05);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  overflow: hidden;
+}
+
+.appointment-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0 18px rgba(11, 175, 245, 0.2);
+}
+
+.appointment-card .badge {
+  text-transform: capitalize;
+  letter-spacing: 0.3px;
+  font-weight: 500;
+}
+
+.hover-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.hover-card::after {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    120deg,
+    rgba(11, 175, 245, 0.05) 0%,
+    rgba(11, 175, 245, 0.1) 50%,
+    transparent 100%
+  );
+  transform: rotate(25deg);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+.hover-card:hover::after {
+  opacity: 1;
+}
+
+/* ===========================
+   BUTTONS & INPUTS
+   =========================== */
+.btn.bg-black {
+  background-color: #000 !important;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+}
+
+.btn.bg-black:hover {
+  background-color: #0baff5 !important;
+  border-color: #0baff5 !important;
+  color: #fff !important;
+  box-shadow: 0 0 15px rgba(11, 175, 245, 0.6);
+}
+
+.form-control {
+  background-color: #121214 !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  color: #e9e9ea !important;
+  border-radius: 8px;
+  transition: border 0.3s ease, box-shadow 0.3s ease;
+}
+
+.form-control:focus {
+  border-color: #0baff5 !important;
+  box-shadow: 0 0 10px rgba(11, 175, 245, 0.3);
+  outline: none !important;
+}
+
+/* ===========================
+   HIGHLIGHT ANIMATION
+   =========================== */
+.highlight-card {
+  border: 2px solid #0baff5 !important;
+  box-shadow: 0 0 14px rgba(11, 175, 245, 0.9);
+  animation: pulseHighlight 1.2s ease-in-out 2;
+}
+
+@keyframes pulseHighlight {
+  0% {
+    box-shadow: 0 0 6px rgba(11, 175, 245, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 22px rgba(11, 175, 245, 1);
+  }
+  100% {
+    box-shadow: 0 0 6px rgba(11, 175, 245, 0.3);
+  }
+}
+
+/* ===========================
+   TABLET & MOBILE RESPONSIVE
+   =========================== */
+@media (max-width: 992px) {
+  .dashboard-main {
+    padding: 1.5rem 1rem;
+  }
+
+  .dashboard-section-title {
+    font-size: 1.2rem;
+  }
+
+  .dashboard-establishment-logo {
+    width: 58px;
+    height: 58px;
+  }
+
+  .appointment-card {
+    font-size: 0.9rem;
+  }
+
+  .kpi-card {
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .dashboard-main {
+    padding: 1rem;
+  }
+
+  .dashboard-section-title {
+    justify-content: center;
+    text-align: center;
+  }
+
+  .dashboard-establishment-card {
+    text-align: center;
+  }
+
+  .dashboard-establishment-logo {
+    margin: 0 auto 1rem;
+  }
+
+  .dashboard-establishment-name {
+    font-size: 1.1rem;
+  }
+
+  .kpi-card {
+    margin-bottom: 1rem;
+  }
+
+  .appointment-card {
+    margin-bottom: 1rem;
+  }
+
+  .btn.bg-black {
+    width: 100%;
+  }
+
+  .form-control {
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .dashboard-section-title {
+    font-size: 1rem;
+  }
+
+  .dashboard-establishment-card {
+    padding: 1rem;
+  }
+
+  .dashboard-establishment-logo {
+    width: 50px;
+    height: 50px;
+  }
+
+  .dashboard-establishment-name {
+    font-size: 1rem;
+  }
+
+  .appointment-card {
+    font-size: 0.85rem;
+  }
+
+  .kpi-card {
+    font-size: 0.85rem;
+  }
+}
+
+/* ===========================
+   ANIMATIONS
+   =========================== */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.hover-fade {
+  transition: opacity 0.3s ease;
+}
+
+.hover-fade:hover {
+  opacity: 0.8;
+}
+
+.hover-scale {
+  transition: transform 0.3s ease;
+}
+
+.hover-scale:hover {
+  transform: scale(1.03);
+}
+
+/* ===========================
+   SCROLLBARS
+   =========================== */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0b0b0c;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #0baff5;
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #16c1ff;
+}

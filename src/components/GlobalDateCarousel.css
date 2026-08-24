@@ -1,0 +1,93 @@
+.date-carousel {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  padding: 10px 0;
+}
+
+.date-track {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  padding: 6px 45px; /* espaço para as setas */
+}
+
+.date-item {
+  flex: 0 0 auto;
+  width: 90px;
+  text-align: center;
+  background-color: rgba(25, 25, 25, 0.9);
+  color: #fff;
+  border-radius: 10px;
+  padding: 10px 0;
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.3s ease;
+}
+
+.date-item:hover {
+  background-color: rgba(0, 224, 255, 0.3);
+}
+
+.date-item.active {
+  background-color: #00e0ff;
+  color: #000;
+  font-weight: bold;
+}
+
+.date-week {
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.date-day {
+  font-size: 1.6rem;
+  font-weight: bold;
+  margin-top: 4px;
+}
+
+.date-month {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  opacity: 0.8;
+}
+
+/* Botões laterais */
+.date-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 50%;
+  background-color: rgba(0, 224, 255, 0.8);
+  color: #000;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  z-index: 2;
+}
+
+.date-btn.left {
+  left: 5px;
+}
+
+.date-btn.right {
+  right: 5px;
+}
+
+.date-btn:hover {
+  background-color: #00ffff;
+}
+
+/* Oculta setas no mobile pequeno */
+@media (max-width: 576px) {
+  .date-btn {
+    display: none;
+  }
+}

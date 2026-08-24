@@ -1,0 +1,99 @@
+/* ===============================
+   VARIÁVEIS GLOBAIS
+================================*/
+:root {
+  --iteml-bg: var(--dash-bg);
+  --iteml-panel: var(--dash-panel);
+  --iteml-border: var(--dash-border);
+  --iteml-text: var(--dash-text);
+  --iteml-muted: var(--dash-muted);
+  --iteml-accent: var(--dash-accent);
+  --iteml-shadow: var(--dash-shadow);
+  --iteml-radius: var(--dash-radius);
+  --iteml-gap: var(--dash-gap);
+}
+
+/* ===============================
+   ROOT DA PÁGINA
+================================*/
+.iteml-root {
+  background: var(--iteml-bg);
+  min-height: 100vh;
+  color: var(--iteml-text);
+  padding-bottom: 40px;
+}
+
+/* ===============================
+   TÍTULO DAS SEÇÕES
+================================*/
+.iteml-title {
+  margin: 10px 0 16px;
+  padding-left: 4px;
+  font-weight: 900;
+  font-size: clamp(20px, 3.6vw, 26px);
+  color: var(--iteml-text);
+  letter-spacing: -0.5px;
+
+  text-shadow: 0 1px 12px
+    color-mix(in oklab, var(--iteml-accent), transparent 82%);
+}
+
+/* ===============================
+   GRID DE CARDS
+================================*/
+.iteml-grid {
+  width: 100%;
+  display: grid;
+  gap: var(--iteml-gap);
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+
+  padding: 6px 2px 20px;
+}
+
+/* ===============================
+   ESTADO VAZIO
+================================*/
+.iteml-empty {
+  background: linear-gradient(180deg, #17171a, #121214);
+  border: 1px dashed var(--iteml-muted);
+  color: var(--iteml-muted);
+  padding: 20px;
+  border-radius: 12px;
+  text-align: center;
+  width: 100%;
+  font-size: 15px;
+}
+
+/* ===============================
+   AJUSTES DO HERO + ESPAÇAMENTO
+================================*/
+.iteml-root .global-hero {
+  margin-bottom: 12px !important;
+}
+
+/* ===============================
+   RESPONSIVIDADE
+================================*/
+@media (max-width: 991.98px) {
+  .iteml-title {
+    font-size: 22px;
+  }
+
+  .iteml-grid {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  }
+}
+
+@media (max-width: 767.98px) {
+  .iteml-grid {
+    grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+    gap: 14px;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .iteml-grid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 12px;
+  }
+}

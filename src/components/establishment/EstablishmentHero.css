@@ -1,0 +1,139 @@
+/* src/components/establishment/EstablishmentHero.css */
+
+.eshlist-root {
+  position: relative;
+  width: 100vw;
+  min-height: 320px;
+  margin-left: calc(-50vw + 50%);
+  margin-right: calc(-50vw + 50%);
+  margin-bottom: 30px;
+
+  background-color: #000;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+  overflow: hidden;
+}
+
+/* overlay escuro consistente */
+.eshlist-root::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    rgba(55, 54, 54, 0.6),
+    rgba(0, 0, 0, 0.9)
+  );
+  z-index: 1;
+}
+
+/* container interno */
+.eshlist-inner {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 44px 24px 52px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+
+  color: #ffffff;
+}
+
+/* botão voltar */
+.eshlist-back {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+}
+
+/* box do logo */
+.eshlist-logo-box {
+  width: 96px;
+  height: 96px;
+  border-radius: 22px;
+
+  background-color: #000;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  margin-bottom: 18px;
+}
+
+/* logo */
+.eshlist-logo {
+  max-width: 70%;
+  max-height: 70%;
+  object-fit: contain;
+}
+
+/* título principal */
+.eshlist-title {
+  font-size: clamp(28px, 4vw, 42px);
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.5px;
+  margin-bottom: 10px;
+}
+
+/* subtítulo */
+.eshlist-subtitle {
+  font-size: 15px;
+  color: rgba(255, 255, 255, 0.85);
+  margin-bottom: 8px;
+  max-width: 760px;
+}
+
+/* descrição */
+.eshlist-description {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.65);
+  margin-bottom: 16px;
+  max-width: 820px;
+}
+
+/* localização */
+.eshlist-location {
+  display: inline-flex;
+  align-items: center;
+
+  padding: 6px 14px;
+  border-radius: 999px;
+
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.85);
+
+  background-color: #000;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+/* mobile */
+@media (max-width: 768px) {
+  .eshlist-inner {
+    padding: 32px 16px 40px;
+  }
+
+  .eshlist-back {
+    top: 14px;
+    right: 14px;
+  }
+
+  .eshlist-logo-box {
+    width: 80px;
+    height: 80px;
+    border-radius: 18px;
+  }
+
+  .eshlist-title {
+    font-size: 24px;
+  }
+}

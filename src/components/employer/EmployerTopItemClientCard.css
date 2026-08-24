@@ -1,0 +1,52 @@
+.emp-topcard {
+  background: #0a0a0c;
+  border: 1px solid #00ffff22;
+  box-shadow: 0 0 25px #00ffff11;
+  border-radius: 18px;
+  color: #fff;
+  margin-bottom: 25px;
+  overflow: hidden;
+}
+
+.emp-topcard-header {
+  background: #111218;
+  border-bottom: 1px solid #00ffff33;
+  color: #00ffff;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  padding: 10px 15px;
+}
+
+.emp-topcard-body {
+  padding: 20px;
+}
+
+.emp-topcard-item-img,
+.emp-topcard-client-img {
+  width: 50px;
+  height: 50px;
+  object-fit: cover;
+  border: 2px solid #00ffff55;
+  box-shadow: 0 0 10px #00ffff44;
+}
+
+.emp-topcard-item:hover .emp-topcard-item-img,
+.emp-topcard-client:hover .emp-topcard-client-img {
+  transform: scale(1.05);
+  box-shadow: 0 0 12px #00ffffaa;
+}
+
+.emp-topcard-item,
+.emp-topcard-client {
+  transition: all 0.3s ease;
+}
+
+.emp-topcard-item:hover,
+.emp-topcard-client:hover {
+  background: #00ffff08;
+  border-radius: 12px;
+  padding-left: 6px;
+}

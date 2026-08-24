@@ -1,0 +1,250 @@
+/* CitySelectorModal.css */
+
+.city-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(circle at top, rgba(0, 180, 255, 0.15), rgba(0, 0, 0, 0.85));
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.city-modal {
+  width: 100%;
+  max-width: 520px;
+  background: rgba(10, 15, 25, 0.85);
+  border-radius: 18px;
+  box-shadow:
+    0 0 0 1px rgba(0, 180, 255, 0.15),
+    0 30px 80px rgba(0, 0, 0, 0.8);
+  color: #e5e7eb;
+  display: flex;
+  flex-direction: column;
+  animation: modalIn 0.35s ease-out;
+}
+
+@keyframes modalIn {
+  from {
+    transform: translateY(20px) scale(0.96);
+    opacity: 0;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+
+.city-modal-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 24px 24px 16px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.15);
+}
+
+.city-modal-header h3 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #f9fafb;
+}
+
+.city-modal-header p {
+  margin: 6px 0 0;
+  font-size: 0.9rem;
+  color: #94a3b8;
+}
+
+.city-close-btn {
+  background: none;
+  border: none;
+  color: #94a3b8;
+  font-size: 28px;
+  line-height: 1;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.city-close-btn:hover {
+  color: #38bdf8;
+}
+
+.city-modal-body {
+  padding: 20px 24px 24px;
+}
+
+.city-loading {
+  text-align: center;
+  padding: 40px 0;
+  color: #94a3b8;
+  font-size: 0.95rem;
+}
+
+.city-dropdown-container {
+  position: relative;
+}
+
+.city-label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 0.85rem;
+  color: #cbd5f5;
+  font-weight: 500;
+}
+
+.city-search-input {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: rgba(2, 6, 23, 0.8);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  color: #f1f5f9;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.city-search-input::placeholder {
+  color: #64748b;
+}
+
+.city-search-input:focus {
+  border-color: #38bdf8;
+  box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.4);
+}
+
+.city-dropdown {
+  margin-top: 12px;
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-radius: 12px;
+  background: linear-gradient(
+    145deg,
+    rgba(30, 41, 59, 0.9),
+    rgba(15, 23, 42, 0.9)
+  );
+  border: 1px solid rgba(100, 116, 139, 0.25);
+  cursor: pointer;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.city-dropdown.open,
+.city-dropdown:hover {
+  border-color: #38bdf8;
+  box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.35);
+}
+
+.city-selected {
+  font-size: 0.95rem;
+  color: #f8fafc;
+}
+
+.city-arrow {
+  font-size: 0.7rem;
+  color: #94a3b8;
+  margin-left: 8px;
+}
+
+.city-options {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  max-height: 280px;
+  overflow-y: auto;
+  background: rgba(2, 6, 23, 0.95);
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  border-radius: 14px;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-6px);
+  transition: opacity 0.2s, transform 0.2s;
+  z-index: 10;
+}
+
+.city-options.show {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+
+.city-option {
+  width: 100%;
+  padding: 12px 14px;
+  background: none;
+  border: none;
+  text-align: left;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #e5e7eb;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.city-option:hover {
+  background: rgba(30, 41, 59, 0.6);
+  color: #38bdf8;
+}
+
+.city-option.active {
+  background: rgba(56, 189, 248, 0.15);
+  color: #38bdf8;
+}
+
+.city-empty {
+  padding: 20px;
+  text-align: center;
+  color: #94a3b8;
+  font-size: 0.9rem;
+}
+
+.city-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 18px 24px 22px;
+  border-top: 1px solid rgba(148, 163, 184, 0.15);
+}
+
+.city-btn {
+  padding: 10px 18px;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.city-btn.secondary {
+  background: transparent;
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  color: #e5e7eb;
+}
+
+.city-btn.secondary:hover {
+  border-color: #38bdf8;
+  color: #38bdf8;
+}
+
+.city-btn.primary {
+  background: linear-gradient(135deg, #38bdf8, #0ea5e9);
+  border: none;
+  color: #020617;
+  box-shadow: 0 0 20px rgba(56, 189, 248, 0.45);
+}
+
+.city-btn.primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.city-btn.primary:not(:disabled):hover {
+  transform: translateY(-1px);
+  box-shadow: 0 0 30px rgba(56, 189, 248, 0.6);
+}

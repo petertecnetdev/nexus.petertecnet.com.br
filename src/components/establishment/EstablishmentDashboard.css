@@ -1,0 +1,151 @@
+/* src/components/establishment/EstablishmentDashboard.css */
+
+/* ======================================================
+   ESTABLISHMENT DASHBOARD
+   Card + ActionBar como painel único
+====================================================== */
+
+.establishment-dashboard {
+  position: relative;
+  margin-bottom: 24px;
+  padding: 20px;
+  border-radius: 24px;
+  background: linear-gradient(
+    180deg,
+    rgba(18, 20, 26, 0.95),
+    rgba(10, 12, 16, 0.98)
+  );
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.05),
+    0 30px 90px rgba(0, 0, 0, 0.8);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* hover sutil (painel vivo, não chamativo) */
+.establishment-dashboard:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    inset 0 0 0 1px rgba(120, 170, 255, 0.25),
+    0 45px 120px rgba(0, 0, 0, 0.9);
+}
+
+/* ======================================================
+   GRID INTERNO
+====================================================== */
+
+.establishment-dashboard-row {
+  display: flex;
+  gap: 24px;
+  align-items: stretch;
+}
+
+/* ======================================================
+   COLUNA DO CARD
+====================================================== */
+
+.establishment-dashboard-card {
+  flex: 0 0 340px;
+  max-width: 340px;
+  display: flex;
+}
+
+.establishment-dashboard-card .carousel-card {
+  width: 100%;
+  margin: 0;
+  box-shadow: none;
+  background: linear-gradient(
+    180deg,
+    rgba(28, 32, 42, 0.92),
+    rgba(14, 16, 22, 0.96)
+  );
+}
+
+/* ======================================================
+   COLUNA DAS AÇÕES
+====================================================== */
+
+.establishment-dashboard-actions {
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+
+/* ======================================================
+   ACTION BAR – INTEGRADA
+====================================================== */
+
+.establishment-dashboard-actions .card {
+  width: 100%;
+  border-radius: 20px;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.045),
+    rgba(255, 255, 255, 0.015)
+  );
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+}
+
+/* remove efeito de modal */
+.establishment-dashboard-actions .card-body {
+  padding: 18px 20px;
+}
+
+/* ======================================================
+   BOTÕES DO DASHBOARD
+====================================================== */
+
+.establishment-dashboard-actions .dashboard-establishment-btn {
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.08),
+    rgba(255, 255, 255, 0.02)
+  );
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: none;
+  border-radius: 14px;
+  font-size: 0.75rem;
+  letter-spacing: 0.3px;
+  transition: all 0.25s ease;
+}
+
+.establishment-dashboard-actions .dashboard-establishment-btn:hover {
+  background: linear-gradient(
+    180deg,
+    rgba(120, 170, 255, 0.25),
+    rgba(120, 170, 255, 0.08)
+  );
+  border-color: rgba(120, 170, 255, 0.45);
+  transform: translateY(-1px);
+}
+
+/* ======================================================
+   RESPONSIVO
+====================================================== */
+
+@media (max-width: 991px) {
+  .establishment-dashboard-row {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .establishment-dashboard-card {
+    max-width: 100%;
+    flex: 1;
+  }
+
+  .establishment-dashboard-actions {
+    align-items: stretch;
+  }
+}
+
+@media (max-width: 576px) {
+  .establishment-dashboard {
+    padding: 16px;
+    border-radius: 20px;
+  }
+
+  .establishment-dashboard-actions .card-body {
+    padding: 14px;
+  }
+}

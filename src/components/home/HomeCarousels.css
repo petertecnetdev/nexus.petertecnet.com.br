@@ -1,0 +1,64 @@
+/* CONTAINER PRINCIPAL DOS CARROSSEIS */
+.homecarousels-container {
+  padding: 0 0.5rem;
+}
+
+/* BLOCO DE CADA SESSÃO */
+.homecarousels-section {
+  background: #111318;
+  padding: 1.6rem;
+  border-radius: 1rem;
+  margin-bottom: 2.2rem;
+  box-shadow: 0 0 15px #00000050 inset, 0 0 20px #00000030;
+  transition: 0.25s ease;
+}
+
+.homecarousels-section:hover {
+  box-shadow: 0 0 18px #00e0ff25, 
+              0 0 12px #00e0ff15 inset;
+}
+
+/* TÍTULO DAS SEÇÕES */
+.homecarousels-title {
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin-bottom: 1.2rem;
+  padding-left: 0.6rem;
+  border-left: 4px solid #00eaff;
+  color: #f4f4f4;
+}
+
+/* AJUSTE GLOBAL DO CARROUSEL */
+.homecarousels-section .global-carousel-wrapper {
+  padding-top: 0.5rem;
+}
+
+.homecarousels-section .carousel-container {
+  padding: 0;
+}
+
+/* ESTILO DOS CARDS DO GLOBALCARD QUANDO EXIBIDOS AQUI */
+.homecarousels-section .global-card {
+  background: #1a1d24;
+  border-radius: 1rem !important;
+  transition: 0.25s ease;
+  border: 1px solid #20242c;
+}
+
+.homecarousels-section .global-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 6px 18px #00eaff25;
+  border-color: #00eaff55;
+}
+
+/* TÍTULO INTERNO DOS CARDS */
+.homecarousels-section .global-card-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #f1f1f1;
+}
+
+/* SEPARAÇÃO ENTRE AS SESSÕES */
+.homecarousels-section + .homecarousels-section {
+  margin-top: 2.4rem;
+}

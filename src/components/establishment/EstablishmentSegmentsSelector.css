@@ -1,0 +1,77 @@
+/* =========================================================
+   EstablishmentSegmentsSelector.css
+   Seletor de Segmentos (Responsivo + Tema Inkap)
+   ========================================================= */
+
+/* ---------- SEARCH INPUT ---------- */
+.segments-search,
+.form-control {
+  background: var(--i-surface-2, #160f26);
+  color: var(--i-text, #f4eaff);
+  border: 1px solid rgba(180, 108, 255, 0.25);
+  border-radius: 12px;
+  padding: 0.65rem 0.85rem;
+  font-size: 0.9rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.form-control::placeholder {
+  color: var(--i-text-soft, #9b7fc2);
+}
+
+.form-control:focus {
+  outline: none;
+  border-color: var(--i-primary, #b46cff);
+  box-shadow: 0 0 0 2px rgba(180, 108, 255, 0.25);
+  background: var(--i-surface-2, #160f26);
+}
+
+/* ---------- GRID ---------- */
+.segments-grid-4 {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.1rem;
+}
+
+/* ---------- CARD BASE (fallback styling) ---------- */
+/* Caso o card não tenha estilos suficientes */
+.segments-grid-4 > * {
+  background: var(--i-surface, #110b1d);
+  border-radius: 16px;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.segments-grid-4 > *:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 26px rgba(0, 0, 0, 0.35);
+}
+
+/* ---------- RESPONSIVE ---------- */
+
+/* Large tablets / small desktops */
+@media (max-width: 1199px) {
+  .segments-grid-4 {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* Tablets */
+@media (max-width: 991px) {
+  .segments-grid-4 {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.9rem;
+  }
+}
+
+/* Mobile */
+@media (max-width: 575px) {
+  .segments-grid-4 {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+
+  .form-control {
+    font-size: 0.85rem;
+    padding: 0.6rem 0.75rem;
+  }
+}

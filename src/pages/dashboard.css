@@ -1,0 +1,290 @@
+:root {
+  --dash-bg: var(--est-bg, #0b0b0c);
+  --dash-bg-elev: var(--est-bg-elev, #121214);
+  --dash-panel: var(--est-panel, #151518);
+  --dash-border: var(--est-border, rgba(255, 255, 255, 0.08));
+  --dash-text: var(--est-text, #e9e9ea);
+  --dash-muted: var(--est-muted, #b5b5b9);
+  --dash-accent: var(--est-accent, #0baff5);
+  --dash-accent-2: var(--est-accent-2, #0baff5);
+  --dash-focus: var(--est-focus, #22d3ee);
+  --dash-success: var(--est-success, #22c55e);
+  --dash-danger: var(--est-danger, #ef4444);
+  --dash-shadow: var(--est-shadow, rgba(0, 0, 0, 0.5));
+  --dash-radius: var(--est-radius, 16px);
+  --dash-radius-sm: var(--est-radius-sm, 12px);
+  --dash-gap: var(--est-gap, 14px);
+  --dash-gap-lg: var(--est-gap-lg, 18px);
+  --dash-max-w: var(--est-max-w, 1200px);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+.dashboard-root {
+  background: var(--dash-bg);
+  color: var(--dash-text);
+  min-height: 100vh;
+}
+
+.dashboard-main {
+  padding: clamp(10px, 2vw, 18px);
+}
+
+.dashboard-section {
+  width: min(98%, var(--dash-max-w));
+  margin: 0 auto;
+}
+
+.dashboard-section-title {
+  margin: 6px 0 14px;
+  font-weight: 900;
+  font-size: clamp(18px, 3.4vw, 24px);
+  color: var(--dash-text);
+  text-shadow: 0 1px 14px color-mix(in oklab, var(--dash-accent), transparent 85%);
+}
+
+.dashboard-establishments-list {
+  margin-top: 4px;
+}
+
+.dashboard-empty {
+  background: linear-gradient(180deg, #17171a, #121214);
+  border: 1px dashed var(--dash-border);
+  color: var(--dash-muted);
+  padding: 18px;
+  border-radius: 12px;
+  text-align: center;
+}
+
+/* Card do Estabelecimento */
+.dashboard-establishment-card {
+  background: linear-gradient(180deg, #17171a 0%, #121214 100%);
+  border: 1px solid var(--dash-border);
+  border-radius: var(--dash-radius);
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.5), inset 0 0 0 1px rgba(255, 255, 255, 0.03);
+  overflow: hidden;
+  transition: transform 160ms ease, box-shadow 180ms ease, border-color 180ms ease;
+}
+
+.dashboard-establishment-card:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in oklab, var(--dash-accent), transparent 60%);
+  box-shadow: 0 22px 60px color-mix(in oklab, var(--dash-accent), black 85%), 0 18px 50px rgba(0, 0, 0, 0.55);
+}
+
+.dashboard-establishment-card .card-body {
+  padding: clamp(10px, 2.2vw, 18px);
+}
+
+/* Header dentro do card */
+.dashboard-establishment-header {
+  display: grid;
+  grid-template-columns: 64px 1fr;
+  gap: 12px;
+  align-items: center;
+}
+
+.dashboard-establishment-logo {
+  width: 64px;
+  height: 64px;
+  border-radius: 12px;
+  object-fit: cover;
+  background: #0f0f11;
+  border: 1px solid var(--dash-border);
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.45);
+  -webkit-user-drag: none;
+  user-select: none;
+}
+
+.dashboard-establishment-name {
+  font-weight: 900;
+  font-size: clamp(16px, 3.2vw, 20px);
+  color: var(--dash-text);
+  line-height: 1.2;
+}
+
+.dashboard-establishment-slug {
+  color: var(--dash-muted);
+  font-size: 13px;
+  margin-top: 2px;
+}
+
+/* Botões de ação */
+.dashboard-establishment-btn.btn,
+.dashboard-establishment-btn {
+  --btn-bdc: color-mix(in oklab, var(--dash-accent), transparent 65%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px solid var(--btn-bdc) !important;
+  color: var(--dash-text) !important;
+  background:
+    radial-gradient(200% 140% at 10% 0%, color-mix(in oklab, var(--dash-accent), transparent 90%) 0%, transparent 60%),
+    linear-gradient(180deg, #19191c 0%, #141417 100%) !important;
+  border-radius: 12px !important;
+  padding: 8px 10px !important;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.03), 0 10px 30px rgba(0,0,0,0.45) !important;
+  transition: transform 140ms ease, border-color 160ms ease, box-shadow 160ms ease, filter 160ms ease !important;
+  text-decoration: none !important;
+  white-space: nowrap;
+}
+
+.dashboard-establishment-btn:hover {
+  transform: translateY(-1px);
+  border-color: color-mix(in oklab, var(--dash-accent), transparent 40%) !important;
+  box-shadow: 0 18px 44px color-mix(in oklab, var(--dash-accent), black 85%), 0 16px 44px rgba(0,0,0,0.5) !important;
+}
+
+.dashboard-establishment-btn:focus-visible {
+  outline: 2px solid var(--dash-focus);
+  outline-offset: 2px;
+}
+
+.dashboard-establishment-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* Cards internos “Retrato de hoje” */
+.card.bg-dark,
+.card.bg-black,
+.card.text-light {
+  border-radius: 12px !important;
+  border: 1px solid var(--dash-border) !important;
+}
+
+.card.bg-dark .card-header,
+.card.bg-dark .card-body,
+.card.bg-black .card-body {
+  border-color: var(--dash-border) !important;
+}
+
+.card.bg-black {
+  background: linear-gradient(180deg, #0f0f11 0%, #0b0b0c 100%) !important;
+  color: var(--dash-text) !important;
+}
+
+.card.bg-dark {
+  background: linear-gradient(180deg, #141417 0%, #111113 100%) !important;
+  color: var(--dash-text) !important;
+}
+
+.card.bg-dark .card-header {
+  background: #141417 !important;
+  color: var(--dash-text) !important;
+  border-bottom: 1px solid var(--dash-border) !important;
+  font-weight: 800;
+}
+
+/* Métricas */
+.card-title.fs-6 {
+  color: var(--dash-muted) !important;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+}
+
+.card-text.fw-bold {
+  color: var(--dash-accent-2) !important;
+  text-shadow: 0 1px 10px color-mix(in oklab, var(--dash-accent-2), transparent 80%);
+}
+
+/* Ajustes de grid responsivo para os blocos de ações e métricas */
+@media (max-width: 991.98px) {
+  .dashboard-establishment-header {
+    grid-template-columns: 56px 1fr;
+  }
+  .dashboard-establishment-logo {
+    width: 56px;
+    height: 56px;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .dashboard-section {
+    width: min(98%, 100%);
+  }
+  .dashboard-establishment-card .card-body {
+    padding: 12px;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .dashboard-establishment-header {
+    grid-template-columns: 48px 1fr;
+    gap: 10px;
+  }
+  .dashboard-establishment-logo {
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
+  }
+  .dashboard-establishment-name {
+    font-size: 16px;
+  }
+  .dashboard-establishment-slug {
+    font-size: 12px;
+  }
+  .dashboard-establishment-btn {
+    padding: 8px 10px !important;
+    font-size: 0.92rem !important;
+  }
+}
+
+/* Estados e acessibilidade */
+@media (prefers-reduced-motion: reduce) {
+  .dashboard-establishment-card,
+  .dashboard-establishment-btn,
+  .dashboard-section-title {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+/* Scrollbars */
+.dashboard-root ::-webkit-scrollbar {
+  height: 10px;
+  width: 10px;
+}
+.dashboard-root ::-webkit-scrollbar-thumb {
+  background: #2a2a2f;
+  border-radius: 10px;
+  border: 2px solid #16161a;
+}
+.dashboard-root ::-webkit-scrollbar-thumb:hover {
+  background: #3a3a40;
+}
+.dashboard-root ::-webkit-scrollbar-track {
+  background: #111114;
+  border-radius: 10px;
+}
+
+/* Helpers para contraste de valores numéricos críticos */
+.dashboard-value-up {
+  color: var(--dash-success);
+  font-weight: 800;
+}
+.dashboard-value-down {
+  color: var(--dash-danger);
+  font-weight: 800;
+}
+
+/* Botão “Page” com variação sutil */
+.dashboard-establishment-btn.mx-1.bg-black {
+  background:
+    radial-gradient(180% 140% at 90% 0%, color-mix(in oklab, var(--dash-accent), transparent 92%) 0%, transparent 60%),
+    linear-gradient(180deg, #0f0f11 0%, #0b0b0c 100%) !important;
+}
+
+/* Correção de cores de links dentro do dashboard */
+.dashboard-root a {
+  color: inherit;
+  text-decoration: none;
+}
+.dashboard-root a:hover {
+  text-decoration: none;
+}

@@ -1,0 +1,45 @@
+def keystoreProperties = new Properties()
+def keystorePropertiesFile = rootProject.file("gradle.properties")
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+}
+
+apply plugin: 'com.android.application'
+
+android {
+    namespace "com.rasoio.app"
+    compileSdkVersion 33
+
+    defaultConfig {
+        applicationId "com.rasoio.app"
+        minSdkVersion 21
+        targetSdkVersion 33
+        versionCode 1
+        versionName "1.0"
+    }
+
+    signingConfigs {
+        release {
+            storeFile file(keystoreProperties['MYAPP_RELEASE_STORE_FILE'])
+            storePassword keystoreProperties['MYAPP_RELEASE_STORE_PASSWORD']
+            keyAlias keystoreProperties['MYAPP_RELEASE_KEY_ALIAS']
+            keyPassword keystoreProperties['MYAPP_RELEASE_KEY_PASSWORD']
+        }
+    }
+
+    buildTypes {
+        release {
+            signingConfig signingConfigs.release
+            minifyEnabled false
+            shrinkResources false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+dependencies {
+    implementation fileTree(dir: "libs", include: ["*.jar"])
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'com.google.android.material:material:1.9.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+}

@@ -1,0 +1,260 @@
+/* src/components/GlobalOrderCard.css */
+
+.gorder-card {
+  background: #0f1115;
+  border-radius: 16px;
+  padding: 16px;
+  border: 2px solid transparent;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.gorder-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+}
+
+/* =========================
+   STATUS COLORS (BORDERS)
+========================= */
+
+.gorder-status-pending {
+  border-color: #ffc107;
+}
+
+.gorder-status-scheduled {
+  border-color: #0dcaf0;
+}
+
+.gorder-status-confirmed {
+  border-color: #0d6efd;
+}
+
+.gorder-status-completed,
+.gorder-status-attended {
+  border-color: #198754;
+}
+
+.gorder-status-cancelled,
+.gorder-status-not_attended {
+  border-color: #dc3545;
+}
+
+/* =========================
+   HEADER
+========================= */
+
+.gorder-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.gorder-users {
+  display: flex;
+  gap: 20px;
+}
+
+.gorder-user {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.gorder-user-client {
+  padding-right: 16px;
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.gorder-user-attendant {
+  padding-left: 16px;
+}
+
+.gorder-user-info {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.gorder-user-role {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.gorder-user-info a {
+  color: #ffffff;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.gorder-user-info a:hover {
+  text-decoration: underline;
+}
+
+/* =========================
+   AVATAR
+========================= */
+
+.gorder-avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.gorder-avatar-fallback {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #343a40, #212529);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  color: #ffffff;
+  font-size: 14px;
+}
+
+/* =========================
+   BODY
+========================= */
+
+.gorder-body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.gorder-time {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.gorder-items {
+  margin-top: 8px;
+  border-top: 1px dashed rgba(255, 255, 255, 0.1);
+  padding-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.gorder-item-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.gorder-total {
+  margin-top: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+/* =========================
+   FOOTER
+========================= */
+
+.gorder-footer {
+  margin-top: 6px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* =========================
+   RESPONSIVE
+========================= */
+
+@media (max-width: 576px) {
+  .gorder-users {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .gorder-user-client {
+    border-right: none;
+    padding-right: 0;
+  }
+
+  .gorder-user-attendant {
+    padding-left: 0;
+  }
+}
+.gorder-card {
+  height: 100%;
+  min-height: 420px;
+  max-height: 420px;
+
+  display: flex;
+  flex-direction: column;
+
+  background: linear-gradient(180deg, #0b0f14, #06080c);
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.05);
+}
+
+/* HEADER */
+.gorder-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+/* BODY ocupa o espaço variável */
+.gorder-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow: hidden;
+}
+
+/* LISTA DE ITENS COM ALTURA CONTROLADA */
+.gorder-items {
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 6px;
+}
+
+/* scrollbar discreto */
+.gorder-items::-webkit-scrollbar {
+  width: 4px;
+}
+.gorder-items::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.2);
+  border-radius: 10px;
+}
+
+/* ITEM */
+.gorder-item-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 13px;
+}
+
+/* RESUMO sempre no mesmo lugar */
+.gorder-summary {
+  border-top: 1px dashed rgba(255,255,255,0.15);
+  padding-top: 8px;
+  margin-top: auto;
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+}
+
+/* FOOTER fixo no fundo */
+.gorder-footer {
+  margin-top: 12px;
+  display: flex;
+  justify-content: flex-end;
+}

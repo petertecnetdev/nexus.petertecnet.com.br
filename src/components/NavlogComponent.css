@@ -1,0 +1,422 @@
+:root {
+  --navlog-bg: #0b0b0c;
+  --navlog-bg-elev: #121214;
+  --navlog-overlay: rgba(0, 0, 0, 0.65);
+  --navlog-border: rgba(255, 255, 255, 0.08);
+  --navlog-text: #e9e9ea;
+  --navlog-muted: #b5b5b9;
+  --navlog-accent: #f59e0b;
+  --navlog-accent-2: #ffd166;
+  --navlog-danger: #ef4444;
+  --navlog-focus: #22d3ee;
+  --navlog-shadow: rgba(0, 0, 0, 0.5);
+  --navlog-radius: 14px;
+  --navlog-radius-sm: 10px;
+  --navlog-gap: 12px;
+  --navlog-gap-lg: 16px;
+  --navlog-max-w: 420px;
+  --navlog-blur: 12px;
+  --navlog-z-navbar: 1030;
+  --navlog-z-menu: 1040;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+.navlog__navbar.navbar {
+  position: sticky;
+  top: 0;
+  z-index: var(--navlog-z-navbar);
+  width: 100%;
+  background: linear-gradient(180deg, #0b0b0cf2 0%, #0b0b0cf2 60%, #0b0b0cde 100%);
+  backdrop-filter: blur(6px);
+  border-bottom: 1px solid var(--navlog-border);
+  padding-block: 10px;
+  padding-inline: clamp(14px, 3vw, 24px);
+}
+
+.navlog__brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 8px;
+  border-radius: var(--navlog-radius-sm);
+  text-decoration: none;
+}
+
+.navlog__brand:focus-visible {
+  outline: 2px solid var(--navlog-focus);
+  outline-offset: 2px;
+}
+
+.navlog__logo-image {
+  height: clamp(28px, 4.2vw, 38px);
+  width: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 10px rgba(245, 158, 11, 0.1));
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.navlog__mobile-toggle-btn {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 40px;
+  width: 44px;
+  padding: 0;
+  border: 1px solid var(--navlog-border);
+  border-radius: 12px;
+  background: radial-gradient(120% 120% at 50% 10%, #18181b 0%, #121214 60%, #0b0b0c 100%);
+  color: var(--navlog-text);
+  font-size: 22px;
+  line-height: 1;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.03), 0 6px 22px var(--navlog-shadow);
+  transition: transform 160ms ease, border-color 160ms ease, box-shadow 160ms ease, background 160ms ease;
+}
+
+.navlog__mobile-toggle-btn:hover {
+  transform: translateY(-1px);
+  border-color: rgba(245, 158, 11, 0.35);
+  box-shadow: inset 0 0 0 1px rgba(245, 158, 11, 0.05), 0 8px 28px rgba(245, 158, 11, 0.08), 0 10px 28px var(--navlog-shadow);
+}
+
+.navlog__mobile-toggle-btn:active {
+  transform: translateY(0);
+}
+
+.navlog__mobile-toggle-btn:focus-visible {
+  outline: 2px solid var(--navlog-focus);
+  outline-offset: 2px;
+}
+
+.navlog__login-btn {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  height: 40px;
+  padding-inline: 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  background:
+    radial-gradient(220% 120% at 10% 0%, rgba(245, 158, 11, 0.08) 0%, rgba(245, 158, 11, 0.03) 50%, rgba(245, 158, 11, 0) 100%),
+    linear-gradient(180deg, #121214 0%, #0f0f11 100%);
+  color: var(--navlog-text);
+  text-decoration: none;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  transition: filter 180ms ease, transform 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
+  box-shadow: 0 8px 30px rgba(245, 158, 11, 0.12), inset 0 0 0 1px rgba(255, 255, 255, 0.03);
+}
+
+.navlog__login-btn:hover {
+  filter: brightness(1.05);
+  transform: translateY(-1px);
+}
+
+.navlog__login-btn:active {
+  transform: translateY(0);
+}
+
+.navlog__login-btn:focus-visible {
+  outline: 2px solid var(--navlog-focus);
+  outline-offset: 2px;
+}
+
+.navlog__mobile-menu {
+  position: fixed;
+  inset: 0;
+  z-index: var(--navlog-z-menu);
+  display: grid;
+  grid-template-rows: auto 1fr;
+  color: var(--navlog-text);
+}
+
+.navlog__mobile-menu::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--navlog-overlay);
+  -webkit-backdrop-filter: blur(var(--navlog-blur));
+  backdrop-filter: blur(var(--navlog-blur));
+}
+
+.navlog__mobile-close {
+  position: relative;
+  display: flex;
+  justify-content: flex-end;
+  padding: 12px clamp(12px, 3vw, 22px);
+  padding-top: max(12px, env(safe-area-inset-top));
+  background: linear-gradient(180deg, rgba(18, 18, 20, 0.92) 0%, rgba(18, 18, 20, 0.78) 100%);
+  border-bottom: 1px solid var(--navlog-border);
+}
+
+.navlog__close-btn {
+  height: 44px;
+  width: 44px;
+  border-radius: 12px;
+  border: 1px solid var(--navlog-border);
+  background: linear-gradient(180deg, #18181b 0%, #141417 100%);
+  color: var(--navlog-text);
+  font-size: 24px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.03), 0 6px 22px var(--navlog-shadow);
+  transition: transform 140ms ease, border-color 160ms ease, box-shadow 160ms ease;
+}
+
+.navlog__close-btn:hover {
+  transform: rotate(90deg);
+  border-color: rgba(239, 68, 68, 0.45);
+  box-shadow: 0 8px 28px rgba(239, 68, 68, 0.12);
+}
+
+.navlog__close-btn:active {
+  transform: rotate(0);
+}
+
+.navlog__close-btn:focus-visible {
+  outline: 2px solid var(--navlog-focus);
+  outline-offset: 2px;
+}
+
+.navlog__mobile-content {
+  position: relative;
+  height: 100%;
+  display: grid;
+  place-items: start center;
+  padding: clamp(14px, 3.2vw, 20px);
+  padding-bottom: max(20px, env(safe-area-inset-bottom));
+  overflow: auto;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .navlog__mobile-content {
+    animation: navlogSlideUp 260ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+}
+
+@keyframes navlogSlideUp {
+  from {
+    transform: translateY(6px);
+    opacity: 0.7;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.navlog__mobile-links {
+  display: grid;
+  gap: var(--navlog-gap);
+  width: min(92vw, var(--navlog-max-w));
+  background:
+    radial-gradient(120% 100% at 0% 0%, rgba(245, 158, 11, 0.08) 0%, rgba(245, 158, 11, 0.02) 60%, rgba(245, 158, 11, 0) 100%),
+    linear-gradient(180deg, var(--navlog-bg-elev) 0%, #0e0e11 100%);
+  border: 1px solid var(--navlog-border);
+  border-radius: var(--navlog-radius);
+  box-shadow:
+    0 20px 60px rgba(0, 0, 0, 0.55),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.03);
+  padding: clamp(16px, 3.4vw, 24px);
+}
+
+.navlog__avatar {
+  width: 84px;
+  height: 84px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid rgba(245, 158, 11, 0.4);
+  box-shadow: 0 10px 28px rgba(245, 158, 11, 0.12), 0 0 0 6px rgba(245, 158, 11, 0.06);
+  margin-bottom: 10px;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.navlog__user-name {
+  margin: 0 0 14px;
+  font-weight: 700;
+  font-size: clamp(18px, 4.5vw, 22px);
+  color: var(--navlog-text);
+  text-shadow: 0 2px 14px rgba(245, 158, 11, 0.12);
+}
+
+.navlog__loading {
+  color: var(--navlog-muted);
+  font-size: 15px;
+}
+
+.navlog__link,
+.navlog__admin-btn,
+.navlog__submenu-link {
+  width: 100%;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  color: var(--navlog-text);
+  background: linear-gradient(180deg, #17171a 0%, #121214 100%);
+  border: 1px solid var(--navlog-border);
+  border-radius: 12px;
+  padding: 12px 14px;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.02), 0 8px 26px rgba(0, 0, 0, 0.4);
+  transition: transform 120ms ease, border-color 160ms ease, box-shadow 160ms ease, background 160ms ease;
+}
+
+.navlog__link:hover,
+.navlog__submenu-link:hover {
+  transform: translateY(-1px);
+  border-color: rgba(245, 158, 11, 0.35);
+  box-shadow: 0 10px 30px rgba(245, 158, 11, 0.08), 0 12px 30px rgba(0, 0, 0, 0.5);
+}
+
+.navlog__link:active,
+.navlog__submenu-link:active {
+  transform: translateY(0);
+}
+
+.navlog__link:focus-visible,
+.navlog__admin-btn:focus-visible,
+.navlog__submenu-link:focus-visible {
+  outline: 2px solid var(--navlog-focus);
+  outline-offset: 2px;
+}
+
+.navlog__admin-btn {
+  justify-content: space-between;
+  cursor: pointer;
+  background:
+    radial-gradient(200% 140% at 0% 0%, rgba(245, 158, 11, 0.08) 0%, rgba(245, 158, 11, 0.03) 55%, rgba(245, 158, 11, 0) 100%),
+    linear-gradient(180deg, #19191c 0%, #141417 100%);
+}
+
+.navlog__admin-submenu {
+  display: grid;
+  gap: 10px;
+  margin-top: 8px;
+  padding-left: 6px;
+}
+
+.navlog__submenu-link {
+  padding-left: 16px;
+  background: linear-gradient(180deg, #151518 0%, #111113 100%);
+}
+
+.navlog__submenu-link::before {
+  content: "•";
+  color: var(--navlog-accent);
+  margin-right: 6px;
+  font-size: 14px;
+  transform: translateY(-1px);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .navlog__link:hover,
+  .navlog__submenu-link:hover,
+  .navlog__admin-btn:hover {
+    background: linear-gradient(180deg, #1b1b1f 0%, #151519 100%);
+  }
+}
+
+@media (min-width: 480px) {
+  .navlog__mobile-links {
+    gap: var(--navlog-gap-lg);
+    padding: 22px;
+  }
+  .navlog__avatar {
+    width: 92px;
+    height: 92px;
+  }
+}
+
+@media (min-width: 992px) {
+  .navlog__mobile-toggle-btn {
+    height: 42px;
+    width: 46px;
+    font-size: 22px;
+  }
+}
+
+@media (min-width: 1240px) {
+  .navlog__mobile-links {
+    width: min(88vw, var(--navlog-max-w));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .navlog__mobile-toggle-btn,
+  .navlog__close-btn,
+  .navlog__link,
+  .navlog__admin-btn,
+  .navlog__submenu-link,
+  .navlog__mobile-content {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+@media (max-width: 360px) {
+  .navlog__mobile-toggle-btn,
+  .navlog__close-btn {
+    height: 40px;
+    width: 40px;
+  }
+  .navlog__avatar {
+    width: 78px;
+    height: 78px;
+  }
+}
+
+@media (max-height: 560px) and (orientation: landscape) {
+  .navlog__mobile-content {
+    padding: 10px;
+  }
+  .navlog__mobile-links {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .navlog__admin-submenu {
+    grid-column: 1 / -1;
+  }
+}
+
+.navlog__link[href*="/logout"],
+.navlog__submenu-link[href*="/logout"] {
+  border-color: rgba(239, 68, 68, 0.3);
+  background:
+    radial-gradient(140% 120% at 0% 0%, rgba(239, 68, 68, 0.08) 0%, rgba(239, 68, 68, 0.03) 55%, rgba(239, 68, 68, 0) 100%),
+    linear-gradient(180deg, #19191c 0%, #141417 100%);
+}
+
+.navlog__link[href*="/logout"]:hover,
+.navlog__submenu-link[href*="/logout"]:hover {
+  border-color: rgba(239, 68, 68, 0.45);
+  box-shadow: 0 10px 30px rgba(239, 68, 68, 0.12), 0 12px 30px rgba(0, 0, 0, 0.5);
+}
+
+.navlog__navbar .navbar-brand,
+.navlog__navbar .navbar-nav .nav-link,
+.navlog__navbar .navbar-text {
+  color: var(--navlog-text) !important;
+}
+
+.navlog__navbar .navbar-brand:hover,
+.navlog__navbar .navbar-nav .nav-link:hover {
+  color: #ffffff !important;
+}
+
+@supports (background: paint(worklet)) {
+  .navlog__mobile-links {
+    border-image: radial-gradient(120% 200% at 0% 0%, rgba(245, 158, 11, 0.22), rgba(245, 158, 11, 0)) 1;
+  }
+}

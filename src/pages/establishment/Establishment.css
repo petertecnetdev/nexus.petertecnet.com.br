@@ -1,0 +1,588 @@
+/* =========================================================
+   EstablishmentView.css
+   Visual futurista, escuro, responsivo e performático
+   ========================================================= */
+
+:root {
+  --bg: #0b0b0f;
+  --surface: #111118;
+  --surface-2: #161621;
+  --surface-3: #1a1a28;
+  --text: #e9edf1;
+  --muted: #a9b0bb;
+  --accent: #0211e8;      /* amarelo quente */
+  --accent-2: #5eead4;    /* ciano suave */
+  --danger: #ef4444;
+  --ok: #22c55e;
+  --shadow: 0 10px 30px rgba(0, 0, 0, .55);
+  --shadow-soft: 0 8px 20px rgba(0, 0, 0, .35);
+  --round: 18px;
+  --round-lg: 24px;
+  --gap: 16px;
+  --gap-lg: 22px;
+  --maxw: 1280px;
+
+  /* altura da barra fixa — atualizada em runtime pelo componente */
+  --estab-nav-height: 56px;
+}
+
+/* Reset suave */
+.establishment-page-vitrine * {
+  box-sizing: border-box;
+}
+
+.establishment-page-vitrine {
+  background: radial-gradient(1200px 800px at 80% -10%, rgba(94,234,212,.12), transparent 55%),
+              radial-gradient(1000px 600px at 0% 10%, rgba(255,200,87,.1), transparent 40%),
+              var(--bg);
+  min-height: 100dvh;
+  color: var(--text);
+  overflow-x: hidden;
+  padding-top: calc(var(--estab-nav-height) + 8px); /* evita conteúdo sob a barra fixa */
+}
+
+/* ---------------------------------------------------------
+   Barra fixa de navegação por seções
+--------------------------------------------------------- */
+.estab-nav-buttons {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 80;
+  display: flex;
+  gap: 8px;
+  padding: 10px clamp(10px, 3vw, 22px);
+  background: linear-gradient(180deg, rgba(12,12,16,.88), rgba(12,12,16,.70) 40%, rgba(12,12,16,.35) 85%, transparent);
+  backdrop-filter: blur(10px) saturate(140%);
+  border-bottom: 1px solid rgba(255,255,255,.06);
+}
+
+.estab-nav-buttons button {
+  -webkit-tap-highlight-color: transparent;
+  appearance: none;
+  border: 0;
+  border-radius: 999px;
+  padding: 10px 14px;
+  font: 600 14px/1.1 ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, "Helvetica Neue", Arial;
+  letter-spacing: .2px;
+  color: var(--text);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,0)) padding-box,
+    linear-gradient(180deg, rgba(255,255,255,.2), rgba(255,255,255,.05)) border-box;
+  border: 1px solid transparent;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.03);
+  transition: transform .2s ease, box-shadow .2s ease, background .2s ease;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.estab-nav-buttons button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(0,0,0,.35), inset 0 0 0 1px rgba(255,255,255,.06);
+}
+
+.estab-nav-buttons button.active {
+  background:
+    linear-gradient(180deg, rgba(255,200,87,.25), rgba(255,200,87,.08)) padding-box,
+    linear-gradient(180deg, rgba(18, 10, 232, 0.6), rgba(255,255,255,.12)) border-box;
+  box-shadow: 0 10px 28px rgba(7, 89, 166, 0.18), inset 0 0 0 1px rgba(255,200,87,.35);
+  color: #111;
+}
+
+/* ---------------------------------------------------------
+   HERO
+--------------------------------------------------------- */
+.estab-hero {
+  width: 100%;
+  min-height: clamp(240px, 46vw, 420px);
+  display: grid;
+  place-items: center;
+  background-color: #0e0e15;
+  box-shadow: var(--shadow);
+}
+
+.estab-hero-inner {
+  width: min(100%, var(--maxw));
+  padding: clamp(16px, 4vw, 28px);
+  display: grid;
+  grid-template-columns: 140px 1fr;
+  align-items: center;
+  gap: clamp(16px, 4vw, 28px);
+}
+
+.estab-logo-bubble {
+  width: clamp(84px, 10vw, 128px);
+  height: clamp(84px, 10vw, 128px);
+  border-radius: 22px;
+  overflow: hidden;
+  background: linear-gradient(180deg, rgba(255,255,255,.1), rgba(255,255,255,0));
+  border: 1px solid rgba(255,255,255,.08);
+  box-shadow: 0 12px 32px rgba(0,0,0,.5), inset 0 0 0 1px rgba(255,255,255,.06);
+  display: grid;
+  place-items: center;
+}
+
+.estab-logo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.estab-info-block {
+  display: grid;
+  gap: 10px;
+}
+
+.estab-title {
+  margin: 0;
+  font-size: clamp(22px, 3.2vw, 36px);
+  letter-spacing: .3px;
+  font-weight: 800;
+  text-shadow: 0 2px 12px rgba(0,0,0,.45);
+}
+
+.estab-description {
+  color: var(--muted);
+  font-size: clamp(14px, 2vw, 16px);
+  line-height: 1.5;
+  max-width: 72ch;
+}
+
+.estab-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.estab-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  color: #101114;
+  background: linear-gradient(180deg, var(--accent), #f7b73b);
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-weight: 700;
+  letter-spacing: .2px;
+  box-shadow: 0 10px 28px rgba(255,200,87,.22), inset 0 -8px 18px rgba(0,0,0,.15);
+  border: 1px solid rgba(0,0,0,.2);
+  transition: transform .2s ease, filter .2s ease;
+}
+
+.estab-link:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.02);
+}
+
+/* ---------------------------------------------------------
+   INFO RÁPIDA (ENDEREÇO/SEGMENTOS)
+--------------------------------------------------------- */
+.estab-details-row {
+  width: min(100%, var(--maxw));
+  margin: clamp(12px, 3.5vw, 24px) auto 0;
+  padding: 14px clamp(16px, 4vw, 28px);
+  display: grid;
+  gap: 8px;
+  color: var(--muted);
+  background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,0));
+  border-top: 1px solid rgba(255,255,255,.06);
+  border-bottom: 1px solid rgba(255,255,255,.04);
+}
+
+/* ---------------------------------------------------------
+   SEÇÕES (serviços, produtos, barbeiros, contato, mapa)
+--------------------------------------------------------- */
+.estab-cardapio-section {
+  width: min(100%, var(--maxw));
+  margin: clamp(16px, 5vw, 28px) auto;
+  padding: 0 clamp(16px, 4vw, 28px);
+  scroll-margin-top: calc(var(--estab-nav-height) + 12px);
+}
+
+.estab-cardapio-title {
+  margin: 0 0 14px 0;
+  font-size: clamp(18px, 2.4vw, 24px);
+  font-weight: 800;
+  letter-spacing: .3px;
+  background: linear-gradient(180deg, #fff, #b8c0cc);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 10px 30px rgba(255,255,255,.04));
+}
+
+/* Grid de cards (serviços/produtos) */
+.estab-items-grid {
+  display: grid;
+  gap: var(--gap);
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+}
+
+@media (min-width: 560px) {
+  .estab-items-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (min-width: 920px) {
+  .estab-items-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+.estab-cardapio-card {
+  background: linear-gradient(180deg, var(--surface), var(--surface-2));
+  border: 1px solid rgba(255,255,255,.06);
+  border-radius: var(--round);
+  overflow: hidden;
+  box-shadow: var(--shadow-soft);
+  display: grid;
+  grid-template-rows: auto 1fr;
+  transition: transform .15s ease, box-shadow .2s ease, border-color .2s ease;
+}
+
+.estab-cardapio-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 38px rgba(0,0,0,.45);
+  border-color: rgba(255,255,255,.12);
+}
+
+.estab-esgotado {
+  opacity: .85;
+  filter: grayscale(10%) saturate(90%);
+  position: relative;
+}
+
+.estab-esgotado::after {
+  content: "Esgotado";
+  position: absolute;
+  top: 12px; right: -36px;
+  transform: rotate(35deg);
+  background: linear-gradient(180deg, #2a2a38, #232331);
+  color: #fff;
+  padding: 8px 46px;
+  font-weight: 800;
+  font-size: 13px;
+  letter-spacing: .6px;
+  border: 1px solid rgba(255,255,255,.12);
+  box-shadow: 0 10px 24px rgba(0,0,0,.45);
+}
+
+.estab-item-img {
+  width: 100%;
+  height: clamp(160px, 26vw, 220px);
+  object-fit: cover;
+  background: #0e0e15;
+}
+
+.estab-item-info {
+  display: grid;
+  gap: 8px;
+  padding: 12px 12px 14px;
+}
+
+.estab-item-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.estab-item-title {
+  font-weight: 800;
+  letter-spacing: .2px;
+  font-size: 16px;
+}
+
+.estab-item-preco {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 800;
+  color: var(--accent);
+}
+
+.estab-item-desc {
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.estab-item-bottom-row {
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.estab-item-duracao {
+  color: var(--accent-2);
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.estab-item-disponivel,
+.estab-item-indisponivel {
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: .3px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid rgba(255,255,255,.08);
+}
+
+.estab-item-disponivel { color: var(--ok); background: rgba(34,197,94,.12); }
+.estab-item-indisponivel { color: var(--danger); background: rgba(239,68,68,.10); }
+
+/* ---------------------------------------------------------
+   Barbeiros
+--------------------------------------------------------- */
+.estab-barbers-grid {
+  display: grid;
+  gap: var(--gap);
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+}
+
+@media (min-width: 560px) {
+  .estab-barbers-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (min-width: 920px) {
+  .estab-barbers-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+.estab-barber-card {
+  background: linear-gradient(180deg, var(--surface), var(--surface-2));
+  border: 1px solid rgba(255,255,255,.06);
+  border-radius: var(--round);
+  box-shadow: var(--shadow-soft);
+  display: grid;
+  grid-template-columns: 84px 1fr;
+  gap: 12px;
+  padding: 12px;
+  align-items: center;
+  transition: transform .15s ease, border-color .2s ease;
+}
+
+.estab-barber-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(255,255,255,.12);
+}
+
+.estab-barber-img-wrapper {
+  width: 84px; height: 84px;
+  border-radius: 16px;
+  overflow: hidden;
+  background: #0f0f16;
+  display: grid; place-items: center;
+  border: 1px solid rgba(255,255,255,.06);
+}
+
+.estab-barber-img {
+  width: 100%; height: 100%; object-fit: cover;
+}
+
+.estab-barber-placeholder {
+  width: 100%; height: 100%;
+  display: grid; place-items: center;
+  color: var(--muted);
+  font-weight: 800;
+  font-size: 28px;
+}
+
+.estab-barber-info { display: grid; gap: 2px; }
+.estab-barber-name { font-weight: 800; letter-spacing: .2px; }
+.estab-barber-role { color: var(--muted); font-size: 13px; }
+
+/* ---------------------------------------------------------
+   Contato
+--------------------------------------------------------- */
+.contact-grid {
+  display: grid;
+  gap: var(--gap);
+  grid-template-columns: 1fr;
+}
+@media (min-width: 920px) {
+  .contact-grid { grid-template-columns: 1.2fr .8fr; }
+}
+
+.contact-card {
+  background: linear-gradient(180deg, var(--surface), var(--surface-2));
+  border: 1px solid rgba(255,255,255,.06);
+  border-radius: var(--round);
+  box-shadow: var(--shadow-soft);
+  overflow: hidden;
+}
+
+.contact-card .header {
+  padding: 12px 14px;
+  background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,0));
+  border-bottom: 1px solid rgba(255,255,255,.06);
+  font-weight: 800;
+  letter-spacing: .3px;
+}
+
+.contact-card .body {
+  padding: 12px;
+  display: grid;
+  gap: 10px;
+}
+
+.estab-contact-row {
+  display: grid;
+  grid-template-columns: 130px 1fr;
+  gap: 10px;
+  align-items: center;
+}
+
+.estab-contact-label {
+  color: var(--muted);
+  font-size: 13px;
+  letter-spacing: .2px;
+}
+
+.estab-contact-value {
+  font-weight: 700;
+}
+
+.estab-link-inline {
+  color: var(--text);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: 10px;
+  background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,0));
+  border: 1px solid rgba(255,255,255,.06);
+  transition: transform .15s ease, border-color .2s ease;
+}
+
+.estab-link-inline:hover { transform: translateY(-1px); border-color: rgba(255,255,255,.12); }
+
+.estab-map-link-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  font-weight: 800;
+  letter-spacing: .2px;
+  color: #101114;
+  background: linear-gradient(180deg, var(--accent), #f7b73b);
+  border-radius: 12px;
+  padding: 10px 14px;
+  box-shadow: 0 12px 28px rgba(255,200,87,.22), inset 0 -8px 18px rgba(0,0,0,.15);
+  border: 1px solid rgba(0,0,0,.2);
+  transition: transform .2s ease, filter .2s ease;
+}
+
+.estab-map-link-btn:hover { transform: translateY(-1px); filter: brightness(1.02); }
+
+/* ---------------------------------------------------------
+   Mapa
+--------------------------------------------------------- */
+.estab-map-wrap {
+  background: linear-gradient(180deg, var(--surface), var(--surface-2));
+  border: 1px solid rgba(255,255,255,.06);
+  border-radius: var(--round);
+  overflow: hidden;
+  box-shadow: var(--shadow-soft);
+}
+
+.estab-map-iframe {
+  width: 100%;
+  height: clamp(260px, 40vw, 420px);
+  border: 0;
+  display: block;
+  filter: saturate(105%) contrast(98%);
+}
+
+/* ---------------------------------------------------------
+   Estados auxiliares
+--------------------------------------------------------- */
+.estab-vazio {
+  color: var(--muted);
+  text-align: center;
+  padding: 24px 12px;
+  border: 1px dashed rgba(255,255,255,.12);
+  border-radius: var(--round);
+  background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,0));
+}
+
+/* ---------------------------------------------------------
+   FAB — WhatsApp flutuante
+--------------------------------------------------------- */
+.fab {
+  position: fixed;
+  bottom: clamp(16px, 3vw, 24px);
+  right: clamp(16px, 3vw, 24px);
+  width: 58px; height: 58px;
+  display: grid; place-items: center;
+  border-radius: 50%;
+  color: #0b1912;
+  background: linear-gradient(180deg, #25D366, #1ebe57);
+  text-decoration: none;
+  box-shadow: 0 18px 36px rgba(37,211,102,.35), inset 0 -10px 18px rgba(0,0,0,.18);
+  border: 1px solid rgba(0,0,0,.2);
+  z-index: 90;
+  transition: transform .18s ease, filter .18s ease;
+}
+.fab:hover { transform: translateY(-2px) scale(1.02); filter: brightness(1.03); }
+.fab svg { width: 26px; height: 26px; }
+
+/* ---------------------------------------------------------
+   Acessibilidade / Motion
+--------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  .estab-nav-buttons button,
+  .estab-cardapio-card,
+  .estab-link,
+  .estab-map-link-btn,
+  .fab {
+    transition: none !important;
+  }
+}
+
+/* ---------------------------------------------------------
+   Responsividade fina
+--------------------------------------------------------- */
+@media (max-width: 720px) {
+  .estab-hero-inner {
+    grid-template-columns: 1fr;
+    justify-items: start;
+  }
+  .estab-logo-bubble { width: 96px; height: 96px; }
+  .estab-details-row { padding-top: 8px; padding-bottom: 8px; }
+  .estab-contact-row { grid-template-columns: 1fr; gap: 6px; }
+}
+
+@media (min-width: 1280px) {
+  .estab-cardapio-title { font-size: 26px; }
+  .estab-item-title { font-size: 17px; }
+}
+
+/* ---------------------------------------------------------
+   Toques de brilho (sutileza futurista)
+--------------------------------------------------------- */
+.estab-cardapio-card::before,
+.estab-barber-card::before,
+.contact-card::before,
+.estab-map-wrap::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity .25s ease;
+  background:
+    radial-gradient(600px 160px at 0% 0%, rgba(255,200,87,.05), transparent 60%),
+    radial-gradient(600px 160px at 100% 100%, rgba(94,234,212,.06), transparent 60%);
+}
+.estab-cardapio-card:hover::before,
+.estab-barber-card:hover::before,
+.contact-card:hover::before,
+.estab-map-wrap:hover::before {
+  opacity: 1;
+}

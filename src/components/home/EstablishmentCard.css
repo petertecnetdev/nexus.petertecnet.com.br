@@ -1,0 +1,46 @@
+/* src/components/home/EstablishmentCard.css */
+.estcard {
+  background: #1a1c22;
+  border-radius: 14px;
+  border: 1px solid #1f222a;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.estcard-top {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.estcard-logo {
+  width: 64px;
+  height: 64px;
+  border-radius: 12px;
+  object-fit: cover;
+  background: #101215;
+}
+
+.estcard-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.estcard-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.estcard-sub {
+  font-size: 14px;
+  color: #ffffff99;
+}
+
+.estcard-stats {
+  font-size: 14px;
+  color: #ffffff99;
+}

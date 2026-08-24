@@ -1,0 +1,133 @@
+/* ============================================================
+   WRAPPER GERAL
+============================================================ */
+.global-rotativity {
+  width: 100%;
+  padding: 10px 0 25px 0;
+}
+
+/* Card container */
+.rotativity-card {
+  background: rgba(10, 14, 20, 0.65) !important;
+  border-radius: 16px !important;
+  border: 1px solid rgba(0, 255, 255, 0.18) !important;
+  box-shadow: 0 0 32px rgba(0, 255, 255, 0.08);
+  backdrop-filter: blur(14px);
+  position: relative;
+  overflow: hidden;
+}
+
+/* TÍTULO */
+.rotativity-card h4 {
+  font-weight: 700;
+  font-size: 22px;
+  letter-spacing: 1px;
+  color: #00f6ff !important;
+  text-shadow: 0 0 8px rgba(0, 255, 255, 0.5);
+}
+
+/* ============================================================
+   HOLOGRAMA SUTIL
+============================================================ */
+.rotativity-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    circle at 20% 30%,
+    rgba(0, 255, 255, 0.18),
+    transparent 65%
+  );
+  opacity: 0.4;
+  filter: blur(40px);
+}
+
+.rotativity-card:hover::before {
+  opacity: 0.55;
+  filter: blur(55px);
+}
+
+/* ============================================================
+   SEÇÕES INTERNAS
+============================================================ */
+.rotativity-section {
+  margin-bottom: 22px;
+}
+
+.rotativity-section-title {
+  font-size: 18px;
+  color: #e0faff;
+  margin-bottom: 12px;
+  text-align: left;
+  padding-left: 6px;
+  font-weight: 600;
+  border-left: 3px solid #00f6ff;
+}
+
+/* ============================================================
+   MINI CARDS INTERNOS (caso queira usar no futuro)
+============================================================ */
+.rotativity-mini-card {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 14px;
+  padding: 12px;
+  transition: 0.2s;
+  cursor: pointer;
+  border: 1px solid rgba(0, 255, 255, 0.12);
+}
+
+.rotativity-mini-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(0, 255, 255, 0.4);
+  box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
+}
+
+/* ============================================================
+   CAROUSELS AJUSTADOS PARA ESTA SEÇÃO
+============================================================ */
+.global-rotativity .carousel-wrapper {
+  padding: 2px 8px;
+}
+
+.global-rotativity .carousel-title {
+  font-size: 19px !important;
+  font-weight: 600 !important;
+  color: #dffeff !important;
+  text-align: left !important;
+  margin-bottom: 10px !important;
+}
+
+/* ============================================================
+   SCROLL BARRA PERSONALIZADA
+============================================================ */
+.rotativity-card::-webkit-scrollbar {
+  height: 6px;
+}
+.rotativity-card::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.06);
+}
+.rotativity-card::-webkit-scrollbar-thumb {
+  background: rgba(0, 255, 255, 0.35);
+  border-radius: 10px;
+}
+.rotativity-card::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 255, 255, 0.55);
+}
+
+/* ============================================================
+   RESPONSIVIDADE
+============================================================ */
+@media (max-width: 600px) {
+  .rotativity-card {
+    padding: 15px !important;
+  }
+
+  .rotativity-card h4 {
+    font-size: 20px;
+  }
+
+  .rotativity-section-title {
+    font-size: 16px;
+  }
+}

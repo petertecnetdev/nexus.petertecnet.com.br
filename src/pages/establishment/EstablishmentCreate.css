@@ -1,0 +1,179 @@
+/* =========================================================
+   EstablishmentCreate.css
+   Página: Criar Estabelecimento (Responsivo + Tema Inkap)
+   ========================================================= */
+
+/* ---------- ROOT ---------- */
+.establishment-root {
+  min-height: 100vh;
+  background: linear-gradient(
+    180deg,
+    var(--i-bg, #05030a),
+    var(--i-bg-soft, #0b0713)
+  );
+  color: var(--i-text, #f4eaff);
+  display: flex;
+  flex-direction: column;
+}
+
+/* ---------- PAGE CONTAINER ---------- */
+.establishment-create-page {
+  width: 100%;
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 2.5rem 1.5rem 3rem;
+}
+
+/* ---------- TITLE ---------- */
+.establishment-create-page .title {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--i-text, #f4eaff);
+  margin-bottom: 1.5rem;
+  position: relative;
+}
+
+.establishment-create-page .title::after {
+  content: "";
+  display: block;
+  width: 64px;
+  height: 4px;
+  margin-top: 0.5rem;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    var(--i-primary, #b46cff),
+    var(--i-primary-2, #9f4dff)
+  );
+}
+
+/* ---------- FORM CARD (WRAP) ---------- */
+/* Assume que o form já vem com estrutura própria */
+.establishment-create-page form {
+  background: var(--i-surface, #110b1d);
+  border-radius: 18px;
+  padding: 2rem 2rem 2.5rem;
+  box-shadow:
+    0 20px 40px rgba(0, 0, 0, 0.45),
+    inset 0 0 0 1px rgba(180, 108, 255, 0.12);
+}
+
+/* ---------- FORM GRID ---------- */
+.establishment-create-page .row {
+  margin-left: -0.5rem;
+  margin-right: -0.5rem;
+}
+
+.establishment-create-page .col,
+.establishment-create-page [class*="col-"] {
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+}
+
+/* ---------- INPUTS ---------- */
+.establishment-create-page input,
+.establishment-create-page select,
+.establishment-create-page textarea {
+  background: var(--i-surface-2, #160f26);
+  color: var(--i-text, #f4eaff);
+  border: 1px solid rgba(180, 108, 255, 0.25);
+  border-radius: 12px;
+  padding: 0.7rem 0.85rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.establishment-create-page input::placeholder,
+.establishment-create-page textarea::placeholder {
+  color: var(--i-text-soft, #9b7fc2);
+}
+
+.establishment-create-page input:focus,
+.establishment-create-page select:focus,
+.establishment-create-page textarea:focus {
+  outline: none;
+  border-color: var(--i-primary, #b46cff);
+  box-shadow: 0 0 0 2px rgba(180, 108, 255, 0.25);
+  background: var(--i-surface-2, #160f26);
+}
+
+/* ---------- LABELS ---------- */
+.establishment-create-page label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--i-text-muted, #c5addf);
+  margin-bottom: 0.35rem;
+}
+
+/* ---------- BUTTONS ---------- */
+.establishment-create-page button {
+  border-radius: 999px;
+  font-weight: 600;
+  padding: 0.65rem 1.4rem;
+}
+
+/* Primary button (submit) */
+.establishment-create-page button[type="submit"] {
+  background: linear-gradient(
+    135deg,
+    var(--i-primary, #b46cff),
+    var(--i-primary-2, #9f4dff)
+  );
+  border: none;
+  color: #fff;
+  box-shadow: 0 10px 24px rgba(159, 77, 255, 0.35);
+}
+
+.establishment-create-page button[type="submit"]:hover {
+  filter: brightness(1.05);
+  transform: translateY(-1px);
+}
+
+/* ---------- ERRORS ---------- */
+.establishment-create-page .invalid-feedback,
+.establishment-create-page .error,
+.establishment-create-page .text-danger {
+  font-size: 0.8rem;
+  color: var(--i-danger, #ef4444);
+  margin-top: 0.25rem;
+}
+
+/* ---------- RESPONSIVE ---------- */
+
+/* Tablets */
+@media (max-width: 991px) {
+  .establishment-create-page {
+    padding: 2rem 1.25rem 2.5rem;
+  }
+
+  .establishment-create-page .title {
+    font-size: 1.6rem;
+  }
+
+  .establishment-create-page form {
+    padding: 1.75rem 1.5rem 2rem;
+  }
+}
+
+/* Mobile */
+@media (max-width: 575px) {
+  .establishment-create-page {
+    padding: 1.5rem 1rem 2rem;
+  }
+
+  .establishment-create-page .title {
+    font-size: 1.4rem;
+  }
+
+  .establishment-create-page .title::after {
+    width: 48px;
+  }
+
+  .establishment-create-page form {
+    padding: 1.4rem 1.1rem 1.8rem;
+    border-radius: 14px;
+  }
+
+  .establishment-create-page button {
+    width: 100%;
+  }
+}

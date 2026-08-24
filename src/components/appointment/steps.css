@@ -1,0 +1,155 @@
+/* =========================================================
+   ⚡ ESTILO BASE DO CONTAINER
+   ========================================================= */
+.step-container {
+  background: #0d0d0f;
+  border: 1px solid #00ffff33;
+  border-radius: 14px;
+  padding: 26px 28px;
+  color: #fff;
+  box-shadow: 0 0 25px #00ffff22;
+  text-align: left;
+  animation: fadeIn 0.4s ease-in-out;
+}
+
+.step-container h4 {
+  font-size: 1.45rem;
+  color: #00ffff;
+  margin-bottom: 18px;
+  text-shadow: 0 0 8px #00ffff99;
+  text-align: center;
+}
+
+.step-container p,
+.step-container li {
+  color: #ccc;
+  font-size: 0.95rem;
+  margin: 4px 0;
+}
+
+.step-container hr {
+  border: none;
+  border-top: 1px solid #00ffff22;
+  margin: 12px 0 18px;
+}
+
+/* =========================================================
+   🧾 CAMPOS DE ENTRADA (CPF / TELEFONE)
+   ========================================================= */
+.step-container .confirm-inputs {
+  display: flex;
+  gap: 16px;
+  margin: 16px 0;
+}
+
+.step-container .confirm-inputs input {
+  flex: 1;
+  background: #121214;
+  border: 1px solid #00ffff33;
+  border-radius: 10px;
+  color: #fff;
+  font-size: 1rem;
+  padding: 12px 16px;
+  outline: none;
+  transition: all 0.25s ease;
+  box-shadow: inset 0 0 8px rgba(0, 255, 255, 0.05);
+}
+
+.step-container .confirm-inputs input::placeholder {
+  color: #777;
+  font-size: 0.9rem;
+}
+
+.step-container .confirm-inputs input:focus {
+  border-color: #00ffffcc;
+  box-shadow: 0 0 10px #00ffff66, inset 0 0 6px #00ffff22;
+  background: #18181b;
+}
+
+/* =========================================================
+   🧩 CONFIRMAÇÃO DE SERVIÇOS
+   ========================================================= */
+.step-container .confirm-box {
+  background: #101012;
+  border: 1px solid #00ffff22;
+  border-radius: 12px;
+  padding: 18px 20px;
+  margin-top: 10px;
+}
+
+.step-container .confirm-box ul {
+  list-style: none;
+  padding: 0;
+  margin: 10px 0;
+}
+
+.step-container .confirm-box li {
+  border-bottom: 1px solid #00ffff22;
+  padding: 6px 0;
+  color: #ccc;
+}
+
+.step-container .confirm-box p {
+  color: #bbb;
+  font-size: 0.95rem;
+}
+
+/* =========================================================
+   🎨 BOTÕES
+   ========================================================= */
+.step-container .btn {
+  border-radius: 8px;
+  padding: 10px 18px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.step-container .btn-dark {
+  background: #111;
+  color: #00ffff;
+  border: 1px solid #00ffff66;
+}
+
+.step-container .btn-dark:hover {
+  background: #00ffff;
+  color: #000;
+  box-shadow: 0 0 12px #00ffffaa;
+}
+
+.step-container .btn-info {
+  background: #00ffff;
+  color: #000;
+  border: none;
+}
+
+.step-container .btn-info:hover {
+  background: #00cccc;
+  box-shadow: 0 0 10px #00ffffaa;
+}
+
+/* =========================================================
+   ✨ ANIMAÇÃO
+   ========================================================= */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* =========================================================
+   📱 RESPONSIVIDADE
+   ========================================================= */
+@media (max-width: 576px) {
+  .step-container .confirm-inputs {
+    flex-direction: column;
+  }
+
+  .step-container {
+    padding: 20px 18px;
+  }
+}

@@ -1,0 +1,86 @@
+/* src/components/GlobalDateCarousel.css */
+
+.date-carousel-container {
+  width: 100%;
+  overflow-x: auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: transparent;
+  padding: 10px 0;
+  position: relative;
+  z-index: 2;
+}
+
+.date-carousel-track {
+  display: flex;
+  gap: 10px;
+  padding: 5px 10px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.date-carousel-track::-webkit-scrollbar {
+  display: none;
+}
+
+.date-item {
+  background: linear-gradient(145deg, #1b1b1b, #2a2a2a);
+  border: 1px solid rgba(0, 255, 255, 0.2);
+  border-radius: 10px;
+  color: #e6e6e6;
+  text-align: center;
+  padding: 10px 15px;
+  min-width: 75px;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  box-shadow: 0 0 6px rgba(0, 255, 255, 0.15);
+}
+
+.date-item:hover {
+  background: linear-gradient(145deg, #222, #333);
+  transform: translateY(-2px);
+  box-shadow: 0 0 10px rgba(0, 255, 255, 0.25);
+}
+
+.date-item.active {
+  background: #00bcd4;
+  color: #000;
+  border: 1px solid #00e5ff;
+  box-shadow: 0 0 10px #00e5ff;
+  transform: scale(1.05);
+}
+
+.date-week {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  opacity: 0.8;
+}
+
+.date-day {
+  display: block;
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin: 2px 0;
+}
+
+.date-month {
+  display: block;
+  font-size: 0.75rem;
+  opacity: 0.7;
+}
+
+/* 🔹 Garantir que o carrossel sempre apareça mesmo dentro de modais escuros */
+.wizard-step {
+  background-color: rgba(10, 10, 10, 0.85);
+  border-radius: 10px;
+  padding: 15px;
+  text-align: center;
+}
+
+.wizard-step h4 {
+  margin-bottom: 15px;
+  color: #00e5ff;
+  font-weight: 600;
+}

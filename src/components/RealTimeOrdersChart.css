@@ -1,0 +1,10 @@
+.chart-wrapper {
+  background-color: #121212;
+  padding: 1rem;
+  border-radius: 8px;
+}
+
+.chart-wrapper .recharts-wrapper {
+  margin: 0 !important;
+  padding: 0 !important;
+}

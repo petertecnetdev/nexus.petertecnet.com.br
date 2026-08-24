@@ -1,0 +1,178 @@
+/* =========================================================
+   HOME INFO SECTION — ESTILO RASOIO
+========================================================= */
+
+.hp-info-section {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  padding: 1.5rem;
+  background: linear-gradient(180deg, #0a0f1d 0%, #05070f 100%);
+  color: #f5f7fb;
+  font-family: "Inter", sans-serif;
+}
+
+/* ===============================
+   SECTIONS
+================================ */
+.hp-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.hp-section h2 {
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: #f5f7fb;
+  margin-bottom: 0.5rem;
+  border-bottom: 1px solid rgba(255,255,255,0.12);
+  padding-bottom: 0.25rem;
+}
+
+/* ===============================
+   CARDS WRAPPER
+================================ */
+.hp-cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+/* ===============================
+   CARD
+================================ */
+.hp-card {
+  background: linear-gradient(180deg, #0f1320 0%, #05060f 100%);
+  border-radius: 1rem;
+  padding: 1rem;
+  flex: 1 1 180px;
+  min-width: 180px;
+  max-width: 220px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  box-shadow:
+    inset 0 0 0 1px rgba(255,255,255,0.06),
+    0 16px 36px rgba(0,0,0,0.85);
+  transition: transform 0.35s ease, box-shadow 0.35s ease;
+  cursor: default;
+}
+
+.hp-card:hover {
+  transform: translateY(-4px);
+  box-shadow:
+    inset 0 0 0 1px rgba(120,170,255,0.45),
+    0 28px 64px rgba(0,0,0,0.95);
+}
+
+/* ===============================
+   CARD CONTENT
+================================ */
+.hp-card strong {
+  font-size: 0.85rem;
+  color: #9fd1ff;
+  margin-bottom: 0.3rem;
+  text-align: center;
+}
+
+.hp-card-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.3rem;
+}
+
+.hp-card-img {
+  width: 80px;
+  height: 80px;
+  border-radius: 1rem;
+  object-fit: cover;
+  box-shadow:
+    inset 0 0 0 1px rgba(255,255,255,0.22),
+    0 12px 32px rgba(0,0,0,0.8);
+}
+
+/* ===============================
+   CARD TEXT
+================================ */
+.hp-card span {
+  font-size: 0.85rem;
+  color: #f5f7fb;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 140px;
+}
+
+.hp-card small {
+  font-size: 0.72rem;
+  color: rgba(230,235,245,0.65);
+}
+
+/* ===============================
+   LISTS
+================================ */
+.hp-list {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.hp-list li {
+  background: linear-gradient(180deg, #0f1320 0%, #05060f 100%);
+  border-radius: 0.85rem;
+  padding: 0.6rem 1rem;
+  box-shadow:
+    inset 0 0 0 1px rgba(255,255,255,0.06),
+    0 10px 24px rgba(0,0,0,0.8);
+  font-size: 0.85rem;
+  color: #f5f7fb;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.hp-list li strong {
+  color: #9fd1ff;
+}
+
+.hp-list li em {
+  color: rgba(230,235,245,0.75);
+}
+
+.hp-small {
+  font-size: 0.72rem;
+  color: rgba(220,225,235,0.65);
+}
+
+/* ===============================
+   RESPONSIVO
+================================ */
+@media (max-width: 991.98px) {
+  .hp-cards {
+    gap: 0.75rem;
+    justify-content: center;
+  }
+
+  .hp-card {
+    flex: 1 1 140px;
+    min-width: 140px;
+  }
+}
+
+@media (max-width: 576px) {
+  .hp-info-section {
+    padding: 1rem;
+  }
+
+  .hp-card {
+    flex: 1 1 100%;
+    min-width: unset;
+  }
+}

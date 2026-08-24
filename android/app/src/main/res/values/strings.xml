@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">app-name</string>
+    <string name="title_activity_main">app-name</string>
+    <string name="package_name">rasoio.petertecnet.com.br</string>
+    <string name="custom_url_scheme">rasoio.petertecnet.com.br</string>
+</resources>

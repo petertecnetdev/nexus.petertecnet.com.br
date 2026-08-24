@@ -1,0 +1,77 @@
+.order-items-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+/* ===========================
+   🔹 MODO COMPACTO
+   =========================== */
+
+.order-items-grid.compact {
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 12px;
+}
+
+.order-item-card {
+  background: #0e1117;
+  border-radius: 14px;
+  padding: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid #00ffff22;
+}
+
+.order-items-grid.compact .order-item-card {
+  padding: 10px;
+  border-radius: 12px;
+}
+
+.order-item-card.active {
+  border-color: #00ffff;
+  box-shadow: 0 0 10px #00ffff55;
+}
+
+/* 🖼️ IMAGEM */
+
+.order-item-card .item-image {
+  width: 100%;
+  height: 120px;
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.order-items-grid.compact .item-image {
+  height: 90px;
+}
+
+.order-item-card .item-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* 📄 TEXTO */
+
+.order-item-card .item-info strong {
+  font-size: 0.95rem;
+}
+
+.order-items-grid.compact .item-info strong {
+  font-size: 0.85rem;
+}
+
+.order-item-card .item-info span {
+  font-size: 0.85rem;
+  color: #00ffff;
+}
+
+.order-items-grid.compact .item-info span {
+  font-size: 0.8rem;
+}
+
+.order-item-card .item-info small {
+  font-size: 0.75rem;
+  color: #aaa;
+}

@@ -1,0 +1,166 @@
+/* =========================================================
+   INKAP — GlobalCarousel.css
+   Carousel premium dark / neon purple
+   ========================================================= */
+
+/* ===================== CONTAINER ===================== */
+.global-carousel {
+  background:
+    radial-gradient(
+      900px 200px at 50% 0%,
+      rgba(180, 108, 255, 0.12),
+      transparent 70%
+    ),
+    linear-gradient(
+      160deg,
+      var(--i-surface),
+      var(--i-surface-2)
+    );
+  border-radius: 24px;
+  box-shadow:
+    inset 0 0 0 1px rgba(180, 108, 255, 0.12),
+    0 30px 80px rgba(0, 0, 0, 0.65);
+}
+
+/* ===================== HEADER ===================== */
+.global-carousel .card-header {
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0.65),
+    rgba(0, 0, 0, 0.2)
+  );
+  border-bottom: 1px solid rgba(180, 108, 255, 0.15);
+}
+
+.global-carousel .card-header h5 {
+  letter-spacing: 0.6px;
+  font-weight: 700;
+  text-shadow: 0 0 16px rgba(180, 108, 255, 0.35);
+}
+
+/* ===================== BODY ===================== */
+.global-carousel .card-body {
+  position: relative;
+  padding: 1.2rem 2.8rem;
+}
+
+/* ===================== TRACK ===================== */
+.carousel-track-static {
+  display: flex;
+  gap: 1.2rem;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-behavior: smooth;
+  padding: 0.5rem 0.25rem 0.8rem;
+
+  scrollbar-width: none;
+}
+
+.carousel-track-static::-webkit-scrollbar {
+  display: none;
+}
+
+/* ===================== ITEM WRAPPER ===================== */
+.global-carousel-item-wrapper {
+  flex: 0 0 auto;
+  width: 260px;
+  max-width: 260px;
+  transition: transform 0.25s ease;
+}
+
+.global-carousel-item-wrapper:hover {
+  transform: translateY(-4px);
+}
+
+/* ===================== ARROWS ===================== */
+.carousel-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 5;
+
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: linear-gradient(
+    145deg,
+    rgba(180, 108, 255, 0.35),
+    rgba(0, 0, 0, 0.85)
+  );
+
+  border: 1px solid rgba(180, 108, 255, 0.4);
+  color: #fff;
+
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.carousel-arrow.left {
+  left: 10px;
+}
+
+.carousel-arrow.right {
+  right: 10px;
+}
+
+.carousel-arrow:hover {
+  background: linear-gradient(
+    145deg,
+    rgba(180, 108, 255, 0.7),
+    rgba(0, 0, 0, 0.9)
+  );
+  box-shadow:
+    0 0 18px rgba(180, 108, 255, 0.6),
+    0 0 40px rgba(180, 108, 255, 0.35);
+  transform: translateY(-50%) scale(1.08);
+}
+
+.carousel-arrow svg {
+  font-size: 1.1rem;
+}
+
+/* ===================== LOGIN MODAL ===================== */
+.login-modal .modal-content {
+  background: linear-gradient(
+    160deg,
+    var(--i-surface),
+    var(--i-bg-soft)
+  );
+  border-radius: 18px;
+  border: 1px solid rgba(180, 108, 255, 0.25);
+  box-shadow:
+    0 30px 80px rgba(0, 0, 0, 0.8),
+    inset 0 0 0 1px rgba(180, 108, 255, 0.12);
+}
+
+/* ===================== RESPONSIVO ===================== */
+@media (max-width: 992px) {
+  .global-carousel .card-body {
+    padding: 1rem 2.2rem;
+  }
+
+  .global-carousel-item-wrapper {
+    width: 230px;
+    max-width: 230px;
+  }
+}
+
+@media (max-width: 576px) {
+  .global-carousel .card-body {
+    padding: 0.8rem 1.2rem;
+  }
+
+  .carousel-arrow {
+    display: none;
+  }
+
+  .global-carousel-item-wrapper {
+    width: 200px;
+    max-width: 200px;
+  }
+}

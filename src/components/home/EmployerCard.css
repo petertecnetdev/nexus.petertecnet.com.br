@@ -1,0 +1,46 @@
+/* src/components/home/EmployerCard.css */
+.ecard {
+  background: #1a1c22;
+  border-radius: 14px;
+  border: 1px solid #1f222a;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.ecard-top {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.ecard-avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: #101215;
+}
+
+.ecard-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ecard-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.ecard-sub {
+  font-size: 14px;
+  color: #ffffff99;
+}
+
+.ecard-stats {
+  font-size: 14px;
+  color: #ffffff99;
+}

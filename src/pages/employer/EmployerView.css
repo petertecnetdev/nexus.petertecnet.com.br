@@ -1,0 +1,267 @@
+/* ============================================================
+   RASOIO - EMPLOYER VIEW PAGE
+   Neon Futurista 3D — Peter Tecnet Signature
+   ============================================================ */
+
+:root {
+  --neon-cyan: #00ffff;
+  --neon-blue: #007bff;
+  --neon-pink: #ff00ff;
+  --dark-bg: #05060a;
+  --card-bg: rgba(10, 12, 18, 0.95);
+  --text-light: #e5f1ff;
+  --text-muted: #9ca9b9;
+  --radius: 1.5rem;
+  --transition-fast: 0.3s ease;
+}
+
+/* ===== ROOT ===== */
+.empv-root {
+  background: radial-gradient(circle at top left, #04050a, #0b0d16);
+  color: var(--text-light);
+  min-height: 100vh;
+  font-family: "Poppins", sans-serif;
+  overflow-x: hidden;
+  padding-bottom: 80px;
+}
+
+/* ===== HERO ===== */
+.empv-hero {
+  position: relative;
+  min-height: 420px;
+  background-size: cover;
+  background-position: center;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.empv-hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(0,0,0,0.6), rgba(0,0,0,0.95));
+  backdrop-filter: blur(25px);
+  z-index: 1;
+}
+
+.empv-hero-content {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  width: 100%;
+  padding: 2rem 3rem;
+}
+
+.empv-avatar {
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  border: 3px solid var(--neon-cyan);
+  box-shadow: 0 0 25px var(--neon-cyan);
+  object-fit: cover;
+  transition: transform 0.4s ease, box-shadow 0.4s ease;
+}
+.empv-avatar:hover {
+  transform: scale(1.08);
+  box-shadow: 0 0 45px var(--neon-cyan);
+}
+
+.empv-title {
+  font-size: 2.5rem;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--neon-cyan);
+  text-shadow: 0 0 15px var(--neon-cyan), 0 0 30px var(--neon-blue);
+}
+
+.empv-desc {
+  font-size: 1rem;
+  color: var(--text-muted);
+  margin-top: 0.5rem;
+  max-width: 600px;
+}
+
+/* ===== MAIN ===== */
+.empv-main {
+  padding: 3rem 2rem;
+}
+
+/* ===== 3D WRAPPER ===== */
+.empv-3d-wrapper {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  perspective: 1800px;
+  cursor: grab;
+}
+.empv-3d-wrapper:active {
+  cursor: grabbing;
+}
+
+/* ===== TRACK ===== */
+.empv-3d-track {
+  display: flex;
+  align-items: center;
+  gap: 2.2rem;
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+.empv-3d-wrapper:hover .empv-3d-track {
+  animation-play-state: paused;
+}
+
+/* ===== CARD ===== */
+.empv-3d-card {
+  flex: 0 0 300px;
+  background: var(--card-bg);
+  border: 1px solid rgba(0, 255, 255, 0.1);
+  border-radius: var(--radius);
+  padding: 1rem;
+  text-align: center;
+  box-shadow: 0 0 15px rgba(0, 255, 255, 0.05);
+  transition: transform 0.6s ease, box-shadow 0.4s ease;
+}
+.empv-3d-card:hover {
+  transform: scale(1.05) rotateY(4deg);
+  box-shadow: 0 0 30px rgba(0, 255, 255, 0.4);
+}
+
+/* ===== MEDIA ===== */
+.empv-media-wrap {
+  width: 100%;
+  height: 220px;
+  overflow: hidden;
+  border-radius: var(--radius);
+}
+.empv-media {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 1.2s ease;
+}
+.empv-3d-card:hover .empv-media {
+  transform: scale(1.1);
+}
+
+/* ===== TEXT ===== */
+.empv-item-name {
+  margin-top: 1rem;
+  color: var(--neon-cyan);
+  font-size: 1.1rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+.empv-item-price {
+  color: #fff;
+  font-size: 1.2rem;
+  font-weight: 700;
+  text-shadow: 0 0 10px var(--neon-cyan);
+}
+
+/* ===== BUTTON ===== */
+.button {
+  background: linear-gradient(90deg, var(--neon-cyan), var(--neon-blue));
+  border: none;
+  border-radius: 10px;
+  color: #000;
+  font-weight: 600;
+  transition: all var(--transition-fast);
+}
+.button:hover {
+  background: linear-gradient(90deg, var(--neon-pink), var(--neon-cyan));
+  transform: translateY(-2px);
+  box-shadow: 0 0 15px var(--neon-cyan);
+}
+.empv-3d-track {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  scroll-behavior: smooth;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.empv-3d-track::-webkit-scrollbar {
+  display: none;
+}
+
+/* ===== CONTROLS ===== */
+.empv-carousel-controls {
+  position: absolute;
+  top: 50%;
+  width: 100%;
+  transform: translateY(-50%);
+  display: flex;
+  justify-content: space-between;
+  pointer-events: none;
+  z-index: 5;
+}
+
+.empv-arrow {
+  pointer-events: auto;
+  background: rgba(0, 255, 255, 0.1);
+  border: 1px solid rgba(0, 255, 255, 0.3);
+  color: var(--neon-cyan);
+  font-size: 1.6rem;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: 0.3s;
+  cursor: pointer;
+  box-shadow: 0 0 10px rgba(0, 255, 255, 0.2);
+}
+.empv-arrow:hover {
+  background: rgba(0, 255, 255, 0.3);
+  box-shadow: 0 0 25px rgba(0, 255, 255, 0.6);
+  transform: scale(1.1);
+}
+
+/* ===== WHATSAPP FAB ===== */
+.empv-whatsapp-fab {
+  position: fixed;
+  bottom: 22px;
+  right: 22px;
+  background: var(--neon-cyan);
+  color: #000;
+  border-radius: 50%;
+  width: 64px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 25px var(--neon-cyan);
+  z-index: 1000;
+  transition: all var(--transition-fast);
+}
+.empv-whatsapp-fab:hover {
+  transform: scale(1.1) rotate(10deg);
+  box-shadow: 0 0 45px var(--neon-cyan);
+}
+.empv-whatsapp-icon {
+  font-size: 2rem;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 1200px) {
+  .empv-3d-card { flex: 0 0 260px; }
+}
+@media (max-width: 992px) {
+  .empv-3d-card { flex: 0 0 220px; }
+  .empv-media-wrap { height: 200px; }
+}
+@media (max-width: 768px) {
+  .empv-3d-card { flex: 0 0 180px; }
+  .empv-media-wrap { height: 180px; }
+}
+@media (max-width: 576px) {
+  .empv-3d-card { flex: 0 0 85%; }
+  .empv-avatar { width: 100px; height: 100px; }
+  .empv-title { font-size: 1.4rem; }
+}

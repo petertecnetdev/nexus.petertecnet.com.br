@@ -1,0 +1,71 @@
+/* src/pages/establishment/EstablishmentMyPage.css */
+
+/* Wrapper mantendo o padrão do tema */
+.establishment-my-wrapper {
+  padding-left: 14px;
+  padding-right: 14px;
+}
+
+@media (min-width: 992px) {
+  .establishment-my-wrapper {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+}
+
+/* ✅ Botão no padrão INKAP (usando tokens do index.css) */
+.establishment-my__create-btn.btn {
+  border: 1px solid rgba(180, 108, 255, 0.28) !important;
+  border-radius: var(--i-radius-lg) !important;
+
+  height: 44px;
+  padding: 0 16px;
+
+  font-weight: 900;
+  letter-spacing: 0.3px;
+
+  /* Usa o gradiente oficial do tema */
+  background: var(--i-grad-primary) !important;
+
+  /* Contraste padrão do tema: u-btn usa #12051f */
+  color: #12051f !important;
+
+  box-shadow: var(--i-glow-sm);
+  transition: transform var(--i-speed-2), box-shadow var(--i-speed-2),
+    filter var(--i-speed-2), border-color var(--i-speed-2);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+/* Hover */
+.establishment-my__create-btn.btn:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--i-glow-md);
+  filter: brightness(1.02);
+  border-color: rgba(180, 108, 255, 0.45) !important;
+}
+
+/* Active */
+.establishment-my__create-btn.btn:active {
+  transform: translateY(0) scale(0.99);
+  box-shadow: var(--i-glow-sm);
+  filter: brightness(0.98);
+}
+
+/* Focus (acessível) */
+.establishment-my__create-btn.btn:focus,
+.establishment-my__create-btn.btn:focus-visible {
+  outline: none !important;
+  box-shadow: var(--i-focus-ring), var(--i-glow-sm) !important;
+  border-color: rgba(180, 108, 255, 0.55) !important;
+}
+
+/* Mobile: botão full e confortável */
+@media (max-width: 576px) {
+  .establishment-my__create-btn.btn {
+    width: 100%;
+    border-radius: var(--i-radius-md) !important;
+  }
+}

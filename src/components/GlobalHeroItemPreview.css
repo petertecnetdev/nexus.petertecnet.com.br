@@ -1,0 +1,38 @@
+.ghi-preview-root {
+  width: 100%;
+  text-align: center;
+  padding: 20px 0;
+}
+
+.ghi-preview-circle {
+  width: 130px;
+  height: 130px;
+  margin: 0 auto 12px auto;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.06);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.ghi-preview-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 12px;
+}
+
+.ghi-preview-initials {
+  font-size: 42px;
+  font-weight: 700;
+  color: #fff;
+  opacity: 0.9;
+}
+
+.ghi-preview-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #ddd;
+  margin-top: 6px;
+}

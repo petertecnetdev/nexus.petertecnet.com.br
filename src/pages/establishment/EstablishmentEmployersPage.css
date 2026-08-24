@@ -1,0 +1,139 @@
+/* src/pages/establishment/EstablishmentEmployersPage.css */
+
+/* ===== TEMA DARK GLOBAL ===== */
+:root {
+  --bg-main: #020617;
+  --bg-card: #0b1220;
+  --bg-card-soft: #111827;
+
+  --border-soft: rgba(148, 163, 184, 0.14);
+
+  --text-main: #e5e7eb;
+  --text-soft: #94a3b8;
+  --text-muted: #64748b;
+
+  --primary: #38bdf8;
+  --primary-hover: #0ea5e9;
+
+  --danger: #ef4444;
+  --danger-hover: #dc2626;
+}
+
+/* ===== CONTAINER ===== */
+.establishment-employers-page {
+  min-height: 100vh;
+  background: linear-gradient(180deg, #020617 0%, #020617 100%);
+}
+
+/* ===== HERO AJUSTE ===== */
+.establishment-employers-page .esh-card {
+  background: var(--bg-card);
+}
+
+/* ===== HEADER DE AÇÕES ===== */
+.est-employers-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  color: var(--text-main);
+}
+
+.est-employers-actions .btn {
+  background: linear-gradient(
+    135deg,
+    var(--primary),
+    var(--primary-hover)
+  );
+  border: none;
+  font-weight: 600;
+}
+
+.est-employers-actions .btn:hover {
+  filter: brightness(1.05);
+}
+
+/* ===== CARD PRINCIPAL ===== */
+.est-employers-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-soft);
+  border-radius: 16px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.45);
+}
+
+.est-employers-card .card-header {
+  background: transparent;
+  border-bottom: 1px solid var(--border-soft);
+  color: var(--text-main);
+  font-weight: 600;
+}
+
+.est-employers-card .card-body {
+  background: transparent;
+}
+
+/* ===== ALERTAS ===== */
+.est-employers-card .alert {
+  background: var(--bg-card-soft);
+  border: 1px dashed var(--border-soft);
+  color: var(--text-soft);
+}
+
+/* ===== BOTÃO REMOVER ===== */
+.est-employer-remove-btn {
+  background: transparent;
+  border: 1px solid var(--danger);
+  color: var(--danger);
+  font-weight: 600;
+}
+
+.est-employer-remove-btn:hover {
+  background: var(--danger);
+  color: #fff;
+}
+
+/* ===== GLOBALCARD AJUSTES ===== */
+.carousel-card.type-employer {
+  background: var(--bg-card-soft);
+  border: 1px solid var(--border-soft);
+}
+
+.carousel-card.type-employer:hover {
+  box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.35),
+    0 20px 40px rgba(0, 0, 0, 0.6);
+}
+
+/* Avatar sempre redondo */
+.carousel-image-wrap.img-round {
+  border-radius: 50%;
+  overflow: hidden;
+  background: radial-gradient(
+    circle at top,
+    #1e293b,
+    #020617
+  );
+}
+
+.carousel-image-wrap.img-round img {
+  object-fit: cover;
+}
+
+/* Placeholder de iniciais */
+.carousel-placeholder.img-round {
+  background: linear-gradient(135deg, #1e293b, #020617);
+  color: var(--text-main);
+  font-weight: 700;
+}
+
+/* ===== RESPONSIVO ===== */
+@media (max-width: 768px) {
+  .est-employers-actions {
+    flex-direction: column;
+    gap: 12px;
+    align-items: stretch;
+  }
+
+  .est-employers-actions .btn {
+    width: 100%;
+  }
+}

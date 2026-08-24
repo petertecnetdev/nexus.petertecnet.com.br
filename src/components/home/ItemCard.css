@@ -1,0 +1,46 @@
+.icard {
+  background: #1a1c22;
+  border-radius: 14px;
+  border: 1px solid #1f222a;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.icard-top {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.icard-img {
+  width: 64px;
+  height: 64px;
+  border-radius: 12px;
+  object-fit: cover;
+  background: #101215;
+}
+
+.icard-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.icard-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.icard-price {
+  font-size: 15px;
+  font-weight: 500;
+  color: #00e0ff;
+}
+
+.icard-stats {
+  font-size: 14px;
+  color: #ffffff99;
+}

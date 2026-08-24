@@ -1,0 +1,37 @@
+/* ======================= src/components/home/HighlightsSection.css ======================= */
+
+.hp-section {
+  width: 100%;
+  margin-bottom: 26px;
+}
+
+.hp-section-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 14px;
+}
+
+/* GRID DOS CARDS DE DESTAQUES */
+.hp-highlights-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 14px;
+  width: 100%;
+}
+
+/* Ajuste para telas médias */
+@media (max-width: 992px) {
+  .hp-highlights-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+}
+
+/* Mobile */
+@media (max-width: 576px) {
+  .hp-highlights-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+}

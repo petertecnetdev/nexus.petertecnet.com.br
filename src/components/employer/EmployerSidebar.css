@@ -1,0 +1,251 @@
+/* ============================================================
+   RASOIO - EMPLOYER SIDEBAR (Quantum Matrix v6)
+   Peter Tecnet Design System | Neon-Glass Modular Layout
+   ============================================================ */
+
+:root {
+  --neon-cyan: #00eaff;
+  --neon-purple: #b966ff;
+  --neon-green: #00ffae;
+  --neon-blue: #009dff;
+  --neon-yellow: #ffe873;
+  --neon-red: #ff4d4d;
+  --dark-bg: #040509;
+  --dark-card: rgba(10, 14, 22, 0.9);
+  --text-light: #eaf7ff;
+  --text-muted: #9ba7c2;
+  --radius: 1.1rem;
+  --transition: 0.35s ease;
+}
+
+/* ============================================================
+   CONTAINER
+   ============================================================ */
+.emp-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+  color: var(--text-light);
+}
+
+.emp-card {
+  background: linear-gradient(145deg, rgba(5, 8, 15, 0.96), rgba(9, 14, 20, 0.95));
+  border: 1px solid rgba(0, 255, 255, 0.08);
+  border-radius: var(--radius);
+  box-shadow: 0 0 25px rgba(0, 255, 255, 0.05);
+  overflow: hidden;
+  backdrop-filter: blur(10px);
+  transition: all var(--transition);
+}
+
+.emp-card:hover {
+  border-color: rgba(0, 255, 255, 0.25);
+  box-shadow: 0 0 35px rgba(0, 255, 255, 0.15);
+  transform: translateY(-2px);
+}
+
+.emp-card .card-header {
+  background: linear-gradient(90deg, rgba(0, 255, 255, 0.15), rgba(185, 102, 255, 0.15));
+  border-bottom: 1px solid rgba(0, 255, 255, 0.15);
+  color: var(--neon-cyan);
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-shadow: 0 0 12px rgba(0, 255, 255, 0.5);
+  text-transform: uppercase;
+  font-size: 0.9rem;
+}
+
+/* ============================================================
+   AVATAR / USER
+   ============================================================ */
+.emp-avatar-frame {
+  position: relative;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 2px solid rgba(0, 255, 255, 0.25);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 255, 255, 0.05);
+  box-shadow: 0 0 15px rgba(0, 255, 255, 0.05);
+  transition: all var(--transition);
+}
+
+.emp-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.emp-avatar-placeholder {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--neon-cyan);
+}
+
+.emp-status-dot {
+  position: absolute;
+  bottom: 2px;
+  right: 2px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 1px solid #000;
+}
+
+.emp-status-dot.online {
+  background: var(--neon-green);
+  box-shadow: 0 0 6px var(--neon-green);
+}
+
+.emp-status-dot.offline {
+  background: var(--neon-red);
+  box-shadow: 0 0 6px var(--neon-red);
+}
+
+/* ============================================================
+   ESTABLISHMENT LINK
+   ============================================================ */
+.emp-establishment-highlight {
+  background: rgba(0, 255, 255, 0.03);
+  border: 1px solid rgba(0, 255, 255, 0.08);
+  border-radius: 0.8rem;
+  transition: all var(--transition);
+}
+
+.emp-establishment-highlight:hover {
+  border-color: rgba(0, 255, 255, 0.25);
+  background: rgba(0, 255, 255, 0.06);
+  box-shadow: 0 0 20px rgba(0, 255, 255, 0.1);
+  transform: translateY(-3px);
+}
+
+.emp-establishment-logo {
+  width: 50px;
+  height: 50px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 255, 255, 0.25);
+}
+
+.emp-establishment-name {
+  color: var(--neon-cyan);
+}
+
+.emp-establishment-location {
+  color: var(--text-muted);
+}
+
+/* ============================================================
+   BUTTONS
+   ============================================================ */
+.emp-schedule-btn {
+  border: 1px solid var(--neon-yellow);
+  color: var(--neon-yellow);
+  background: rgba(255, 232, 115, 0.05);
+  border-radius: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.4px;
+  transition: all var(--transition);
+}
+
+.emp-schedule-btn:hover {
+  background: var(--neon-yellow);
+  color: #000;
+  box-shadow: 0 0 20px var(--neon-yellow);
+}
+
+/* ============================================================
+   METRICS / PERFORMANCE
+   ============================================================ */
+.emp-card .text-light.small strong {
+  color: var(--neon-cyan);
+}
+
+.text-secondary.small {
+  color: var(--text-muted);
+}
+
+.text-success.small {
+  color: var(--neon-green);
+}
+
+/* ============================================================
+   USER INTERACTIONS
+   ============================================================ */
+.cursor-pointer {
+  cursor: pointer;
+  transition: all var(--transition);
+}
+
+.cursor-pointer:hover {
+  color: var(--neon-cyan);
+}
+
+/* ============================================================
+   SCROLL / SPACING
+   ============================================================ */
+.emp-sidebar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.emp-sidebar::-webkit-scrollbar-thumb {
+  background: rgba(0, 255, 255, 0.2);
+  border-radius: 10px;
+}
+
+.emp-sidebar::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 255, 255, 0.4);
+}
+
+/* ============================================================
+   LOADING SKELETON
+   ============================================================ */
+.sidebar-loading-skeleton {
+  width: 100%;
+  height: 400px;
+  background: linear-gradient(90deg, #1a1a1a 25%, #222 37%, #1a1a1a 63%);
+  background-size: 400% 100%;
+  animation: shimmer 1.4s ease infinite;
+  border-radius: var(--radius);
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* ============================================================
+   RESPONSIVE DESIGN
+   ============================================================ */
+@media (max-width: 992px) {
+  .emp-avatar-frame {
+    width: 42px;
+    height: 42px;
+  }
+}
+
+@media (max-width: 768px) {
+  .emp-card .card-header {
+    font-size: 0.85rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .emp-sidebar {
+    gap: 1rem;
+  }
+  .emp-card {
+    border-radius: 0.9rem;
+  }
+  .emp-avatar-frame {
+    width: 40px;
+    height: 40px;
+  }
+}

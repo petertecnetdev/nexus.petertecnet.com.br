@@ -1,0 +1,17 @@
+/* src/components/home/HomeTopLists.css */
+.toplists-container {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+}
+.toplist-section {
+  background: #16181f;
+  padding: 20px;
+  border-radius: 14px;
+  width: 48%;
+}
+.toplist-row {
+  padding: 10px 0;
+  border-bottom: 1px solid #1f222a;
+  font-size: 14px;
+}

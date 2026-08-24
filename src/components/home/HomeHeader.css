@@ -1,0 +1,64 @@
+/* ======================= HomeHeader.css ======================= */
+
+.hp-header {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px 12px;
+  margin-bottom: 10px;
+  background: #0f0f0f;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.hp-header-left h1 {
+  margin: 0;
+  font-size: 1.55rem;
+  font-weight: 700;
+  color: #ffffff;
+  line-height: 1.2;
+}
+
+.hp-location {
+  margin-top: 5px;
+  font-size: 0.95rem;
+  color: #a1a1a1;
+  font-weight: 500;
+}
+
+.hp-header-right .hp-change-city-btn {
+  padding: 6px 14px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border-radius: 20px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+}
+
+/* Hover */
+.hp-header-right .hp-change-city-btn:hover {
+  opacity: 0.9;
+}
+
+/* Mobile */
+@media (max-width: 480px) {
+  .hp-header {
+    flex-direction: row;
+    align-items: flex-start;
+    padding: 14px 10px;
+  }
+
+  .hp-header-left h1 {
+    font-size: 1.35rem;
+  }
+
+  .hp-location {
+    font-size: 0.85rem;
+  }
+
+  .hp-change-city-btn {
+    font-size: 0.8rem !important;
+    padding: 5px 12px !important;
+  }
+}

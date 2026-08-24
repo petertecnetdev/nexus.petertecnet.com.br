@@ -1,0 +1,274 @@
+/* src/pages/employer/EmployerMePage.css */
+/* Visual premium / dark-futuristic, menos “Bootstrap puro” e mais identidade */
+
+:root {
+  --bg-main: #070a13;
+  --bg-card: #0d1222;
+  --bg-soft: #121936;
+  --border-soft: rgba(255, 255, 255, 0.08);
+
+  --txt-main: #e5e7eb;
+  --txt-muted: #9ca3af;
+
+  --primary: #4f7cff;
+  --primary-strong: #2563eb;
+  --primary-glow: rgba(79, 124, 255, 0.45);
+
+  --success: #22c55e;
+  --success-glow: rgba(34, 197, 94, 0.35);
+
+  --danger: #ef4444;
+  --danger-glow: rgba(239, 68, 68, 0.4);
+}
+
+/* ===== Layout geral ===== */
+.employer-me-container {
+  padding-bottom: 64px;
+  color: var(--txt-main);
+}
+
+/* ===== HERO refinamento ===== */
+.ghlist-root {
+  border-bottom: 1px solid var(--border-soft);
+  box-shadow: inset 0 -40px 80px rgba(0, 0, 0, 0.65);
+}
+
+/* ===== Tabs ===== */
+.employer-me-tabs {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.employer-me-tabs .btn {
+  position: relative;
+  min-width: 180px;
+  padding: 12px 22px;
+  font-weight: 700;
+  border-radius: 18px;
+  letter-spacing: 0.4px;
+  backdrop-filter: blur(10px);
+  transition: all 0.25s ease;
+}
+
+.employer-me-tabs .btn-primary {
+  background: linear-gradient(
+    135deg,
+    var(--primary),
+    var(--primary-strong)
+  );
+  border: none;
+  box-shadow:
+    0 0 0 1px rgba(79,124,255,0.5),
+    0 12px 32px var(--primary-glow);
+}
+
+.employer-me-tabs .btn-primary::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 18px;
+  box-shadow: inset 0 0 18px rgba(255,255,255,0.15);
+  pointer-events: none;
+}
+
+.employer-me-tabs .btn-outline-primary {
+  background: rgba(255,255,255,0.02);
+  border: 1px solid var(--border-soft);
+  color: var(--txt-main);
+}
+
+.employer-me-tabs .btn-outline-primary:hover {
+  background: rgba(79,124,255,0.15);
+  transform: translateY(-2px);
+}
+
+/* ===== Cards base ===== */
+.card {
+  background:
+    radial-gradient(
+      120% 140% at 100% 0%,
+      rgba(79,124,255,0.06),
+      transparent 60%
+    ),
+    var(--bg-card);
+  border: 1px solid var(--border-soft);
+  border-radius: 20px;
+  box-shadow:
+    0 20px 50px rgba(0,0,0,0.55),
+    inset 0 0 0 1px rgba(255,255,255,0.02);
+}
+
+.card-header {
+  background: transparent;
+  border-bottom: 1px solid var(--border-soft);
+  padding: 18px 22px;
+  font-weight: 800;
+  letter-spacing: 0.6px;
+}
+
+/* ===== Form adicionar horário ===== */
+.employer-schedule-add-card {
+  overflow: hidden;
+}
+
+.employer-schedule-add-card label {
+  color: var(--txt-muted);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.employer-schedule-add-card select,
+.employer-schedule-add-card input {
+  background: var(--bg-soft);
+  border: 1px solid var(--border-soft);
+  color: var(--txt-main);
+  border-radius: 12px;
+  padding: 10px 12px;
+}
+
+.employer-schedule-add-card select:focus,
+.employer-schedule-add-card input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow:
+    0 0 0 1px var(--primary),
+    0 0 22px var(--primary-glow);
+}
+
+/* Botão adicionar */
+.employer-schedule-add-card .btn {
+  height: 44px;
+  border-radius: 14px;
+  font-weight: 800;
+  background: linear-gradient(
+    135deg,
+    var(--primary),
+    var(--primary-strong)
+  );
+  border: none;
+  box-shadow: 0 10px 28px var(--primary-glow);
+}
+
+.employer-schedule-add-card .btn:hover {
+  transform: translateY(-2px) scale(1.01);
+}
+
+/* ===== Day Card ===== */
+.employer-schedule-day-card {
+  transition: all 0.3s ease;
+}
+
+.employer-schedule-day-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 30px 70px rgba(0,0,0,0.65);
+}
+
+/* Tabela horários */
+.employer-schedule-day-card table {
+  color: var(--txt-main);
+}
+
+.employer-schedule-day-card thead th {
+  background: var(--bg-soft);
+  color: var(--txt-muted);
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.employer-schedule-day-card tbody tr {
+  transition: background 0.2s ease;
+}
+
+.employer-schedule-day-card tbody tr:hover {
+  background: rgba(79,124,255,0.08);
+}
+
+/* Remover */
+.employer-schedule-day-card .btn-danger {
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 800;
+  padding: 6px 12px;
+  background: linear-gradient(135deg, #dc2626, var(--danger));
+  border: none;
+  box-shadow: 0 8px 22px var(--danger-glow);
+}
+
+/* ===== Ações (Salvar horários) ===== */
+.employer-schedule-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 36px;
+}
+
+.employer-schedule-actions .btn {
+  min-width: 220px;
+  height: 48px;
+  border-radius: 18px;
+  font-weight: 900;
+  letter-spacing: 0.6px;
+  background: linear-gradient(
+    135deg,
+    #16a34a,
+    var(--success)
+  );
+  border: none;
+  box-shadow: 0 14px 40px var(--success-glow);
+}
+
+.employer-schedule-actions .btn:disabled {
+  opacity: 0.55;
+  box-shadow: none;
+}
+
+/* ===== Appointments ===== */
+.employer-appointments-table th {
+  background: var(--bg-soft);
+  color: var(--txt-muted);
+  font-size: 0.65rem;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.employer-appointments-table tr:hover {
+  background: rgba(79,124,255,0.08);
+}
+
+/* ===== Badge ===== */
+.badge {
+  padding: 6px 14px;
+  font-weight: 800;
+  border-radius: 999px;
+  letter-spacing: 0.4px;
+}
+
+/* ===== Loading ===== */
+.employer-me-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 70vh;
+}
+
+/* ===== Mobile ===== */
+@media (max-width: 768px) {
+  .employer-me-tabs {
+    flex-direction: column;
+  }
+
+  .employer-me-tabs .btn {
+    width: 100%;
+  }
+
+  .employer-schedule-actions {
+    justify-content: center;
+  }
+
+  .employer-schedule-actions .btn {
+    width: 100%;
+  }
+}

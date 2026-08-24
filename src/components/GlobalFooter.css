@@ -1,0 +1,56 @@
+/* =========================================================
+   INKAP — Global Footer (Instagram Style)
+   ========================================================= */
+
+.inkapfooter {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  z-index: 1300;
+  background: linear-gradient(
+    180deg,
+    rgba(11, 7, 19, 0.95),
+    rgba(5, 3, 10, 0.98)
+  );
+  border-top: 1px solid rgba(180, 108, 255, 0.2);
+  backdrop-filter: blur(10px);
+}
+
+/* ------------------ Nav ------------------ */
+.inkapfooter__nav {
+  max-width: 1400px;
+  margin: 0 auto;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+}
+
+/* ------------------ Item ------------------ */
+.inkapfooter__item {
+  flex: 1;
+  text-align: center;
+  color: var(--i-text-soft);
+  font-size: 1.3rem;
+  text-decoration: none;
+  transition: color 0.15s ease, transform 0.1s ease;
+}
+
+.inkapfooter__item i {
+  pointer-events: none;
+}
+
+.inkapfooter__item:hover {
+  color: var(--i-text);
+  transform: translateY(-1px);
+}
+
+/* ------------------ Active ------------------ */
+.inkapfooter__item.active {
+  color: var(--i-primary);
+}
+
+.inkapfooter__item.active i {
+  text-shadow: 0 0 12px rgba(180, 108, 255, 0.7);
+}

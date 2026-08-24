@@ -1,0 +1,177 @@
+/* =========================================================
+   EstablishmentCreateFields.css
+   Formulário de Criação de Estabelecimento (Responsivo)
+   ========================================================= */
+
+/* ---------- FORM ROOT ---------- */
+.estab-form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+}
+
+/* ---------- SECTION ---------- */
+.estab-form-section {
+  background: var(--i-surface, #110b1d);
+  border-radius: 18px;
+  padding: 1.8rem 1.8rem 2.2rem;
+  box-shadow:
+    0 16px 32px rgba(0, 0, 0, 0.45),
+    inset 0 0 0 1px rgba(180, 108, 255, 0.1);
+}
+
+/* ---------- SECTION TITLE ---------- */
+.estab-form-title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--i-text, #f4eaff);
+  margin-bottom: 1.4rem;
+  position: relative;
+}
+
+.estab-form-title::after {
+  content: "";
+  display: block;
+  width: 48px;
+  height: 3px;
+  margin-top: 0.4rem;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    var(--i-primary, #b46cff),
+    var(--i-primary-2, #9f4dff)
+  );
+}
+
+/* ---------- GRID ---------- */
+.estab-form-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.1rem 1.1rem;
+}
+
+/* Column spans */
+.estab-form-grid .span-2 {
+  grid-column: span 2;
+}
+
+.estab-form-grid .span-3 {
+  grid-column: span 3;
+}
+
+.estab-form-grid .span-4 {
+  grid-column: span 4;
+}
+
+/* ---------- FORM GROUP ---------- */
+.estab-form .form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+/* ---------- LABEL ---------- */
+.estab-form label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--i-text-muted, #c5addf);
+  margin-bottom: 0.35rem;
+}
+
+/* ---------- INPUTS ---------- */
+.estab-form input,
+.estab-form textarea {
+  background: var(--i-surface-2, #160f26);
+  color: var(--i-text, #f4eaff);
+  border: 1px solid rgba(180, 108, 255, 0.25);
+  border-radius: 12px;
+  padding: 0.65rem 0.8rem;
+  font-size: 0.9rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.estab-form textarea {
+  min-height: 110px;
+  resize: vertical;
+}
+
+.estab-form input::placeholder,
+.estab-form textarea::placeholder {
+  color: var(--i-text-soft, #9b7fc2);
+}
+
+.estab-form input:focus,
+.estab-form textarea:focus {
+  outline: none;
+  border-color: var(--i-primary, #b46cff);
+  box-shadow: 0 0 0 2px rgba(180, 108, 255, 0.25);
+}
+
+/* ---------- SEGMENTS SELECTOR ---------- */
+.estab-form-section :is(.segments-selector, .segment-item) {
+  margin-top: 0.75rem;
+}
+
+/* ---------- ACTIONS ---------- */
+.estab-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 0.5rem;
+}
+
+/* ---------- RESPONSIVE ---------- */
+
+/* Tablets */
+@media (max-width: 991px) {
+  .estab-form-section {
+    padding: 1.6rem 1.4rem 2rem;
+  }
+
+  .estab-form-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .estab-form-grid .span-2,
+  .estab-form-grid .span-3,
+  .estab-form-grid .span-4 {
+    grid-column: span 2;
+  }
+}
+
+/* Mobile */
+@media (max-width: 575px) {
+  .estab-form {
+    gap: 2rem;
+  }
+
+  .estab-form-section {
+    padding: 1.3rem 1.1rem 1.6rem;
+    border-radius: 14px;
+  }
+
+  .estab-form-title {
+    font-size: 1.05rem;
+  }
+
+  .estab-form-title::after {
+    width: 36px;
+  }
+
+  .estab-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .estab-form-grid .span-2,
+  .estab-form-grid .span-3,
+  .estab-form-grid .span-4 {
+    grid-column: span 1;
+  }
+
+  .estab-form-actions {
+    justify-content: stretch;
+  }
+
+  .estab-form-actions button {
+    width: 100%;
+  }
+}

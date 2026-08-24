@@ -1,0 +1,309 @@
+/* =========================================================
+   INKAP — GlobalNav (Header)
+   ========================================================= */
+
+/* ------------------ Root ------------------ */
+.inkapnav {
+  position: sticky;
+  top: 0;
+  z-index: 1200;
+  width: 100%;
+  background: linear-gradient(
+    180deg,
+    var(--i-bg) 0%,
+    var(--i-bg-soft) 100%
+  );
+  border-bottom: 1px solid rgba(180, 108, 255, 0.15);
+  backdrop-filter: blur(6px);
+}
+
+/* ------------------ Bar ------------------ */
+.inkapnav__bar {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0.75rem 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+/* ------------------ Left ------------------ */
+.inkapnav__left {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  flex-wrap: nowrap;
+}
+
+.inkapnav__brand {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+}
+
+.inkapnav__logo {
+  width: 44px;
+  height: 44px;
+  object-fit: contain;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at center,
+    rgba(180, 108, 255, 0.35),
+    transparent 70%
+  );
+}
+
+/* ------------------ Public Links ------------------ */
+.inkapnav__links {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.inkapnav__link {
+  position: relative;
+  color: var(--i-text-muted);
+  font-size: 0.95rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.inkapnav__link:hover {
+  color: var(--i-text);
+}
+
+.inkapnav__link::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -4px;
+  width: 0;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    var(--i-primary),
+    var(--i-accent)
+  );
+  transition: width 0.25s ease;
+}
+
+.inkapnav__link:hover::after {
+  width: 100%;
+}
+
+/* ------------------ Location ------------------ */
+.inkapnav__locationWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.inkapnav__location {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.75rem;
+  color: var(--i-text-soft);
+}
+
+.inkapnav__locationDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--i-success);
+  box-shadow: 0 0 6px var(--i-success);
+}
+
+.inkapnav__locationText {
+  white-space: nowrap;
+}
+
+.inkapnav__changeCityBtn {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 0.7rem;
+  color: var(--i-primary);
+  cursor: pointer;
+  text-align: left;
+}
+
+.inkapnav__changeCityBtn:hover {
+  text-decoration: underline;
+}
+
+/* ------------------ Right ------------------ */
+.inkapnav__right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+/* ------------------ Auth Buttons ------------------ */
+.inkapnav__authActions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.inkapnav__btn {
+  padding: 0.45rem 0.9rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border-radius: 999px;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.inkapnav__btn--ghost {
+  color: var(--i-text);
+  border: 1px solid rgba(180, 108, 255, 0.35);
+}
+
+.inkapnav__btn--ghost:hover {
+  background: rgba(180, 108, 255, 0.15);
+}
+
+.inkapnav__btn--primary {
+  color: #fff;
+  background: linear-gradient(
+    135deg,
+    var(--i-primary),
+    var(--i-primary-2)
+  );
+  box-shadow: 0 0 12px rgba(180, 108, 255, 0.45);
+}
+
+.inkapnav__btn--primary:hover {
+  filter: brightness(1.1);
+}
+
+/* ------------------ User ------------------ */
+.inkapnav__user {
+  position: relative;
+}
+
+.inkapnav__userBtn {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.25rem 0.4rem;
+}
+
+.inkapnav__avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--i-primary);
+  box-shadow: 0 0 8px rgba(180, 108, 255, 0.6);
+}
+
+.inkapnav__userName {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--i-text);
+  max-width: 160px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ------------------ User Menu ------------------ */
+.inkapnav__userMenu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 0.5rem);
+  min-width: 260px;
+  background: linear-gradient(
+    180deg,
+    var(--i-surface),
+    var(--i-surface-2)
+  );
+  border-radius: 14px;
+  padding: 0.4rem 0;
+  box-shadow:
+    0 10px 30px rgba(0, 0, 0, 0.55),
+    inset 0 0 0 1px rgba(180, 108, 255, 0.2);
+  animation: fadeUp 0.15s ease;
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.inkapnav__userMenuItem {
+  display: block;
+  padding: 0.55rem 1rem;
+  font-size: 0.85rem;
+  color: var(--i-text-muted);
+  text-decoration: none;
+  background: none;
+  border: none;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.inkapnav__userMenuItem:hover {
+  background: rgba(180, 108, 255, 0.15);
+  color: var(--i-text);
+}
+
+.inkapnav__divider {
+  height: 1px;
+  margin: 0.35rem 0;
+  background: rgba(180, 108, 255, 0.15);
+}
+
+.inkapnav__logout {
+  color: var(--i-danger);
+}
+
+.inkapnav__logout:hover {
+  background: rgba(239, 68, 68, 0.15);
+}
+
+/* ------------------ Responsive ------------------ */
+@media (max-width: 992px) {
+  .inkapnav__links {
+    display: none;
+  }
+
+  .inkapnav__locationWrap {
+    display: none;
+  }
+
+  .inkapnav__userName {
+    display: none;
+  }
+}
+
+@media (max-width: 576px) {
+  .inkapnav__bar {
+    padding: 0.6rem 0.75rem;
+  }
+
+  .inkapnav__logo {
+    width: 38px;
+    height: 38px;
+  }
+
+  .inkapnav__avatar {
+    width: 32px;
+    height: 32px;
+  }
+}

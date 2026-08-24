@@ -1,0 +1,46 @@
+/* ============================================================
+   GLOBAL NAV — LINK "MINHAS BARBEARIAS"
+   Futurista • Neon • Vidro Líquido
+============================================================ */
+
+.navlog__link {
+  display: block;
+  width: 100%;
+  padding: 1rem 1.1rem;
+  margin-bottom: 0.55rem;
+
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+
+  color: #e5e5e5;
+  text-decoration: none;
+  font-size: 1.05rem;
+  letter-spacing: 0.4px;
+  font-weight: 500;
+
+  transition: 0.28s ease;
+  backdrop-filter: blur(14px) saturate(180%);
+}
+
+/* Hover premium com brilho neon */
+.navlog__link:hover {
+  border-color: #00eaff;
+  color: #00eaff;
+  background: rgba(0, 234, 255, 0.12);
+  box-shadow: 0 0 14px rgba(0, 234, 255, 0.4);
+  transform: translateX(6px);
+}
+
+/* Pequeno efeito de "press"
+   (fica mais elegante do que animar para baixo) */
+.navlog__link:active {
+  transform: scale(0.98) translateX(3px);
+}
+
+/* Responsivo: em desktop menu mobile some */
+@media (min-width: 992px) {
+  .navlog__link {
+    display: none;
+  }
+}

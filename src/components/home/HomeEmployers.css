@@ -1,0 +1,29 @@
+/* src/components/home/HomeEmployers.css */
+.homeemp-container {
+  background: #16181f;
+  padding: 20px;
+  border-radius: 14px;
+}
+.homeemp-card {
+  padding: 20px;
+  background: #1a1c22;
+  border-radius: 14px;
+  margin-top: 20px;
+}
+.homeemp-avatar {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+}
+.homeemp-name {
+  margin-top: 10px;
+  font-size: 18px;
+}
+.homeemp-sub {
+  font-size: 14px;
+  color: #ffffff99;
+}
+.homeemp-metric {
+  margin-top: 10px;
+  color: #00e0ff;
+}

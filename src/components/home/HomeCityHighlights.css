@@ -1,0 +1,33 @@
+/* src/components/home/HomeCityHighlights.css */
+.highlight-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.section-title {
+  font-size: 24px;
+  font-weight: bold;
+}
+.highlight-grid {
+  display: flex;
+  gap: 20px;
+}
+.highlight-card {
+  background: #16181f;
+  padding: 18px;
+  border-radius: 14px;
+  width: 160px;
+  text-align: center;
+}
+.highlight-avatar {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+}
+.circle-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: #00e0ff33;
+  margin: 0 auto;
+}

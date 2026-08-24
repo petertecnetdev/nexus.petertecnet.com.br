@@ -1,0 +1,12 @@
+.iteml-section-title {
+  font-size: 1.3rem;
+  font-weight: 600;
+}
+
+.iteml-card-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+/* Card do bootstrap já é customizado no ItemCard.css */

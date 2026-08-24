@@ -1,0 +1,81 @@
+/* ============================================================
+   ADMIN SUBMENU — RASOIO STYLE (Neon Cyan + Dark Glass)
+============================================================ */
+
+/* Botão Administrador */
+.navlog__admin-btn {
+  width: 100%;
+  background: rgba(20, 20, 22, 0.55);
+  color: #e9e9ea;
+  padding: 12px 0;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.25s ease;
+  text-align: center;
+  backdrop-filter: blur(12px) saturate(140%);
+}
+
+.navlog__admin-btn:hover {
+  color: #0baff5;
+  border-color: #0baff5;
+  box-shadow: 0 0 14px rgba(11, 175, 245, 0.35);
+}
+
+/* ============================================================
+   SUBMENU
+============================================================ */
+
+.navlog__admin-submenu {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-left: 4px;
+  padding-right: 4px;
+  animation: adminMenuFade 0.3s ease;
+}
+
+@keyframes adminMenuFade {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Links do submenu */
+.navlog__submenu-link {
+  display: block;
+  background: rgba(18, 18, 20, 0.65);
+  padding: 10px 12px;
+  border-radius: 8px;
+  color: #e9e9ea;
+  text-decoration: none;
+  font-size: 0.95rem;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  transition: 0.25s ease;
+  backdrop-filter: blur(12px) saturate(130%);
+}
+
+/* Hover glow */
+.navlog__submenu-link:hover {
+  background: rgba(11, 175, 245, 0.12);
+  border-color: #0baff5;
+  color: #0baff5;
+  box-shadow: 0 0 12px rgba(11, 175, 245, 0.35);
+}
+
+/* ============================================================
+   RESPONSIVIDADE
+============================================================ */
+
+@media (max-width: 480px) {
+  .navlog__admin-btn {
+    font-size: 0.95rem;
+  }
+
+  .navlog__submenu-link {
+    font-size: 0.9rem;
+    padding: 10px;
+  }
+}

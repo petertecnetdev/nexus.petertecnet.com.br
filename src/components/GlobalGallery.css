@@ -1,0 +1,41 @@
+.global-gallery {
+  margin-bottom: 25px;
+}
+
+.gg-thumb {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  border-radius: 10px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.gg-thumb:hover {
+  transform: scale(1.03);
+}
+
+.gg-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.gg-modal-img {
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+  border-radius: 6px;
+}
+
+.gg-modal .modal-content {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.gg-modal .modal-body {
+  padding: 0 !important;
+}
