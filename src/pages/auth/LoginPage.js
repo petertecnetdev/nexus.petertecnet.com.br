@@ -1,13 +1,15 @@
 // src/pages/auth/LoginPage.jsx
+
 import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { apiBaseUrl, appId } from "../../config";
 
-import "./LoginPage.css";
+import { apiBaseUrl, appId } from "../../config";
 
 import GlobalNav from "../../components/GlobalNav";
 import LoginFormComponent from "../../components/auth/LoginFormComponent";
 import ProcessingIndicatorComponent from "../../components/ProcessingIndicatorComponent";
+
+import "./LoginPage.css";
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -21,7 +23,8 @@ export default function LoginPage() {
     navigate(from, { replace: true });
   };
 
-  // 🔒 BLOQUEIO TOTAL DA UI
+  /* =================== BLOQUEIO DA INTERFACE =================== */
+
   if (processing) {
     return (
       <ProcessingIndicatorComponent
@@ -31,33 +34,38 @@ export default function LoginPage() {
     );
   }
 
+  /* =================== RENDER =================== */
+
   return (
     <>
       <GlobalNav />
 
-      <div className="lp-wrapper">
-        <div className="lp-bg-effect" />
+      <main className="lp-wrapper">
+        <div className="lp-bg-effect" aria-hidden="true" />
 
         <div className="lp-content">
-          <div className="lp-card">
-            <div className="lp-card__header">
+          <section className="lp-card" aria-labelledby="login-title">
+            <header className="lp-card__header">
               <div className="lp-logo-wrapper">
                 <img
                   src="/images/logo.png"
-                  alt="Inkap"
+                  alt="Nexus"
                   className="lp-logo"
-                  onError={(e) => {
-                    e.currentTarget.onerror = null;
-                    e.currentTarget.src = "/images/logo.gif";
+                  onError={(event) => {
+                    event.currentTarget.onerror = null;
+                    event.currentTarget.src = "/images/logo.gif";
                   }}
                 />
               </div>
 
-              <h1 className="lp-title">Bem-vindo à Inkap</h1>
+              <h1 id="login-title" className="lp-title">
+                Bem-vindo à Nexus
+              </h1>
+
               <p className="lp-subtitle">
-                Entre para gerenciar seus agendamentos, estúdios e serviços
+              Acesse sua conta para gerenciar sua empresa, seus catálogos e tudo o que faz parte do seu negócio.
               </p>
-            </div>
+            </header>
 
             <div className="lp-card__body">
               <LoginFormComponent
@@ -69,9 +77,9 @@ export default function LoginPage() {
                 appId={appId}
               />
             </div>
-          </div>
+          </section>
         </div>
-      </div>
+      </main>
     </>
   );
 }

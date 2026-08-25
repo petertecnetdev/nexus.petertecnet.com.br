@@ -1,5 +1,5 @@
 {
-  "name": "inkap",
+  "name": "nexus",
   "version": "1.0.0",
   "description": "We are using Laravel 9 for jwt authentication based login and \r signup API. We use react.js on the frontend.",
   "main": "index.js",

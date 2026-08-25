@@ -1,4 +1,5 @@
 // src/components/GlobalNav.jsx
+
 import React, {
   useContext,
   useEffect,
@@ -6,32 +7,87 @@ import React, {
   useRef,
   useState,
 } from "react";
+
 import PropTypes from "prop-types";
-import { Link, useLocation } from "react-router-dom";
+import {
+  Link,
+  NavLink,
+  useLocation,
+} from "react-router-dom";
 
 import { AuthContext } from "../App";
 import useImageUtils from "../hooks/useImageUtils";
+
 import CitySelectorModal from "./CitySelectorModal";
 import ProcessingIndicatorComponent from "./ProcessingIndicatorComponent";
 
 import "./GlobalNav.css";
 
-export default function GlobalNav({ loadingMenu, handleLogout }) {
+/* =================== ITENS DE NAVEGAÇÃO =================== */
+
+const publicNavigation = [
+  {
+    label: "Explorar",
+    path: "/",
+    end: true,
+  },
+  {
+    label: "Negócios",
+    path: "/establishments",
+  },
+  {
+    label: "Especialistas",
+    path: "/employers",
+  },
+  {
+    label: "Serviços",
+    path: "/item/services",
+  },
+  {
+    label: "Produtos",
+    path: "/item/products",
+  },
+];
+
+export default function GlobalNav({
+  loadingMenu,
+  handleLogout,
+}) {
   const { user } = useContext(AuthContext);
+
   const location = useLocation();
 
-  /* =================== PROCESSING (LOGOUT) =================== */
-  const [processing, setProcessing] = useState(false);
+  /* =================== ESTADOS =================== */
 
-  /* =================== AUTH =================== */
-  const isAuthed = !!user;
+  const [processing, setProcessing] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [showCityModal, setShowCityModal] = useState(false);
+
+  const [currentCity, setCurrentCity] = useState(() =>
+    localStorage.getItem("selectedCity")
+  );
+
+  const [currentUF, setCurrentUF] = useState(() =>
+    localStorage.getItem("selectedUF")
+  );
+
+  const userMenuRef = useRef(null);
+
+  /* =================== AUTENTICAÇÃO =================== */
+
+  const isAuthed = Boolean(user);
+  const navIsLoading = Boolean(loadingMenu);
 
   const fullName = useMemo(() => {
-    if (!user) return "Minha conta";
-    const fn = (user.first_name || "").trim();
-    const ln = (user.last_name || "").trim();
+    if (!user) {
+      return "Minha conta";
+    }
+
+    const firstName = (user.first_name || "").trim();
+    const lastName = (user.last_name || "").trim();
+
     return (
-      `${fn} ${ln}`.trim() ||
+      `${firstName} ${lastName}`.trim() ||
       user.name ||
       user.username ||
       user.email ||
@@ -39,56 +95,62 @@ export default function GlobalNav({ loadingMenu, handleLogout }) {
     );
   }, [user]);
 
-  const { imageUrl, handleImgError, placeholderSvg } = useImageUtils({
+  /* =================== AVATAR =================== */
+
+  const {
+    imageUrl,
+    handleImgError,
+    placeholderSvg,
+  } = useImageUtils({
     fallbackText: fullName,
     fallbackShape: "round",
   });
 
   const avatarSrc = useMemo(() => {
-    const raw =
+    const rawAvatar =
       user?.images?.avatar ||
       user?.images?.profile ||
       user?.avatar ||
       null;
 
-    return imageUrl(raw) || placeholderSvg || "/images/user.png";
+    return (
+      imageUrl(rawAvatar) ||
+      placeholderSvg ||
+      "/images/user.png"
+    );
   }, [user, imageUrl, placeholderSvg]);
 
-  /* =================== UI =================== */
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  /* =================== LOCALIZAÇÃO =================== */
 
-  const userMenuRef = useRef(null);
-  const mobileRef = useRef(null);
+  const locationText = useMemo(() => {
+    if (currentCity && currentUF) {
+      return `${currentCity} / ${currentUF}`;
+    }
 
-  const closeAll = () => {
-    setMobileOpen(false);
-    setUserMenuOpen(false);
-  };
-
-  /* =================== CITY =================== */
-  const [showCityModal, setShowCityModal] = useState(false);
-  const [currentCity, setCurrentCity] = useState(
-    localStorage.getItem("selectedCity")
-  );
-  const [currentUF, setCurrentUF] = useState(
-    localStorage.getItem("selectedUF")
-  );
+    return "Escolha sua cidade";
+  }, [currentCity, currentUF]);
 
   const handleSelectCity = ({ city, uf }) => {
     localStorage.setItem("selectedCity", city);
     localStorage.setItem("selectedUF", uf);
+
     setCurrentCity(city);
     setCurrentUF(uf);
     setShowCityModal(false);
   };
 
-  const locationText =
-    currentCity && currentUF
-      ? `${currentCity} / ${currentUF}`
-      : "Localização não definida";
+  /* =================== INTERFACE =================== */
+
+  const closeUserMenu = () => {
+    setUserMenuOpen(false);
+  };
+
+  const toggleUserMenu = () => {
+    setUserMenuOpen((currentValue) => !currentValue);
+  };
 
   /* =================== LOGOUT =================== */
+
   const onLogout = async () => {
     setProcessing(true);
 
@@ -97,35 +159,64 @@ export default function GlobalNav({ loadingMenu, handleLogout }) {
         await handleLogout();
       }
     } catch {
-      // ignora erro
+      // A limpeza local será executada mesmo se a API falhar.
     } finally {
       localStorage.clear();
-      closeAll();
+
+      closeUserMenu();
+
       window.dispatchEvent(new Event("authChanged"));
       window.location.replace("/login");
     }
   };
 
-  /* =================== EFFECTS =================== */
-  useEffect(() => closeAll(), [location.pathname]);
+  /* =================== EFEITOS =================== */
 
   useEffect(() => {
-    const onDocMouseDown = (e) => {
-      if (userMenuRef.current && !userMenuRef.current.contains(e.target)) {
-        setUserMenuOpen(false);
-      }
-      if (mobileRef.current && !mobileRef.current.contains(e.target)) {
-        setMobileOpen(false);
+    closeUserMenu();
+  }, [location.pathname]);
+
+  useEffect(() => {
+    const handleDocumentMouseDown = (event) => {
+      if (
+        userMenuRef.current &&
+        !userMenuRef.current.contains(event.target)
+      ) {
+        closeUserMenu();
       }
     };
-    document.addEventListener("mousedown", onDocMouseDown);
-    return () =>
-      document.removeEventListener("mousedown", onDocMouseDown);
+
+    const handleEscape = (event) => {
+      if (event.key === "Escape") {
+        closeUserMenu();
+      }
+    };
+
+    document.addEventListener(
+      "mousedown",
+      handleDocumentMouseDown
+    );
+
+    document.addEventListener(
+      "keydown",
+      handleEscape
+    );
+
+    return () => {
+      document.removeEventListener(
+        "mousedown",
+        handleDocumentMouseDown
+      );
+
+      document.removeEventListener(
+        "keydown",
+        handleEscape
+      );
+    };
   }, []);
 
-  const navIsLoading = !!loadingMenu;
+  /* =================== PROCESSAMENTO =================== */
 
-  /* =================== BLOCK UI DURING LOGOUT =================== */
   if (processing) {
     return (
       <ProcessingIndicatorComponent
@@ -136,65 +227,97 @@ export default function GlobalNav({ loadingMenu, handleLogout }) {
   }
 
   /* =================== RENDER =================== */
+
   return (
     <>
       <header className="globalnav">
         <div className="globalnav__bar">
-          {/* LEFT */}
+          {/* =================== ESQUERDA =================== */}
+
           <div className="globalnav__left">
-            <Link to="/" className="globalnav__brand">
+            <Link
+              to="/"
+              className="globalnav__brand"
+              aria-label="Ir para o início da Nexus"
+              title="Nexus"
+            >
               <img
                 src="/images/logo.png"
-                alt="Logo"
+                alt="Nexus"
                 className="globalnav__logo"
               />
             </Link>
 
-            <nav className="globalnav__links">
-              <Link to="/establishments" className="globalnav__link">
-                Estabelecimentos
-              </Link>
-              <Link to="/employers" className="globalnav__link">
-                Profissionais
-              </Link>
-              <Link to="/item/services" className="globalnav__link">
-                Serviços
-              </Link>
-              <Link to="/item/products" className="globalnav__link">
-                Produtos
-              </Link>
+            <nav
+              className="globalnav__links"
+              aria-label="Navegação principal"
+            >
+              {publicNavigation.map((navigationItem) => (
+                <NavLink
+                  key={navigationItem.path}
+                  to={navigationItem.path}
+                  end={navigationItem.end}
+                  className={({ isActive }) =>
+                    [
+                      "globalnav__link",
+                      isActive
+                        ? "globalnav__link--active"
+                        : "",
+                    ]
+                      .filter(Boolean)
+                      .join(" ")
+                  }
+                >
+                  {navigationItem.label}
+                </NavLink>
+              ))}
             </nav>
 
             <div className="globalnav__locationWrap">
               <div className="globalnav__location">
-                <span className="globalnav__locationDot" />
+                <span
+                  className="globalnav__locationDot"
+                  aria-hidden="true"
+                />
+
                 <span className="globalnav__locationText">
                   {locationText}
                 </span>
               </div>
 
               <button
+                type="button"
                 className="globalnav__changeCityBtn"
                 onClick={() => setShowCityModal(true)}
               >
-                Trocar cidade
+                {currentCity && currentUF
+                  ? "Alterar localização"
+                  : "Definir localização"}
               </button>
             </div>
           </div>
 
-          {/* RIGHT */}
+          {/* =================== DIREITA =================== */}
+
           <div className="globalnav__right">
             {!navIsLoading && !isAuthed && (
               <div className="globalnav__authActions">
                 <Link
                   to="/login"
-                  className="globalnav__btn globalnav__btn--ghost"
+                  className="
+                    globalnav__btn
+                    globalnav__btn--ghost
+                  "
                 >
                   Entrar
                 </Link>
+
                 <Link
                   to="/register"
-                  className="globalnav__btn globalnav__btn--primary"
+                  className="
+                    globalnav__btn
+                    globalnav__btn--primary
+                  "
                 >
                   Criar conta
                 </Link>
@@ -202,85 +325,123 @@ export default function GlobalNav({ loadingMenu, handleLogout }) {
             )}
 
             {!navIsLoading && isAuthed && (
-              <div className="globalnav__user" ref={userMenuRef}>
+              <div
+                className="globalnav__user"
+                ref={userMenuRef}
+              >
                 <button
+                  type="button"
                   className="globalnav__userBtn"
-                  onClick={() => setUserMenuOpen((v) => !v)}
+                  onClick={toggleUserMenu}
+                  aria-haspopup="menu"
+                  aria-expanded={userMenuOpen}
+                  aria-label={`Abrir menu de ${fullName}`}
                 >
                   <img
                     src={avatarSrc}
-                    alt={fullName}
+                    alt=""
                     className="globalnav__avatar"
                     onError={handleImgError}
                   />
+
                   <span className="globalnav__userName">
                     {fullName}
                   </span>
                 </button>
 
                 {userMenuOpen && (
-                  <div className="globalnav__userMenu">
+                  <div
+                    className="globalnav__userMenu"
+                    role="menu"
+                    aria-label="Menu da conta"
+                  >
+                    {/* Conta */}
+
                     <Link
                       to="/user/update"
                       className="globalnav__userMenuItem"
-                      onClick={closeAll}
+                      onClick={closeUserMenu}
+                      role="menuitem"
                     >
-                      Meus dados
+                      Minha conta
                     </Link>
-
-                    <div className="globalnav__divider" />
 
                     <Link
                       to="/order/my"
                       className="globalnav__userMenuItem"
-                      onClick={closeAll}
+                      onClick={closeUserMenu}
+                      role="menuitem"
                     >
-                      Meus agendamentos
+                      Minha agenda
                     </Link>
 
-                    <div className="globalnav__divider" />
+                    <div
+                      className="globalnav__divider"
+                      role="separator"
+                    />
+
+                    {/* Negócios */}
 
                     <Link
                       to="/establishment/my"
                       className="globalnav__userMenuItem"
-                      onClick={closeAll}
+                      onClick={closeUserMenu}
+                      role="menuitem"
                     >
-                      Meus estabelecimentos
+                      Meus negócios
                     </Link>
 
                     <Link
                       to="/establishment/create"
                       className="globalnav__userMenuItem"
-                      onClick={closeAll}
+                      onClick={closeUserMenu}
+                      role="menuitem"
                     >
-                      Criar estabelecimento
+                      Cadastrar negócio
                     </Link>
 
-                    <div className="globalnav__divider" />
+                    <div
+                      className="globalnav__divider"
+                      role="separator"
+                    />
+
+                    {/* Profissionais */}
 
                     <Link
                       to="/employer/dashboard"
                       className="globalnav__userMenuItem"
-                      onClick={closeAll}
+                      onClick={closeUserMenu}
+                      role="menuitem"
                     >
-                      Área do colaborador
+                      Área profissional
                     </Link>
 
-                    <div className="globalnav__divider" />
+                    {/* Gestão */}
 
                     <Link
                       to="/dashboard"
                       className="globalnav__userMenuItem"
-                      onClick={closeAll}
+                      onClick={closeUserMenu}
+                      role="menuitem"
                     >
-                      Dashboard
+                      Central de gestão
                     </Link>
 
+                    <div
+                      className="globalnav__divider"
+                      role="separator"
+                    />
+
                     <button
-                      className="globalnav__userMenuItem globalnav__logout"
+                      type="button"
+                      className="
+                        globalnav__userMenuItem
+                        globalnav__logout
+                      "
                       onClick={onLogout}
+                      role="menuitem"
                     >
-                      Sair
+                      Sair da conta
                     </button>
                   </div>
                 )}
@@ -303,4 +464,9 @@ export default function GlobalNav({ loadingMenu, handleLogout }) {
 GlobalNav.propTypes = {
   loadingMenu: PropTypes.bool,
   handleLogout: PropTypes.func,
+};
+
+GlobalNav.defaultProps = {
+  loadingMenu: false,
+  handleLogout: undefined,
 };
