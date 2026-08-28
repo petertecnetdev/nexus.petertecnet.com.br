@@ -1,6 +1,5 @@
 import React from "react";
-import { Row, Col, Form, Button } from "react-bootstrap";
-import GlobalHeroEditorPreview from "../GlobalHeroEditorPreview";
+import establishmentSegments from "../../constants/establishmentSegments";
 import "./EstablishmentUpdateForm.css";
 
 const UF_LIST = [
@@ -8,18 +7,10 @@ const UF_LIST = [
   "PA","PB","PR","PE","PI","RJ","RN","RS","RO","RR","SC","SP","SE","TO",
 ];
 
-const segmentOptions = [
-  { value: "corte_masculino", label: "Corte Masculino" },
-  { value: "barba", label: "Barba" },
-  { value: "sobrancelha", label: "Sobrancelha" },
-  { value: "pintura", label: "Pintura" },
-  { value: "hidratacao", label: "Hidratação" },
-  { value: "alisamento", label: "Alisamento" },
-];
-
 export default function EstablishmentUpdateForm({
   register,
   handleSubmit,
+  errors,
   isSubmitting,
   segments,
   logoPreview,
@@ -28,201 +19,104 @@ export default function EstablishmentUpdateForm({
   handleBackgroundChange,
   handleSegmentsChange,
   onSubmit,
+  watch,
 }) {
+  const name = watch?.("fantasy") || watch?.("name") || "Nome da empresa";
+  const description = watch?.("description") || "A descrição do catálogo aparecerá aqui.";
+
   return (
-    <>
-      {/* PREVIEW GLOBAL */}
-      <GlobalHeroEditorPreview
-        backgroundPreview={backgroundPreview}
-        logoPreview={logoPreview}
-        segments={segments}
-        title="Visualização da Edição"
-        subtitle="As alterações serão refletidas aqui..."
-      />
-
-      {/* BOTÕES DE TROCA DE IMAGEM */}
-      <div className="d-flex justify-content-center gap-3 my-3">
-        <Button
-          variant="secondary"
-          className="action-button"
-          onClick={() => document.getElementById("backgroundInput").click()}
-        >
-          Alterar Background
-        </Button>
-
-        <Button
-          variant="secondary"
-          className="action-button"
-          onClick={() => document.getElementById("logoInput").click()}
-        >
-          Alterar Logo
-        </Button>
+    <form className="eup-form" onSubmit={handleSubmit(onSubmit)} encType="multipart/form-data">
+      <div
+        className="eup-preview"
+        style={backgroundPreview ? {
+          backgroundImage: `linear-gradient(90deg, rgba(8,20,40,.92), rgba(8,20,40,.55)), url("${backgroundPreview}")`,
+        } : undefined}
+      >
+        <div className="eup-preview__logo">
+          {logoPreview ? <img src={logoPreview} alt="Logo da empresa" /> : <span>N</span>}
+        </div>
+        <div className="eup-preview__copy">
+          <span>Prévia do catálogo</span>
+          <h2>{name}</h2>
+          <p>{description}</p>
+        </div>
       </div>
 
-      {/* INPUTS REAIS (ESCONDIDOS) */}
-      <Form.Control
-        id="backgroundInput"
-        type="file"
-        accept="image/*"
-        onChange={handleBackgroundChange}
-        style={{ display: "none" }}
-      />
-      <Form.Control
-        id="logoInput"
-        type="file"
-        accept="image/*"
-        onChange={handleLogoChange}
-        style={{ display: "none" }}
-      />
+      <div className="eup-uploadbar">
+        <label htmlFor="backgroundInput">Alterar capa</label>
+        <label htmlFor="logoInput">Alterar logo</label>
+        <input id="backgroundInput" type="file" accept="image/*" onChange={handleBackgroundChange} />
+        <input id="logoInput" type="file" accept="image/*" onChange={handleLogoChange} />
+      </div>
 
-      {/* FORMULÁRIO */}
-      <Form onSubmit={handleSubmit(onSubmit)}>
-        <Row className="gy-3 mt-2">
+      <Section title="Informações da empresa" subtitle="Estes são os dados atuais. Edite apenas o que desejar mudar.">
+        <div className="eup-grid">
+          <Field label="Nome da empresa *" className="span-4" error={errors?.name?.message}>
+            <input {...register("name", { required: "Informe o nome da empresa." })} />
+          </Field>
+          <Field label="Nome fantasia" className="span-4"><input {...register("fantasy")} /></Field>
+          <Field label="CNPJ" className="span-4"><input {...register("cnpj")} /></Field>
+          <Field label="Telefone" className="span-4"><input {...register("phone")} /></Field>
+          <Field label="E-mail" className="span-4"><input type="email" {...register("email")} /></Field>
+          <Field label="CEP" className="span-4"><input {...register("cep")} /></Field>
+          <Field label="Descrição do catálogo" className="span-12"><textarea rows={4} {...register("description")} /></Field>
+          <Field label="Informações adicionais" className="span-12"><textarea rows={3} {...register("additional_info")} /></Field>
+        </div>
+      </Section>
 
-          <Col xs={12} md={6} lg={4}>
-            <div className="form-group">
-              <label>Nome*</label>
-              <input type="text" {...register("name", { required: true })} required />
-            </div>
-          </Col>
+      <Section title="Localização" subtitle="Endereço e localização exibidos para quem acessar o catálogo.">
+        <div className="eup-grid">
+          <Field label="Endereço" className="span-8"><input {...register("address")} /></Field>
+          <Field label="Cidade" className="span-2"><input {...register("city")} /></Field>
+          <Field label="UF" className="span-2">
+            <select {...register("uf")}>
+              <option value="">Selecione</option>
+              {UF_LIST.map((uf) => <option key={uf} value={uf}>{uf}</option>)}
+            </select>
+          </Field>
+          <Field label="Localização / Google Maps" className="span-12"><input {...register("location")} /></Field>
+        </div>
+      </Section>
 
-          <Col xs={12} md={6} lg={4}>
-            <div className="form-group">
-              <label>Nome Fantasia</label>
-              <input type="text" {...register("fantasy")} />
-            </div>
-          </Col>
+      <Section title="Presença digital" subtitle="Links opcionais da empresa.">
+        <div className="eup-grid">
+          <Field label="Instagram" className="span-4"><input type="url" {...register("instagram_url")} /></Field>
+          <Field label="Facebook" className="span-4"><input type="url" {...register("facebook_url")} /></Field>
+          <Field label="Site" className="span-4"><input type="url" {...register("website_url")} /></Field>
+          <Field label="X / Twitter" className="span-6"><input type="url" {...register("twitter_url")} /></Field>
+          <Field label="YouTube" className="span-6"><input type="url" {...register("youtube_url")} /></Field>
+        </div>
+      </Section>
 
-          <Col xs={6} md={4} lg={2}>
-            <div className="form-group">
-              <label>CNPJ</label>
-              <input type="text" {...register("cnpj")} />
-            </div>
-          </Col>
+      <Section title="Tipo de catálogo" subtitle="Selecione os segmentos que ajudam a identificar o conteúdo desta empresa.">
+        <div className="eup-segments">
+          {establishmentSegments.map((option) => {
+            const selected = segments.includes(option.value);
+            return (
+              <label key={option.value} className={`eup-segment ${selected ? "is-selected" : ""}`}>
+                <input type="checkbox" value={option.value} checked={selected} onChange={handleSegmentsChange} />
+                <span className="eup-segment__check" aria-hidden="true" />
+                <span>{option.label}</span>
+              </label>
+            );
+          })}
+        </div>
+        <input type="hidden" {...register("segments")} value={segments.join(",")} readOnly />
+      </Section>
 
-          <Col xs={6} md={4} lg={2}>
-            <div className="form-group">
-              <label>UF</label>
-              <select {...register("uf")}>
-                <option value="">Selecione</option>
-                {UF_LIST.map((uf) => (
-                  <option key={uf} value={uf}>{uf}</option>
-                ))}
-              </select>
-            </div>
-          </Col>
-
-          <Col xs={12} md={6} lg={4}>
-            <div className="form-group">
-              <label>Telefone</label>
-              <input type="text" {...register("phone")} />
-            </div>
-          </Col>
-
-          <Col xs={12} md={6} lg={4}>
-            <div className="form-group">
-              <label>Email</label>
-              <input type="email" {...register("email")} />
-            </div>
-          </Col>
-
-          <Col xs={12}>
-            <div className="form-group">
-              <label>Endereço</label>
-              <input type="text" {...register("address")} />
-            </div>
-          </Col>
-
-          <Col xs={6} md={4} lg={3}>
-            <div className="form-group">
-              <label>Cidade</label>
-              <input type="text" {...register("city")} />
-            </div>
-          </Col>
-
-          <Col xs={6} md={3} lg={2}>
-            <div className="form-group">
-              <label>CEP</label>
-              <input type="text" {...register("cep")} />
-            </div>
-          </Col>
-
-          <Col xs={12} md={6} lg={4}>
-            <div className="form-group">
-              <label>Localização (Maps)</label>
-              <input type="text" {...register("location")} />
-            </div>
-          </Col>
-
-          <Col xs={12} md={6} lg={4}>
-            <div className="form-group">
-              <label>Instagram</label>
-              <input type="url" {...register("instagram_url")} />
-            </div>
-          </Col>
-
-          <Col xs={12} md={6} lg={4}>
-            <div className="form-group">
-              <label>Facebook</label>
-              <input type="url" {...register("facebook_url")} />
-            </div>
-          </Col>
-
-          <Col xs={12} md={6} lg={4}>
-            <div className="form-group">
-              <label>Twitter</label>
-              <input type="url" {...register("twitter_url")} />
-            </div>
-          </Col>
-
-          <Col xs={12} md={6} lg={4}>
-            <div className="form-group">
-              <label>YouTube</label>
-              <input type="url" {...register("youtube_url")} />
-            </div>
-          </Col>
-
-          <Col xs={12} md={6} lg={4}>
-            <div className="form-group">
-              <label>Site</label>
-              <input type="url" {...register("website_url")} />
-            </div>
-          </Col>
-
-          <Col xs={12}>
-            <div className="form-group">
-              <label>Segmentos Atendidos</label>
-              <div className="segments-grid">
-                {segmentOptions.map((opt) => (
-                  <label key={opt.value} className="seg-item">
-                    <input
-                      type="checkbox"
-                      value={opt.value}
-                      checked={segments.includes(opt.value)}
-                      onChange={handleSegmentsChange}
-                    />
-                    <span>{opt.label}</span>
-                  </label>
-                ))}
-              </div>
-              <input type="hidden" {...register("segments")} value={segments} readOnly />
-            </div>
-          </Col>
-
-          <Col xs={12}>
-            <div className="form-group">
-              <label>Descrição</label>
-              <textarea rows={3} {...register("description")} />
-            </div>
-          </Col>
-
-          <Col xs={12} className="text-end">
-            <button type="submit" className="submit-btn" disabled={isSubmitting}>
-              {isSubmitting ? "Salvando..." : "Salvar Alterações"}
-            </button>
-          </Col>
-        </Row>
-      </Form>
-    </>
+      <div className="eup-actions">
+        <button type="submit" className="eup-submit" disabled={isSubmitting}>
+          {isSubmitting ? "Salvando alterações..." : "Salvar alterações"}
+        </button>
+      </div>
+    </form>
   );
+}
+
+function Section({ title, subtitle, children }) {
+  return <section className="eup-section"><div className="eup-section__heading"><h3>{title}</h3><p>{subtitle}</p></div>{children}</section>;
+}
+
+function Field({ label, className = "", error, children }) {
+  return <label className={`eup-field ${className}`}><span>{label}</span>{children}{error ? <small>{error}</small> : null}</label>;
 }
