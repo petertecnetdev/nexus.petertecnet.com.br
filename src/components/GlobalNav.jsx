@@ -5,13 +5,18 @@ import { Link, NavLink, useLocation } from "react-router-dom";
 
 import { AuthContext } from "../App";
 import useImageUtils from "../hooks/useImageUtils";
-import ProcessingIndicatorComponent from "./ProcessingIndicatorComponent";
 
 import "./GlobalNav.css";
 
 const publicNavigation = [
   { label: "Início", path: "/", end: true },
   { label: "Catálogos", path: "/establishments" },
+];
+
+const accountNavigation = [
+  { label: "Meus catálogos", path: "/establishment/my" },
+  { label: "Cadastrar empresa", path: "/establishment/create" },
+  { label: "Minha conta", path: "/user/update" },
 ];
 
 export default function GlobalNav({ loadingMenu, handleLogout }) {
@@ -50,13 +55,15 @@ export default function GlobalNav({ loadingMenu, handleLogout }) {
   const closeUserMenu = () => setUserMenuOpen(false);
 
   const onLogout = async () => {
+    if (processing) return;
     setProcessing(true);
+
     try {
       if (handleLogout) await handleLogout();
     } catch {
-      // A sessão local ainda é encerrada caso o logout remoto falhe.
+      // O encerramento local deve continuar mesmo se a API de logout falhar.
     } finally {
-      localStorage.clear();
+      localStorage.removeItem("token");
       closeUserMenu();
       window.dispatchEvent(new Event("authChanged"));
       window.location.replace("/login");
@@ -79,10 +86,6 @@ export default function GlobalNav({ loadingMenu, handleLogout }) {
       document.removeEventListener("keydown", onKeyDown);
     };
   }, []);
-
-  if (processing) {
-    return <ProcessingIndicatorComponent messages={["Encerrando sua sessão…", "Voltando para a Nexus…"]} />;
-  }
 
   return (
     <header className="globalnav">
@@ -133,18 +136,28 @@ export default function GlobalNav({ loadingMenu, handleLogout }) {
 
               {userMenuOpen && (
                 <div className="globalnav__userMenu" role="menu" aria-label="Menu da conta">
-                  <Link to="/establishment/my" className="globalnav__userMenuItem" onClick={closeUserMenu} role="menuitem">
-                    Meus catálogos
-                  </Link>
-                  <Link to="/establishment/create" className="globalnav__userMenuItem" onClick={closeUserMenu} role="menuitem">
-                    Cadastrar empresa
-                  </Link>
-                  <div className="globalnav__divider" role="separator" />
-                  <Link to="/user/update" className="globalnav__userMenuItem" onClick={closeUserMenu} role="menuitem">
-                    Minha conta
-                  </Link>
-                  <button type="button" className="globalnav__userMenuItem globalnav__logout" onClick={onLogout} role="menuitem">
-                    Sair da conta
+                  {accountNavigation.map((item, index) => (
+                    <React.Fragment key={item.path}>
+                      {index === 2 && <div className="globalnav__divider" role="separator" />}
+                      <Link
+                        to={item.path}
+                        className="globalnav__userMenuItem"
+                        onClick={closeUserMenu}
+                        role="menuitem"
+                      >
+                        {item.label}
+                      </Link>
+                    </React.Fragment>
+                  ))}
+                  <button
+                    type="button"
+                    className="globalnav__userMenuItem globalnav__logout"
+                    onClick={onLogout}
+                    disabled={processing}
+                    aria-busy={processing}
+                    role="menuitem"
+                  >
+                    {processing ? "Saindo…" : "Sair da conta"}
                   </button>
                 </div>
               )}
