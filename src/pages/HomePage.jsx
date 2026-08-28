@@ -1,6 +1,7 @@
 import React, { useContext, useEffect, useMemo, useRef, useState } from "react";
+import PropTypes from "prop-types";
 import { useNavigate } from "react-router-dom";
-import { FaArrowLeft, FaArrowRight, FaEye, FaLocationDot } from "react-icons/fa6";
+import { FaArrowLeft, FaArrowRight, FaEye, FaMapMarkerAlt } from "react-icons/fa";
 
 import { AuthContext } from "../App";
 import GlobalNav from "../components/GlobalNav";
@@ -38,6 +39,13 @@ function Rail({ title, subtitle, children, railRef }) {
     </section>
   );
 }
+
+Rail.propTypes = {
+  title: PropTypes.string.isRequired,
+  subtitle: PropTypes.string.isRequired,
+  children: PropTypes.node.isRequired,
+  railRef: PropTypes.shape({ current: PropTypes.instanceOf(Element) }).isRequired,
+};
 
 export default function HomePage() {
   const { user } = useContext(AuthContext);
@@ -134,7 +142,7 @@ export default function HomePage() {
               <h2 id="hp-discovery-title">O que está disponível {locationLabel}</h2>
               <p>Empresas e itens públicos são carregados pela localização aproximada do visitante.</p>
             </div>
-            <div className="hp-location-chip"><FaLocationDot /> {locationLabel}</div>
+            <div className="hp-location-chip"><FaMapMarkerAlt /> {locationLabel}</div>
           </div>
 
           {discoveryLoading && (
@@ -172,7 +180,7 @@ export default function HomePage() {
                     <img src={image} alt={establishment.name} loading="lazy" />
                     <div>
                       <h3>{establishment.name}</h3>
-                      <span><FaLocationDot /> {[establishment.city, establishment.uf].filter(Boolean).join(" - ") || locationLabel}</span>
+                      <span><FaMapMarkerAlt /> {[establishment.city, establishment.uf].filter(Boolean).join(" - ") || locationLabel}</span>
                       <small><FaEye /> {Number(establishment.total_views || 0).toLocaleString("pt-BR")} visualizações</small>
                     </div>
                   </article>
