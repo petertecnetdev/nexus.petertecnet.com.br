@@ -13,8 +13,11 @@ export default function GlobalCard({ item, fmtBRL, navigate, actions }) {
   const { imageUrl, handleImgError: baseHandleImgError } = useImageUtils();
   const cardRef = useRef(null);
   const [broken, setBroken] = useState(false);
-  const safeItem = item || {};
-  const establishment = safeItem.establishment || {};
+  const safeItem = useMemo(() => item || {}, [item]);
+  const establishment = useMemo(
+    () => safeItem.establishment || {},
+    [safeItem.establishment]
+  );
 
   const handleImgError = (event) => {
     baseHandleImgError(event);
