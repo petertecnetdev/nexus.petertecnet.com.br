@@ -7,12 +7,12 @@ import {
   Navigate,
   useParams,
 } from "react-router-dom";
-import axios from "axios";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 
 import ProcessingIndicatorComponent from "./components/ProcessingIndicatorComponent";
 import { LoadingProvider, LoadingContext } from "./contexts/LoadingContext";
-import { apiBaseUrl } from "./config";
+import { appId } from "./config";
+import api from "./services/api";
 
 import HomePage from "./pages/HomePage";
 import LoginPage from "./pages/auth/LoginPage";
@@ -32,7 +32,6 @@ import EstablishmentCreatePage from "./pages/establishment/EstablishmentCreatePa
 import EstablishmentUpdatePage from "./pages/establishment/EstablishmentUpdatePage";
 import EstablishmentMyPage from "./pages/establishment/EstablishmentMyPage";
 import EstablishmentItemPage from "./pages/establishment/EstablishmentItemPage";
-import EstablishmentHome from "./pages/establishment/EstablishmentHomePage";
 import CatalogPage from "./pages/catalog/CatalogPage";
 
 import "./index.css";
@@ -55,39 +54,62 @@ function AppInner() {
   useEffect(() => {
     let cancelled = false;
 
+    const resetAuth = () => {
+      setUser(null);
+      setEmployer(null);
+      setIsEmployer(false);
+      setEstablishments([]);
+    };
+
+    const applySession = (data) => {
+      if (!data?.user) {
+        resetAuth();
+        return false;
+      }
+
+      setUser(data.user);
+      setEmployer(data.employer ?? null);
+      setIsEmployer(!!data.is_employer);
+      setEstablishments(Array.isArray(data.establishments) ? data.establishments : []);
+      return true;
+    };
+
     const loadAuth = async () => {
       const token = localStorage.getItem("token");
       if (!token) {
-        setUser(null);
-        setEmployer(null);
-        setIsEmployer(false);
-        setEstablishments([]);
+        resetAuth();
         setInitialLoading(false);
         return;
       }
 
       try {
-        const { data } = await axios.get(`${apiBaseUrl}/auth/me`, {
-          headers: { Authorization: `Bearer ${token}` },
+        const { data } = await api.get("/account/context", {
+          params: { app_id: appId },
         });
         if (cancelled) return;
-        setUser(data.user ?? null);
-        setEmployer(data.employer ?? null);
-        setIsEmployer(!!data.is_employer);
-        setEstablishments(data.establishments ?? []);
+        applySession(data);
       } catch {
         localStorage.removeItem("token");
-        setUser(null);
-        setEmployer(null);
-        setIsEmployer(false);
-        setEstablishments([]);
+        if (!cancelled) resetAuth();
       } finally {
         if (!cancelled) setInitialLoading(false);
       }
     };
 
     loadAuth();
-    const onAuthChanged = () => loadAuth();
+
+    const onAuthChanged = (event) => {
+      if (cancelled) return;
+
+      if (event?.detail?.user) {
+        applySession(event.detail);
+        setInitialLoading(false);
+        return;
+      }
+
+      loadAuth();
+    };
+
     window.addEventListener("authChanged", onAuthChanged);
     return () => {
       cancelled = true;
@@ -142,7 +164,7 @@ function AppInner() {
           <Route path="/catalog/:slug" element={<CatalogPage />} />
           <Route path="/catalogo/:slug" element={<CatalogRedirect />} />
           <Route path="/establishment/view/:slug" element={<CatalogRedirect />} />
-          <Route path="/establishments" element={<EstablishmentHome />} />
+          <Route path="/establishments" element={<Navigate to="/" replace />} />
           <Route path="/item/view/:slug" element={<ItemViewPage />} />
           <Route path="/item/:slug" element={<ItemViewPage />} />
 
@@ -166,7 +188,7 @@ export default function App() {
   return (
     <LoadingProvider>
       <GoogleOAuthProvider
-        clientId={process.env.REACT_APP_GOOGLE_CLIENT_ID}
+        clientId={process.env.REACT_APP_GOOGLE_CLIENT_ID || ""}
         locale="pt-BR"
       >
         <AppInner />

@@ -1,14 +1,15 @@
 // src/pages/item/ItemUpdatePage.jsx
 import { useEffect, useState } from "react";
-import { Spinner, Alert, Container } from "react-bootstrap";
+import { Alert, Container } from "react-bootstrap";
 import { useParams, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
-import axios from "axios";
 
 import GlobalNav from "../../components/GlobalNav";
+import ProcessingIndicatorComponent from "../../components/ProcessingIndicatorComponent";
 import ItemUpdateForm from "../../components/item/ItemUpdateForm";
 import useItemUpdate from "../../hooks/useItemUpdate";
-import { apiBaseUrl } from "../../config";
+import api from "../../services/api";
+import { appId } from "../../config";
 
 export default function ItemUpdatePage() {
   const { id } = useParams();
@@ -22,50 +23,67 @@ export default function ItemUpdatePage() {
   const [item, setItem] = useState(null);
   const [loading, setLoading] = useState(true);
   const [apiError, setApiError] = useState(null);
-
   const [imagePreview, setImagePreview] = useState(null);
   const [imageFile, setImageFile] = useState(null);
   const [removeImage, setRemoveImage] = useState(false);
 
   useEffect(() => {
+    const controller = new AbortController();
+
     async function load() {
       try {
-        const token = localStorage.getItem("token");
-        const res = await axios.get(`${apiBaseUrl}/item/${id}`, {
-          headers: { Authorization: `Bearer ${token}` },
+        setLoading(true);
+        setApiError(null);
+
+        const { data: response } = await api.get(`/item/${encodeURIComponent(id)}`, {
+          params: { app_id: appId },
+          signal: controller.signal,
         });
 
-        const data = res.data?.item ?? res.data;
-        setItem(data);
+        const data = response?.item ?? response;
+        if (!data?.id) throw new Error("Item não encontrado.");
+        if (data.app_id != null && Number(data.app_id) !== Number(appId)) {
+          throw new Error("Este item não pertence à Nexus.");
+        }
 
+        setItem(data);
         reset({
           name: data.name ?? "",
           type: data.type ?? "",
           price: data.price ?? "",
           stock: data.stock ?? "",
-          status: !!data.status,
+          status: Number(data.status ?? 1),
           duration: data.duration ?? "",
           description: data.description ?? "",
-          is_featured: !!data.is_featured,
-          limited_by_user: !!data.limited_by_user,
+          category: data.category ?? "",
+          subcategory: data.subcategory ?? "",
+          brand: data.brand ?? "",
+          is_featured: Number(data.is_featured ?? 0),
         });
 
         const img = data.files?.find(
-          (f) => f.entity_name === "item" && f.type === "image"
+          (file) => file.entity_name === "item" && file.type === "image"
         );
-        if (img?.public_url) setImagePreview(img.public_url);
-      } catch {
-        setApiError("Erro ao carregar item.");
+        setImagePreview(img?.public_url || data.image_url || data.image || null);
+      } catch (error) {
+        if (error?.code === "ERR_CANCELED") return;
+        setApiError(
+          error?.response?.data?.message ||
+          error?.response?.data?.error ||
+          error?.message ||
+          "Erro ao carregar item."
+        );
       } finally {
-        setLoading(false);
+        if (!controller.signal.aborted) setLoading(false);
       }
     }
 
     load();
+    return () => controller.abort();
   }, [id, reset]);
 
-  const handleImageChange = (e) => {
-    const file = e.target.files?.[0];
+  const handleImageChange = (event) => {
+    const file = event.target.files?.[0];
     if (!file) return;
 
     setImageFile(file);
@@ -83,27 +101,29 @@ export default function ItemUpdatePage() {
   };
 
   const onSubmit = async (values) => {
-    const res = await updateItem(values, imageFile, removeImage);
-    if (res) navigate(-1);
+    const response = await updateItem(values, imageFile, removeImage);
+    if (response) navigate(-1);
   };
+
+  if (loading) {
+    return (
+      <ProcessingIndicatorComponent
+        messages={["Carregando item…", "Preparando a edição…"]}
+      />
+    );
+  }
 
   return (
     <>
       <GlobalNav />
 
-      {loading && (
-        <div className="d-flex justify-content-center my-5">
-          <Spinner />
-        </div>
-      )}
-
-      {!loading && apiError && (
+      {apiError && (
         <Container className="my-4">
           <Alert variant="danger">{apiError}</Alert>
         </Container>
       )}
 
-      {!loading && item && (
+      {!apiError && item && (
         <ItemUpdateForm
           register={register}
           handleSubmit={handleSubmit}
@@ -111,7 +131,7 @@ export default function ItemUpdatePage() {
           item={item}
           imagePreview={imagePreview}
           apiErrors={apiErrors}
-          saving={saving}
+          isSubmitting={saving}
           onSubmit={onSubmit}
           onImageChange={handleImageChange}
           onRemoveImage={handleRemoveImage}

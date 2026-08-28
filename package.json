@@ -7,6 +7,7 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
+    "test": "react-scripts test --watchAll=false --passWithNoTests",
     "predeploy": "npm run build",
     "deploy": "gh-pages -d build",
     "lint": "eslint 'src/**/*.{js,jsx}'"
@@ -29,7 +30,6 @@
     "express": "^4.19.2",
     "framer-motion": "^12.4.2",
     "html2canvas": "^1.4.1",
-    "jquery": "^3.7.1",
     "jspdf": "^3.0.1",
     "luxon": "^3.7.2",
     "moment": "^2.30.1",

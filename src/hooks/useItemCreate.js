@@ -1,9 +1,14 @@
 // src/hooks/useItemCreate.js
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import axios from "axios";
 import Swal from "sweetalert2";
-import { apiBaseUrl, appId } from "../config";
+import { appId } from "../config";
+import api from "../services/api";
+
+const getApiMessage = (error, fallback) =>
+  error?.response?.data?.message ||
+  error?.response?.data?.error ||
+  fallback;
 
 export default function useItemCreate(
   navigate,
@@ -12,153 +17,107 @@ export default function useItemCreate(
   establishmentFromState = null
 ) {
   const { slug } = useParams();
-
   const [loading, setLoading] = useState(true);
-  const [imagePreview, setImagePreview] = useState(null);
-  const [image, setImage] = useState(null);
   const [establishment, setEstablishment] = useState(null);
 
   useEffect(() => {
-    let active = true;
+    const controller = new AbortController();
 
     const setupFromEstablishment = (est) => {
+      if (!est?.id) throw new Error("Estabelecimento inválido.");
+      if (est.app_id != null && Number(est.app_id) !== Number(appId)) {
+        throw new Error("Este estabelecimento não pertence à Nexus.");
+      }
+
       setEstablishment(est);
       setValue("app_id", appId);
       setValue("entity_id", est.id);
       setValue("entity_name", "establishment");
-      setValue("status", true);
+      setValue("status", 1);
     };
 
-    (async () => {
-      if (establishmentFromState?.id) {
-        setupFromEstablishment(establishmentFromState);
-        setLoading(false);
-        return;
-      }
-
-      if (!slug) {
-        Swal.fire({
-          icon: "error",
-          title: "Erro",
-          text: "Estabelecimento não identificado.",
-        }).then(() => navigate(-1));
-        return;
-      }
-
+    const loadEstablishment = async () => {
       try {
-        const token = localStorage.getItem("token");
+        if (establishmentFromState?.id) {
+          setupFromEstablishment(establishmentFromState);
+          return;
+        }
 
-        const res = await axios.get(
-          `${apiBaseUrl}/establishment/view/${slug}`,
+        if (!slug) throw new Error("Estabelecimento não identificado.");
+
+        const { data } = await api.get(
+          `/establishment/view/${encodeURIComponent(slug)}`,
           {
-            headers: token ? { Authorization: `Bearer ${token}` } : {},
+            params: { app_id: appId },
+            signal: controller.signal,
           }
         );
 
-        if (!active) return;
-
-        const est = res.data?.establishment;
-
-        if (!est?.id) {
-          throw new Error("Estabelecimento inválido");
+        if (!controller.signal.aborted) {
+          setupFromEstablishment(data?.establishment);
         }
-
-        setupFromEstablishment(est);
-      } catch (err) {
-        Swal.fire({
+      } catch (error) {
+        if (error?.code === "ERR_CANCELED") return;
+        await Swal.fire({
           icon: "error",
-          title: "Erro",
-          text:
-            err?.response?.data?.message ||
-            err?.response?.data?.error ||
-            "Erro ao identificar o estabelecimento.",
-        }).then(() => navigate(-1));
+          title: "Não foi possível abrir o cadastro",
+          text: getApiMessage(error, error?.message || "Erro ao identificar o estabelecimento."),
+        });
+        navigate(-1);
       } finally {
-        if (active) setLoading(false);
+        if (!controller.signal.aborted) setLoading(false);
       }
-    })();
-
-    return () => {
-      active = false;
     };
+
+    loadEstablishment();
+    return () => controller.abort();
   }, [slug, navigate, setValue, establishmentFromState]);
 
-  useEffect(() => {
-    return () => {
-      if (imagePreview) URL.revokeObjectURL(imagePreview);
-    };
-  }, [imagePreview]);
-
-  function handleImageChange(e) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    setImage(file);
-    setImagePreview(URL.createObjectURL(file));
-  }
-
-  function handleRemoveImage() {
-    setImage(null);
-    setImagePreview(null);
-    setValue("image", null);
-  }
-
   async function submitCreate(data) {
+    if (!establishment?.id) return;
+
+    setLoading(true);
+
     try {
-      setLoading(true);
-
-      const token = localStorage.getItem("token");
       const formData = new FormData();
+      const payload = {
+        ...data,
+        app_id: appId,
+        entity_id: establishment.id,
+        entity_name: "establishment",
+      };
 
-      Object.entries(data).forEach(([key, value]) => {
+      Object.entries(payload).forEach(([key, value]) => {
         if (value !== undefined && value !== null && value !== "") {
           formData.append(key, value);
         }
       });
 
-      if (image) {
-        formData.append("image", image);
-      }
+      const { data: response } = await api.post("/item", formData);
 
-      const { data: response } = await axios.post(
-        `${apiBaseUrl}/item`,
-        formData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
-
-      Swal.fire({
+      await Swal.fire({
         icon: "success",
-        title: "Sucesso",
-        text: response.message,
-      }).then(() => {
-        reset();
-        if (establishment?.slug) {
-          navigate(`/establishment/item/${establishment.slug}`);
-        } else {
-          navigate(-1);
-        }
+        title: "Item criado",
+        text: response?.message || "O item foi adicionado ao catálogo.",
       });
-    } catch (err) {
-      if (err.response?.data?.errors) {
-        const errors = err.response.data.errors;
-        const firstKey = Object.keys(errors)[0];
-        Swal.fire({
-          icon: "error",
-          title: "Erro",
-          text: errors[firstKey][0],
-        });
+
+      reset();
+      if (establishment.slug) {
+        navigate(`/establishment/item/${establishment.slug}`);
       } else {
-        Swal.fire({
-          icon: "error",
-          title: "Erro",
-          text: err.response?.data?.error || "Erro ao criar item.",
-        });
+        navigate("/establishment/my");
       }
+    } catch (error) {
+      const validationErrors = error?.response?.data?.errors;
+      const firstValidationMessage = validationErrors
+        ? Object.values(validationErrors).flat().find(Boolean)
+        : null;
+
+      await Swal.fire({
+        icon: "error",
+        title: error?.response?.status === 422 ? "Revise os dados" : "Erro ao criar item",
+        text: firstValidationMessage || getApiMessage(error, "Não foi possível criar o item."),
+      });
     } finally {
       setLoading(false);
     }
@@ -167,9 +126,6 @@ export default function useItemCreate(
   return {
     loading,
     establishment,
-    imagePreview,
-    handleImageChange,
-    handleRemoveImage,
     submitCreate,
   };
 }

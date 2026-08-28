@@ -1,0 +1,44 @@
+name: Nexus Quality
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main, "audit/**"]
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: package.json
+
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Tests
+        run: npm test
+        env:
+          CI: true
+
+      - name: Production build
+        run: npm run build
+        env:
+          CI: true
+          REACT_APP_API_BASE_URL: https://api.petertecnet.com.br/api
+          REACT_APP_STORAGE_URL: https://api.petertecnet.com.br/storage
+          REACT_APP_PUBLIC_URL: https://nexus.petertecnet.com.br
+          REACT_APP_ID: 2
+          REACT_APP_GOOGLE_CLIENT_ID: test.apps.googleusercontent.com

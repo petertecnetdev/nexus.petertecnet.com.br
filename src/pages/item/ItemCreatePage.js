@@ -2,6 +2,7 @@ import React from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate, useLocation } from "react-router-dom";
 import GlobalNav from "../../components/GlobalNav";
+import ProcessingIndicatorComponent from "../../components/ProcessingIndicatorComponent";
 import EstablishmentHero from "../../components/establishment/EstablishmentHero";
 import ItemCreateForm from "../../components/item/ItemCreateForm";
 import useItemCreate from "../../hooks/useItemCreate";
@@ -18,18 +19,27 @@ export default function ItemCreatePage() {
     reset,
     watch,
     formState: { isSubmitting },
-  } = useForm();
+  } = useForm({
+    defaultValues: {
+      status: 1,
+      availability: "available",
+    },
+  });
 
   const {
     loading,
     establishment,
-    imagePreview,
-    handleImageChange,
-    handleRemoveImage,
     submitCreate,
   } = useItemCreate(navigate, reset, setValue, establishmentFromState);
 
-  if (loading) return <GlobalNav />;
+  if (loading) {
+    return (
+      <ProcessingIndicatorComponent
+        messages={["Preparando o cadastro…", "Carregando sua empresa…"]}
+      />
+    );
+  }
+
   const est = establishmentFromState || establishment;
 
   return (
@@ -42,7 +52,7 @@ export default function ItemCreatePage() {
           background={est.background}
           title={est.fantasy || est.name}
           subtitle="Adicionar item ao catálogo"
-          description="Cadastre produtos ou serviços com nome, preço, foto, categoria, marca e uma descrição completa para apresentar ao cliente."
+          description="Cadastre o item com as informações que o cliente realmente precisa para entendê-lo e consultá-lo no catálogo."
           city={est.city}
           uf={est.uf}
           showBack
@@ -54,10 +64,7 @@ export default function ItemCreatePage() {
           register={register}
           handleSubmit={handleSubmit}
           watch={watch}
-          isSubmitting={isSubmitting}
-          imagePreview={imagePreview}
-          handleImageChange={handleImageChange}
-          handleRemoveImage={handleRemoveImage}
+          isSubmitting={isSubmitting || loading}
           onSubmit={submitCreate}
         />
       </div>

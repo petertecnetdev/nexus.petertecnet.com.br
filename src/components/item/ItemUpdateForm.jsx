@@ -11,9 +11,7 @@ export default function ItemUpdateForm({
   isSubmitting,
   item,
   imagePreview,
-  backgroundPreview,
   onImageChange,
-  onBackgroundChange,
   onRemoveImage,
   onSubmit,
 }) {
@@ -25,21 +23,21 @@ export default function ItemUpdateForm({
     <>
       <GlobalHeroEditorPreview
         entity="item"
-        title={item.name ?? ""}
-        subtitle="Visualização da edição"
-        logoPreview={imagePreview ?? null}
-        backgroundPreview={backgroundPreview ?? null}
-        data={item}
+        title={watch("name") || item.name || "Item"}
+        subtitle="Prévia da edição"
+        logoPreview={imagePreview || null}
+        data={{ ...item, name: watch("name") || item.name }}
       />
 
-      <div className="d-flex justify-content-center gap-3 my-3">
+      <div className="d-flex justify-content-center gap-3 my-3 flex-wrap">
         <Button
           variant="secondary"
           className="action-button"
           type="button"
+          disabled={isSubmitting}
           onClick={() => document.getElementById("itemImageInput")?.click()}
         >
-          Alterar Imagem
+          Alterar imagem
         </Button>
 
         {imagePreview && (
@@ -47,9 +45,10 @@ export default function ItemUpdateForm({
             variant="secondary"
             className="action-button"
             type="button"
+            disabled={isSubmitting}
             onClick={onRemoveImage}
           >
-            Remover Imagem
+            Remover imagem
           </Button>
         )}
       </div>
@@ -59,121 +58,106 @@ export default function ItemUpdateForm({
         type="file"
         accept="image/*"
         onChange={onImageChange}
-        style={{ display: "none" }}
+        disabled={isSubmitting}
+        className="visually-hidden"
       />
 
-      <div className="d-flex justify-content-center gap-3 mt-2">
-        <Button
-          variant="secondary"
-          className="action-button"
-          type="button"
-          onClick={() => document.getElementById("itemBgInput")?.click()}
-        >
-          Alterar Background
-        </Button>
-      </div>
-
-      <Form.Control
-        id="itemBgInput"
-        type="file"
-        accept="image/*"
-        onChange={onBackgroundChange}
-        style={{ display: "none" }}
-      />
-
-      <Form onSubmit={handleSubmit(onSubmit)}>
+      <Form onSubmit={handleSubmit(onSubmit)} noValidate>
         <Row className="gy-3 mt-3">
-          <Col xs={12} md={6} lg={4}>
+          <Col xs={12} md={8}>
             <div className="form-group">
-              <label>Nome*</label>
-              <input type="text" {...register("name", { required: true })} />
+              <label htmlFor="item-update-name">Nome*</label>
+              <input
+                id="item-update-name"
+                type="text"
+                {...register("name", { required: true })}
+                required
+              />
             </div>
           </Col>
 
-          <Col xs={12} md={6} lg={3}>
+          <Col xs={12} md={4}>
             <div className="form-group">
-              <label>Tipo*</label>
-              <select {...register("type", { required: true })}>
-                <option value="service">Serviço</option>
+              <label htmlFor="item-update-type">Tipo</label>
+              <select id="item-update-type" {...register("type")}>
+                <option value="">Item genérico</option>
                 <option value="product">Produto</option>
+                <option value="service">Serviço</option>
               </select>
             </div>
           </Col>
 
+          <Col xs={12} md={4}>
+            <div className="form-group">
+              <label htmlFor="item-update-price">Preço</label>
+              <input
+                id="item-update-price"
+                type="text"
+                inputMode="decimal"
+                {...register("price")}
+              />
+            </div>
+          </Col>
+
           {type === "service" && (
-            <Col xs={12} md={4} lg={2}>
+            <Col xs={12} md={4}>
               <div className="form-group">
-                <label>Duração (min)*</label>
-                <input type="number" min="1" {...register("duration", { required: true })} />
+                <label htmlFor="item-update-duration">Duração em minutos</label>
+                <input id="item-update-duration" type="number" min="1" {...register("duration")} />
               </div>
             </Col>
           )}
 
-          <Col xs={12} md={6} lg={3}>
-            <div className="form-group">
-              <label>Preço*</label>
-              <input type="text" inputMode="decimal" {...register("price", { required: true })} />
-            </div>
-          </Col>
+          {type === "product" && (
+            <Col xs={12} md={4}>
+              <div className="form-group">
+                <label htmlFor="item-update-stock">Estoque</label>
+                <input id="item-update-stock" type="number" min="0" {...register("stock")} />
+              </div>
+            </Col>
+          )}
 
-          <Col xs={12} md={6} lg={2}>
+          <Col xs={12} md={4}>
             <div className="form-group">
-              <label>Estoque</label>
-              <input type="number" min="0" {...register("stock")} />
-            </div>
-          </Col>
-
-          <Col xs={12} md={6} lg={3}>
-            <div className="form-group">
-              <label>Status</label>
-              <select {...register("status")}>
+              <label htmlFor="item-update-status">Status</label>
+              <select id="item-update-status" {...register("status")}>
                 <option value="1">Ativo</option>
                 <option value="0">Inativo</option>
               </select>
             </div>
           </Col>
 
-          <Col xs={12} md={6} lg={3}>
+          <Col xs={12} md={6}>
             <div className="form-group">
-              <label>Limitar por usuário</label>
-              <select {...register("limited_by_user")}>
-                <option value="0">Não</option>
-                <option value="1">Sim</option>
-              </select>
+              <label htmlFor="item-update-category">Categoria</label>
+              <input id="item-update-category" type="text" {...register("category")} />
             </div>
           </Col>
 
-          <Col xs={12} md={6} lg={3}>
+          <Col xs={12} md={6}>
             <div className="form-group">
-              <label>Categoria</label>
-              <input type="text" {...register("category")} />
+              <label htmlFor="item-update-subcategory">Subcategoria</label>
+              <input id="item-update-subcategory" type="text" {...register("subcategory")} />
             </div>
           </Col>
 
-          <Col xs={12} md={6} lg={3}>
+          <Col xs={12} md={6}>
             <div className="form-group">
-              <label>Subcategoria</label>
-              <input type="text" {...register("subcategory")} />
-            </div>
-          </Col>
-
-          <Col xs={12} md={6} lg={4}>
-            <div className="form-group">
-              <label>Marca</label>
-              <input type="text" {...register("brand")} />
+              <label htmlFor="item-update-brand">Marca ou referência</label>
+              <input id="item-update-brand" type="text" {...register("brand")} />
             </div>
           </Col>
 
           <Col xs={12}>
             <div className="form-group">
-              <label>Descrição</label>
-              <textarea rows={3} {...register("description")} />
+              <label htmlFor="item-update-description">Descrição</label>
+              <textarea id="item-update-description" rows={5} {...register("description")} />
             </div>
           </Col>
 
           <Col xs={12} className="text-end">
             <button type="submit" className="submit-btn" disabled={isSubmitting}>
-              {isSubmitting ? "Salvando..." : "Salvar Alterações"}
+              {isSubmitting ? "Salvando…" : "Salvar alterações"}
             </button>
           </Col>
         </Row>

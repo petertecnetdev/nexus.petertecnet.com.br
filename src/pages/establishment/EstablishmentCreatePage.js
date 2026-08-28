@@ -12,7 +12,7 @@ export default function EstablishmentCreatePage() {
   const { loading, errors, createEstablishment } = useEstablishmentCreate({
     appId,
     onSuccess: (created) => {
-      if (created?.slug) navigate(`/catalog/${created.slug}`);
+      if (created?.slug) navigate(`/establishment/item/${created.slug}`);
       else navigate("/establishment/my");
     },
   });
@@ -22,14 +22,15 @@ export default function EstablishmentCreatePage() {
       <GlobalNav />
       <main className="establishment-create-page">
         <div className="establishment-page-heading">
-          <span>Empresa e catálogo</span>
+          <span>Primeiro passo</span>
           <h1>Cadastrar empresa</h1>
-          <p>Cadastre os dados da empresa, escolha a logo e a capa que serão exibidas no catálogo.</p>
+          <p>
+            Informe apenas o essencial agora. Depois você poderá completar os dados,
+            adicionar itens e compartilhar o catálogo.
+          </p>
         </div>
 
         <EstablishmentCreateForm
-          category=""
-          type=""
           loading={loading}
           errors={errors}
           onSubmit={createEstablishment}
