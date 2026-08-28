@@ -5,49 +5,30 @@ import { Row, Col, Card, Button } from "react-bootstrap";
 import { Link } from "react-router-dom";
 
 export default function EstablishmentActionsBar({ establishment }) {
+  const catalogUrl = `/catalogo/${establishment.slug}`;
+
   return (
     <Card bg="dark" text="light" className="m-2">
       <Card.Body className="p-2">
         <Row className="gx-2 gy-2 text-center">
-        
-          <Col md={3}>
-            <Button
-              as={Link}
-              to={`/establishment/orders/${establishment.slug}`}
-              size="sm"
-              className="dashboard-establishment-btn bg-black w-100"
-            >
-              📑 Pedidos
+          <Col xs={12} md={3}>
+            <Button as={Link} to={catalogUrl} size="sm" className="dashboard-establishment-btn bg-black w-100">
+              Ver catálogo
             </Button>
           </Col>
-          <Col md={3}>
-            <Button
-              as={Link}
-              to={`/establishment/employers/${establishment.slug}`}
-              size="sm"
-              className="dashboard-establishment-btn bg-black w-100"
-            >
-              👥 Colaboradores
+          <Col xs={12} md={3}>
+            <Button as={Link} to={`/establishment/item/${establishment.slug}`} size="sm" className="dashboard-establishment-btn bg-black w-100">
+              Gerenciar itens
             </Button>
           </Col>
-          <Col md={3}>
-            <Button
-              as={Link}
-               to={`/establishment/item/${establishment.slug}`}
-              size="sm"
-              className="dashboard-establishment-btn bg-black w-100"
-            >
-              Itens
+          <Col xs={12} md={3}>
+            <Button as={Link} to={`/catalogo/${establishment.slug}#compartilhar`} size="sm" className="dashboard-establishment-btn bg-black w-100">
+              QR / Compartilhar
             </Button>
           </Col>
-          <Col md={2}>
-            <Button
-              as={Link}
-              to={`/establishment/update/${establishment.id}`}
-              size="sm"
-              className="dashboard-establishment-btn bg-black w-100"
-            >
-              ✏️ Editar
+          <Col xs={12} md={3}>
+            <Button as={Link} to={`/establishment/update/${establishment.id}`} size="sm" className="dashboard-establishment-btn bg-black w-100">
+              Editar empresa
             </Button>
           </Col>
         </Row>
