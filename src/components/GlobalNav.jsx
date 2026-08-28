@@ -43,8 +43,7 @@ export default function GlobalNav({ loadingMenu, handleLogout }) {
   });
 
   const avatarSrc = useMemo(() => {
-    const rawAvatar =
-      user?.images?.avatar || user?.images?.profile || user?.avatar || null;
+    const rawAvatar = user?.images?.avatar || user?.images?.profile || user?.avatar || null;
     return imageUrl(rawAvatar) || placeholderSvg || "/images/user.png";
   }, [user, imageUrl, placeholderSvg]);
 
@@ -55,7 +54,7 @@ export default function GlobalNav({ loadingMenu, handleLogout }) {
     try {
       if (handleLogout) await handleLogout();
     } catch {
-      // Limpa a sessão local mesmo se a API de logout falhar.
+      // A sessão local ainda é encerrada caso o logout remoto falhe.
     } finally {
       localStorage.clear();
       closeUserMenu();
@@ -68,9 +67,7 @@ export default function GlobalNav({ loadingMenu, handleLogout }) {
 
   useEffect(() => {
     const onMouseDown = (event) => {
-      if (userMenuRef.current && !userMenuRef.current.contains(event.target)) {
-        closeUserMenu();
-      }
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target)) closeUserMenu();
     };
     const onKeyDown = (event) => {
       if (event.key === "Escape") closeUserMenu();
@@ -84,7 +81,7 @@ export default function GlobalNav({ loadingMenu, handleLogout }) {
   }, []);
 
   if (processing) {
-    return <ProcessingIndicatorComponent gifSrc="/images/logo.gif" minDuration={0} />;
+    return <ProcessingIndicatorComponent messages={["Encerrando sua sessão…", "Voltando para a Nexus…"]} />;
   }
 
   return (
