@@ -96,7 +96,11 @@ function AppInner() {
   }, []);
 
   if (initialLoading) {
-    return <ProcessingIndicatorComponent interval={1000} gifSrc="/images/logo.gif" />;
+    return (
+      <ProcessingIndicatorComponent
+        messages={["Conectando à Nexus…", "Preparando sua experiência…"]}
+      />
+    );
   }
 
   const protectedRoute = (element) =>
@@ -119,7 +123,9 @@ function AppInner() {
   return (
     <AuthContext.Provider value={{ user, setUser, employer, isEmployer, establishments }}>
       {isLoading && (
-        <ProcessingIndicatorComponent interval={1000} gifSrc="/images/logo.gif" />
+        <ProcessingIndicatorComponent
+          messages={["Salvando suas alterações…", "Atualizando a Nexus…"]}
+        />
       )}
 
       <Router>
