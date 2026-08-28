@@ -1,39 +1,35 @@
 // src/components/establishment/EstablishmentActionsBar.jsx
 import React from "react";
 import PropTypes from "prop-types";
-import { Row, Col, Card, Button } from "react-bootstrap";
 import { Link } from "react-router-dom";
 
-export default function EstablishmentActionsBar({ establishment }) {
+export default function EstablishmentActionsBar({ establishment, onDelete, deleting }) {
   const catalogUrl = `/catalog/${establishment.slug}`;
 
   return (
-    <Card bg="dark" text="light" className="m-2">
-      <Card.Body className="p-2">
-        <Row className="gx-2 gy-2 text-center">
-          <Col xs={12} md={3}>
-            <Button as={Link} to={catalogUrl} size="sm" className="dashboard-establishment-btn bg-black w-100">
-              Ver catálogo
-            </Button>
-          </Col>
-          <Col xs={12} md={3}>
-            <Button as={Link} to={`/establishment/item/${establishment.slug}`} size="sm" className="dashboard-establishment-btn bg-black w-100">
-              Gerenciar itens
-            </Button>
-          </Col>
-          <Col xs={12} md={3}>
-            <Button as={Link} to={`${catalogUrl}#compartilhar`} size="sm" className="dashboard-establishment-btn bg-black w-100">
-              QR / Compartilhar
-            </Button>
-          </Col>
-          <Col xs={12} md={3}>
-            <Button as={Link} to={`/establishment/update/${establishment.id}`} size="sm" className="dashboard-establishment-btn bg-black w-100">
-              Editar empresa
-            </Button>
-          </Col>
-        </Row>
-      </Card.Body>
-    </Card>
+    <div className="company-card__actions" aria-label={`Ações de ${establishment.fantasy || establishment.name}`}>
+      <Link to={`/establishment/item/${establishment.slug}`} className="company-action company-action--primary">
+        <i className="fas fa-boxes-stacked" aria-hidden="true" />
+        <span>Itens</span>
+      </Link>
+      <Link to={`/establishment/update/${establishment.id}`} className="company-action">
+        <i className="fas fa-pen" aria-hidden="true" />
+        <span>Editar</span>
+      </Link>
+      <Link to={`${catalogUrl}#compartilhar`} className="company-action">
+        <i className="fas fa-qrcode" aria-hidden="true" />
+        <span>QR</span>
+      </Link>
+      <button
+        type="button"
+        className="company-action company-action--danger"
+        onClick={onDelete}
+        disabled={deleting}
+      >
+        <i className={deleting ? "fas fa-circle-notch fa-spin" : "fas fa-trash"} aria-hidden="true" />
+        <span>{deleting ? "Excluindo" : "Excluir"}</span>
+      </button>
+    </div>
   );
 }
 
@@ -41,5 +37,13 @@ EstablishmentActionsBar.propTypes = {
   establishment: PropTypes.shape({
     id: PropTypes.number.isRequired,
     slug: PropTypes.string.isRequired,
+    name: PropTypes.string,
+    fantasy: PropTypes.string,
   }).isRequired,
+  onDelete: PropTypes.func.isRequired,
+  deleting: PropTypes.bool,
+};
+
+EstablishmentActionsBar.defaultProps = {
+  deleting: false,
 };
