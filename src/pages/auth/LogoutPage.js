@@ -1,5 +1,5 @@
 // src/pages/auth/LogoutPage.jsx
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 
 export default function LogoutPage() {
   useEffect(() => {
