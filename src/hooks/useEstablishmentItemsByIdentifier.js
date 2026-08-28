@@ -10,6 +10,9 @@ const getApiMessage = (error, fallback) =>
   error?.response?.data?.message ||
   fallback;
 
+const normalizeEntityName = (value) =>
+  String(value || "").trim().toLowerCase();
+
 const normalizeEstablishment = (establishment) => {
   if (!establishment) return null;
 
@@ -33,6 +36,7 @@ const normalizeEstablishment = (establishment) => {
 
 const normalizeItem = (item, establishment) => ({
   ...item,
+  entity_name: normalizeEntityName(item?.entity_name),
   establishment: item.establishment || establishment || null,
   image:
     item.image ||
@@ -118,11 +122,13 @@ export default function useEstablishmentItemsByIdentifier(identifier) {
         );
 
         const allAppItems = await fetchAllItemsByApp();
-        resolvedItems = allAppItems.filter(
-          (item) =>
+        resolvedItems = allAppItems.filter((item) => {
+          const entityName = normalizeEntityName(item?.entity_name);
+          return (
             Number(item.entity_id) === Number(resolvedEstablishment.id) &&
-            (!item.entity_name || item.entity_name === "establishment")
-        );
+            (!entityName || entityName === "establishment")
+          );
+        });
       }
 
       setItems(
