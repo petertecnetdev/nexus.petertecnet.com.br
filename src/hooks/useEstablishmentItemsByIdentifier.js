@@ -13,6 +13,35 @@ const getApiMessage = (error, fallback) =>
 const normalizeEntityName = (value) =>
   String(value || "").trim().toLowerCase();
 
+const firstFileUrl = (files) => {
+  if (!Array.isArray(files) || files.length === 0) return null;
+
+  const preferred =
+    files.find((file) => file?.is_primary) ||
+    files.find((file) => file?.type === "image") ||
+    files.find((file) => file?.type === "cover") ||
+    files.find((file) => file?.type === "photo") ||
+    files[0];
+
+  return (
+    preferred?.public_url ||
+    preferred?.url ||
+    preferred?.path ||
+    null
+  );
+};
+
+const resolveItemImage = (item) =>
+  item?.image_url ||
+  item?.image ||
+  item?.avatar ||
+  item?.images?.cover ||
+  item?.images?.main ||
+  item?.images?.avatar ||
+  (Array.isArray(item?.images?.gallery) ? item.images.gallery[0] : null) ||
+  firstFileUrl(item?.files) ||
+  null;
+
 const normalizeEstablishment = (establishment) => {
   if (!establishment) return null;
 
@@ -38,11 +67,7 @@ const normalizeItem = (item, establishment) => ({
   ...item,
   entity_name: normalizeEntityName(item?.entity_name),
   establishment: item.establishment || establishment || null,
-  image:
-    item.image ||
-    item.image_url ||
-    item.files?.find?.((file) => file.type === "image")?.public_url ||
-    null,
+  image: resolveItemImage(item),
 });
 
 async function fetchAllItemsByApp() {
