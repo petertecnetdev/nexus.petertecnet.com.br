@@ -1,5 +1,5 @@
 // src/pages/catalog/CatalogPage.jsx
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Badge, Col, Container, Form, Row } from "react-bootstrap";
 import { useNavigate, useParams } from "react-router-dom";
 import { FaLink, FaWhatsapp } from "react-icons/fa";
@@ -18,6 +18,20 @@ const fmtBRL = (value) =>
 
 function normalizeText(value) {
   return String(value || "").trim().toLowerCase();
+}
+
+function setMeta(name, content, property = false) {
+  if (!content) return;
+  const selector = property ? `meta[property="${name}"]` : `meta[name="${name}"]`;
+  let element = document.head.querySelector(selector);
+
+  if (!element) {
+    element = document.createElement("meta");
+    element.setAttribute(property ? "property" : "name", name);
+    document.head.appendChild(element);
+  }
+
+  element.setAttribute("content", content);
 }
 
 export default function CatalogPage() {
@@ -40,7 +54,7 @@ export default function CatalogPage() {
       .filter(Boolean)
       .map((value) => String(value).trim())
       .filter(Boolean);
-    return [...new Set(values)].sort((a, b) => a.localeCompare(b));
+    return [...new Set(values)].sort((a, b) => a.localeCompare(b, "pt-BR"));
   }, [activeItems]);
 
   const filteredItems = useMemo(() => {
@@ -57,6 +71,42 @@ export default function CatalogPage() {
 
   const catalogUrl = `${linkApp}/catalog/${encodeURIComponent(slug || "")}`;
   const qrImageUrl = `https://quickchart.io/qr?size=320&text=${encodeURIComponent(catalogUrl)}`;
+  const title = establishment?.fantasy || establishment?.name || "Catálogo Nexus";
+  const logo = establishment?.images?.logo || establishment?.logo;
+  const background = establishment?.images?.background || establishment?.background;
+
+  useEffect(() => {
+    if (!establishment) return undefined;
+
+    const previousTitle = document.title;
+    const description =
+      establishment.description ||
+      `Confira o catálogo online de ${title} na Nexus.`;
+
+    document.title = `${title} — Catálogo Nexus`;
+    setMeta("description", description);
+    setMeta("og:title", `${title} — Catálogo Nexus`, true);
+    setMeta("og:description", description, true);
+    setMeta("og:type", "website", true);
+    setMeta("og:url", catalogUrl, true);
+    if (logo) setMeta("og:image", logo, true);
+    setMeta("twitter:card", logo ? "summary_large_image" : "summary");
+    setMeta("twitter:title", `${title} — Catálogo Nexus`);
+    setMeta("twitter:description", description);
+    if (logo) setMeta("twitter:image", logo);
+
+    let canonical = document.head.querySelector('link[rel="canonical"]');
+    if (!canonical) {
+      canonical = document.createElement("link");
+      canonical.setAttribute("rel", "canonical");
+      document.head.appendChild(canonical);
+    }
+    canonical.setAttribute("href", catalogUrl);
+
+    return () => {
+      document.title = previousTitle;
+    };
+  }, [catalogUrl, establishment, logo, title]);
 
   const copyCatalogUrl = async () => {
     try {
@@ -70,7 +120,7 @@ export default function CatalogPage() {
     if (navigator.share) {
       try {
         await navigator.share({
-          title: establishment?.fantasy || establishment?.name || "Catálogo Nexus",
+          title,
           text: "Confira nosso catálogo online na Nexus.",
           url: catalogUrl,
         });
@@ -85,7 +135,7 @@ export default function CatalogPage() {
   if (loading) {
     return (
       <ProcessingIndicatorComponent
-        messages={["Carregando catálogo…", "Organizando produtos e serviços…"]}
+        messages={["Carregando catálogo…", "Organizando os itens…"]}
       />
     );
   }
@@ -108,10 +158,6 @@ export default function CatalogPage() {
     );
   }
 
-  const title = establishment.fantasy || establishment.name;
-  const logo = establishment?.images?.logo || establishment.logo;
-  const background = establishment?.images?.background || establishment.background;
-
   return (
     <div className="catalog-page">
       <GlobalNav />
@@ -124,7 +170,7 @@ export default function CatalogPage() {
       >
         <Container>
           <div className="catalog-hero__content">
-            {logo && <img src={logo} alt={title} className="catalog-hero__logo" />}
+            {logo && <img src={logo} alt={`Logo de ${title}`} className="catalog-hero__logo" loading="eager" />}
             <div>
               <Badge bg="info" text="dark" className="mb-2">Catálogo online</Badge>
               <h1>{title}</h1>
@@ -141,17 +187,22 @@ export default function CatalogPage() {
         <section className="catalog-toolbar" aria-label="Filtros do catálogo">
           <Form.Control
             type="search"
+            aria-label="Buscar itens no catálogo"
             placeholder="Buscar por nome, descrição, categoria ou marca"
             value={query}
             onChange={(event) => setQuery(event.target.value)}
           />
-          <Form.Select value={category} onChange={(event) => setCategory(event.target.value)}>
+          <Form.Select
+            aria-label="Filtrar itens por categoria"
+            value={category}
+            onChange={(event) => setCategory(event.target.value)}
+          >
             <option value="all">Todas as categorias</option>
             {categories.map((value) => (
               <option key={value} value={value}>{value}</option>
             ))}
           </Form.Select>
-          <span className="catalog-toolbar__count">
+          <span className="catalog-toolbar__count" aria-live="polite">
             {filteredItems.length} {filteredItems.length === 1 ? "item" : "itens"}
           </span>
         </section>
@@ -200,7 +251,7 @@ export default function CatalogPage() {
           </div>
 
           <div className="catalog-share__qr">
-            <img src={qrImageUrl} alt={`QR Code do catálogo ${title}`} />
+            <img src={qrImageUrl} alt={`QR Code do catálogo ${title}`} loading="lazy" />
             <a href={qrImageUrl} target="_blank" rel="noreferrer">Abrir QR Code</a>
           </div>
         </section>
