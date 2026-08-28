@@ -8,182 +8,149 @@ export default function EstablishmentCreateFields({
   segments,
   segmentOptions,
   handleSegmentsChange,
+  handleCnpjChange,
+  handleCepChange,
+  cnpjLoading = false,
+  cepLoading = false,
+  cnpjStatus = "",
   isSubmitting,
   errors = {},
 }) {
-  const fieldError = (name) =>
-    errors?.[name] ? errors[name][0] : null;
+  const fieldError = (name) => errors?.[name]?.[0] || errors?.[name]?.message || null;
 
   return (
     <>
-      {/* ================= DADOS DO ESTABELECIMENTO ================= */}
       <section className="estab-form-section">
-        <h4 className="estab-form-title">Dados do Estabelecimento</h4>
+        <h4 className="estab-form-title">Dados da Empresa</h4>
 
         <div className="estab-form-grid">
           <div className="form-group span-2">
             <label>Nome*</label>
-            <input {...register("name", { required: true })} />
-            {fieldError("name") && (
-              <small className="text-danger">{fieldError("name")}</small>
-            )}
+            <input {...register("name", { required: true })} disabled={isSubmitting} />
+            {fieldError("name") && <small className="text-danger">{fieldError("name")}</small>}
           </div>
 
           <div className="form-group span-2">
             <label>Nome Fantasia</label>
-            <input {...register("fantasy")} />
-            {fieldError("fantasy") && (
-              <small className="text-danger">{fieldError("fantasy")}</small>
-            )}
+            <input {...register("fantasy")} disabled={isSubmitting} />
+            {fieldError("fantasy") && <small className="text-danger">{fieldError("fantasy")}</small>}
           </div>
 
-          <div className="form-group">
+          <div className="form-group span-2">
             <label>CNPJ</label>
-            <input {...register("cnpj")} />
-            {fieldError("cnpj") && (
-              <small className="text-danger">{fieldError("cnpj")}</small>
-            )}
+            <input
+              {...register("cnpj")}
+              inputMode="numeric"
+              maxLength={18}
+              placeholder="00.000.000/0000-00"
+              onChange={handleCnpjChange}
+              disabled={isSubmitting || cnpjLoading}
+            />
+            {cnpjLoading && <small className="text-info">Consultando CNPJ e preenchendo os dados...</small>}
+            {!cnpjLoading && cnpjStatus && <small className="text-success">{cnpjStatus}</small>}
+            {fieldError("cnpj") && <small className="text-danger">{fieldError("cnpj")}</small>}
           </div>
 
-          <div className="form-group">
+          <div className="form-group span-2">
             <label>Telefone</label>
-            <input {...register("phone")} />
-            {fieldError("phone") && (
-              <small className="text-danger">{fieldError("phone")}</small>
-            )}
+            <input {...register("phone")} disabled={isSubmitting} />
+            {fieldError("phone") && <small className="text-danger">{fieldError("phone")}</small>}
           </div>
 
           <div className="form-group span-2">
             <label>Email</label>
-            <input type="email" {...register("email")} />
-            {fieldError("email") && (
-              <small className="text-danger">{fieldError("email")}</small>
-            )}
+            <input type="email" {...register("email")} disabled={isSubmitting} />
+            {fieldError("email") && <small className="text-danger">{fieldError("email")}</small>}
           </div>
 
           <div className="form-group span-4">
             <label>Descrição</label>
-            <textarea {...register("description")} />
-            {fieldError("description") && (
-              <small className="text-danger">
-                {fieldError("description")}
-              </small>
-            )}
+            <textarea {...register("description")} disabled={isSubmitting} />
+            {fieldError("description") && <small className="text-danger">{fieldError("description")}</small>}
           </div>
 
           <div className="form-group span-4">
             <label>Informações adicionais</label>
-            <textarea {...register("additional_info")} />
-            {fieldError("additional_info") && (
-              <small className="text-danger">
-                {fieldError("additional_info")}
-              </small>
-            )}
+            <textarea {...register("additional_info")} disabled={isSubmitting} />
+            {fieldError("additional_info") && <small className="text-danger">{fieldError("additional_info")}</small>}
           </div>
         </div>
       </section>
 
-      {/* ================= ENDEREÇO ================= */}
       <section className="estab-form-section">
         <h4 className="estab-form-title">Endereço</h4>
 
         <div className="estab-form-grid">
           <div className="form-group span-3">
             <label>Endereço</label>
-            <input {...register("address")} />
-            {fieldError("address") && (
-              <small className="text-danger">{fieldError("address")}</small>
-            )}
+            <input {...register("address")} disabled={isSubmitting} />
+            {fieldError("address") && <small className="text-danger">{fieldError("address")}</small>}
           </div>
 
           <div className="form-group">
             <label>Cidade</label>
-            <input {...register("city")} />
-            {fieldError("city") && (
-              <small className="text-danger">{fieldError("city")}</small>
-            )}
+            <input {...register("city")} disabled={isSubmitting} />
+            {fieldError("city") && <small className="text-danger">{fieldError("city")}</small>}
           </div>
 
           <div className="form-group">
             <label>UF</label>
-            <input
-              {...register("uf")}
-              maxLength={2}
-              placeholder="Ex: GO"
-            />
-            {fieldError("uf") && (
-              <small className="text-danger">{fieldError("uf")}</small>
-            )}
+            <input {...register("uf")} maxLength={2} placeholder="Ex: GO" disabled={isSubmitting} />
+            {fieldError("uf") && <small className="text-danger">{fieldError("uf")}</small>}
           </div>
 
-          <div className="form-group">
+          <div className="form-group span-2">
             <label>CEP</label>
-            <input {...register("cep")} />
-            {fieldError("cep") && (
-              <small className="text-danger">{fieldError("cep")}</small>
-            )}
+            <input
+              {...register("cep")}
+              inputMode="numeric"
+              maxLength={9}
+              placeholder="00000-000"
+              onChange={handleCepChange}
+              disabled={isSubmitting || cepLoading}
+            />
+            {cepLoading && <small className="text-info">Consultando CEP...</small>}
+            {fieldError("cep") && <small className="text-danger">{fieldError("cep")}</small>}
           </div>
         </div>
       </section>
 
-      {/* ================= REDES SOCIAIS ================= */}
       <section className="estab-form-section">
         <h4 className="estab-form-title">Redes Sociais</h4>
 
         <div className="estab-form-grid">
           <div className="form-group">
             <label>Website</label>
-            <input {...register("website_url")} />
-            {fieldError("website_url") && (
-              <small className="text-danger">
-                {fieldError("website_url")}
-              </small>
-            )}
+            <input {...register("website_url")} disabled={isSubmitting} />
+            {fieldError("website_url") && <small className="text-danger">{fieldError("website_url")}</small>}
           </div>
 
           <div className="form-group">
             <label>Instagram</label>
-            <input {...register("instagram_url")} />
-            {fieldError("instagram_url") && (
-              <small className="text-danger">
-                {fieldError("instagram_url")}
-              </small>
-            )}
+            <input {...register("instagram_url")} disabled={isSubmitting} />
+            {fieldError("instagram_url") && <small className="text-danger">{fieldError("instagram_url")}</small>}
           </div>
 
           <div className="form-group">
             <label>Facebook</label>
-            <input {...register("facebook_url")} />
-            {fieldError("facebook_url") && (
-              <small className="text-danger">
-                {fieldError("facebook_url")}
-              </small>
-            )}
+            <input {...register("facebook_url")} disabled={isSubmitting} />
+            {fieldError("facebook_url") && <small className="text-danger">{fieldError("facebook_url")}</small>}
           </div>
 
           <div className="form-group">
             <label>Twitter</label>
-            <input {...register("twitter_url")} />
-            {fieldError("twitter_url") && (
-              <small className="text-danger">
-                {fieldError("twitter_url")}
-              </small>
-            )}
+            <input {...register("twitter_url")} disabled={isSubmitting} />
+            {fieldError("twitter_url") && <small className="text-danger">{fieldError("twitter_url")}</small>}
           </div>
 
           <div className="form-group">
             <label>YouTube</label>
-            <input {...register("youtube_url")} />
-            {fieldError("youtube_url") && (
-              <small className="text-danger">
-                {fieldError("youtube_url")}
-              </small>
-            )}
+            <input {...register("youtube_url")} disabled={isSubmitting} />
+            {fieldError("youtube_url") && <small className="text-danger">{fieldError("youtube_url")}</small>}
           </div>
         </div>
       </section>
 
-      {/* ================= SEGMENTOS ================= */}
       <section className="estab-form-section">
         <h4 className="estab-form-title">Segmentos Atendidos</h4>
 
@@ -194,9 +161,7 @@ export default function EstablishmentCreateFields({
         />
 
         {fieldError("segments") && (
-          <small className="text-danger d-block mt-2">
-            {fieldError("segments")}
-          </small>
+          <small className="text-danger d-block mt-2">{fieldError("segments")}</small>
         )}
       </section>
     </>

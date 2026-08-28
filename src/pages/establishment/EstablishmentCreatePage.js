@@ -14,9 +14,9 @@ export default function EstablishmentCreatePage() {
     appId,
     onSuccess: (created) => {
       if (created?.slug) {
-        navigate(`/establishment/view/${created.slug}`);
+        navigate(`/catalog/${created.slug}`);
       } else {
-        navigate("/establishment");
+        navigate("/establishment/my");
       }
     },
   });
@@ -26,10 +26,10 @@ export default function EstablishmentCreatePage() {
       <GlobalNav />
 
       <div className="establishment-create-page">
-        <h2 className="title mb-3">Criar Estabelecimento</h2>
+        <h2 className="title mb-3">Cadastrar Empresa</h2>
 
         <EstablishmentCreateForm
-          category="tattoo_studio"
+          category=""
           type=""
           loading={loading}
           errors={errors}
