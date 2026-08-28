@@ -1,136 +1,67 @@
-/* ===============================
-   INKAP — REGISTER PAGE
-================================ */
-
 .rp-wrapper {
-  min-height: 100vh;
-  background: radial-gradient(
-    circle at top,
-    #1a0b2e 0%,
-    #05030a 60%,
-    #05030a 100%
-  );
+  position: relative;
+  min-height: calc(100vh - 68px);
+  padding: 28px 16px 80px;
   display: flex;
   align-items: center;
   justify-content: center;
-  position: relative;
   overflow: hidden;
+  background:
+    radial-gradient(circle at 82% 8%, rgba(183,242,12,.075), transparent 28%),
+    radial-gradient(circle at 12% 88%, rgba(75,215,145,.1), transparent 30%);
 }
 
 .rp-bg-effect {
   position: absolute;
-  width: 600px;
-  height: 600px;
-  background: radial-gradient(
-    circle,
-    rgba(180, 108, 255, 0.25),
-    transparent 70%
-  );
-  filter: blur(120px);
-  bottom: -200px;
-  left: -200px;
+  width: 520px;
+  height: 520px;
+  left: -220px;
+  bottom: -250px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(75,215,145,.1), transparent 68%);
+  filter: blur(80px);
   pointer-events: none;
 }
 
-.rp-content {
-  width: 100%;
-  max-width: 480px;
-  padding: 1.5rem;
-  z-index: 1;
-}
-
+.rp-content { position: relative; z-index: 1; width: 100%; max-width: 500px; }
 .rp-card {
-  background: linear-gradient(
-    180deg,
-    rgba(22, 15, 38, 0.88),
-    rgba(11, 7, 19, 0.96)
-  );
-  border-radius: 22px;
-  border: 1px solid rgba(180, 108, 255, 0.25);
-  box-shadow:
-    0 20px 60px rgba(0, 0, 0, 0.65),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.03);
+  padding: clamp(28px, 5vw, 42px);
+  background: linear-gradient(155deg, rgba(255,255,255,.045), rgba(255,255,255,.015));
+  border: 1px solid var(--nx-border);
+  border-radius: 24px;
+  box-shadow: var(--nx-shadow-lg);
   backdrop-filter: blur(18px);
-  padding: 2.6rem 2.2rem;
 }
-
-.rp-card__header {
-  text-align: center;
-  margin-bottom: 2rem;
-}
-
+.rp-card__header { margin-bottom: 26px; text-align: center; }
 .rp-logo-wrapper {
-  width: 90px;
-  height: 90px;
-  margin: 0 auto 1rem;
+  width: 84px;
+  height: 84px;
+  margin: 0 auto 16px;
+  display: grid;
+  place-items: center;
   border-radius: 50%;
-  background: radial-gradient(
-    circle,
-    rgba(180, 108, 255, 0.35),
-    rgba(75, 15, 179, 0.15)
-  );
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 0 45px rgba(180, 108, 255, 0.55);
+  background: rgba(183,242,12,.035);
+  border: 1px solid rgba(183,242,12,.14);
+  box-shadow: 0 14px 38px rgba(0,0,0,.24);
 }
-
-.rp-logo {
-  width: 58px;
-  height: auto;
-  border-radius: 50%;
-}
-
-.rp-title {
-  font-size: 1.65rem;
-  font-weight: 700;
-  color: #f4eaff;
-  margin-bottom: 0.35rem;
-}
-
-.rp-subtitle {
-  font-size: 0.95rem;
-  color: #c5addf;
-  line-height: 1.45;
-}
-
-.rp-card__body {
-  margin-top: 1.5rem;
-}
-
-.rp-card__footer {
-  margin-top: 2rem;
-  text-align: center;
-  font-size: 0.9rem;
-  color: #c5addf;
-}
-
+.rp-logo { width: 68px; height: 68px; object-fit: contain; border-radius: 50%; filter: drop-shadow(0 0 12px rgba(183,242,12,.14)); }
+.rp-title { margin: 0 0 7px; color: var(--nx-text); font-size: 1.7rem; font-weight: 820; letter-spacing: -.025em; }
+.rp-subtitle { margin: 0; color: var(--nx-muted); font-size: .94rem; line-height: 1.6; }
+.rp-card__body { margin-top: 22px; }
+.rp-card__footer { margin-top: 24px; color: var(--nx-muted); font-size: .88rem; text-align: center; }
 .rp-link {
+  margin-left: 5px;
+  padding: 0;
+  color: var(--nx-primary);
   background: none;
-  border: none;
-  color: #b46cff;
-  font-weight: 600;
-  margin-left: 0.35rem;
+  border: 0;
+  font-weight: 750;
   cursor: pointer;
-  transition: color 0.2s ease;
 }
+.rp-link:hover { color: #dbff72; text-decoration: underline; }
 
-.rp-link:hover {
-  color: #d6b4ff;
-  text-decoration: underline;
-}
-
-/* Responsivo */
 @media (max-width: 480px) {
-  .rp-card {
-    padding: 2.1rem 1.6rem;
-  }
-
-  .rp-title {
-    font-size: 1.45rem;
-  }
-
-  .rp-subtitle {
-    font-size: 0.9rem;
-  }
+  .rp-wrapper { align-items: flex-start; padding-top: 20px; }
+  .rp-card { padding: 26px 18px; border-radius: 19px; }
+  .rp-title { font-size: 1.5rem; }
 }
