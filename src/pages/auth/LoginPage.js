@@ -19,16 +19,14 @@ export default function LoginPage() {
     navigate(from, { replace: true });
   };
 
-  if (processing) {
-    return (
-      <ProcessingIndicatorComponent
-        messages={["Entrando na Nexus…", "Carregando seus catálogos…"]}
-      />
-    );
-  }
-
   return (
     <>
+      {processing && (
+        <ProcessingIndicatorComponent
+          messages={["Entrando na Nexus…", "Carregando seus catálogos…"]}
+        />
+      )}
+
       <GlobalNav />
 
       <main className="lp-wrapper">
