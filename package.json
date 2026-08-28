@@ -1,7 +1,7 @@
 {
   "name": "nexus",
   "version": "1.0.0",
-  "description": "We are using Laravel 9 for jwt authentication based login and \r signup API. We use react.js on the frontend.",
+  "description": "Nexus é a plataforma de catálogos online da Peter Tecnet.",
   "main": "index.js",
   "homepage": "/",
   "scripts": {
@@ -11,8 +11,8 @@
     "deploy": "gh-pages -d build",
     "lint": "eslint 'src/**/*.{js,jsx}'"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": ["nexus", "catalog", "react"],
+  "author": "Peter Tecnet",
   "license": "ISC",
   "dependencies": {
     "@capacitor/android": "^7.3.0",
@@ -25,7 +25,6 @@
     "@react-oauth/google": "^0.12.2",
     "axios": "^1.11.0",
     "bootstrap": "^5.3.3",
-    "chart.js": "^4.4.4",
     "dayjs": "^1.11.19",
     "express": "^4.19.2",
     "framer-motion": "^12.4.2",
@@ -38,7 +37,6 @@
     "prop-types": "^15.8.1",
     "react-bootstrap": "^2.10.2",
     "react-bootstrap-icons": "^1.11.6",
-    "react-chartjs-2": "^5.2.0",
     "react-hook-form": "^7.61.1",
     "react-icons": "^5.3.0",
     "react-image-crop": "^11.0.5",
@@ -48,7 +46,6 @@
     "react-webcam": "^7.2.0",
     "react-window": "^2.2.2",
     "reactstrap": "^9.2.2",
-    "recharts": "^2.12.7",
     "sweetalert2": "^11.26.3",
     "sweetalert2-react-content": "^5.1.0",
     "web-vitals": "^3.5.2"
