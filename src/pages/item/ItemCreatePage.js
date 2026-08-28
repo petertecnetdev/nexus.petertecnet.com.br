@@ -9,7 +9,6 @@ import useItemCreate from "../../hooks/useItemCreate";
 export default function ItemCreatePage() {
   const navigate = useNavigate();
   const location = useLocation();
-
   const establishmentFromState = location.state?.establishment || null;
 
   const {
@@ -28,15 +27,9 @@ export default function ItemCreatePage() {
     handleImageChange,
     handleRemoveImage,
     submitCreate,
-  } = useItemCreate(
-    navigate,
-    reset,
-    setValue,
-    establishmentFromState
-  );
+  } = useItemCreate(navigate, reset, setValue, establishmentFromState);
 
   if (loading) return <GlobalNav />;
-
   const est = establishmentFromState || establishment;
 
   return (
@@ -48,8 +41,8 @@ export default function ItemCreatePage() {
           logo={est.logo}
           background={est.background}
           title={est.fantasy || est.name}
-          subtitle="Criar novo item"
-          description="Cadastre produtos ou serviços do estabelecimento. Serviços exigem tempo de duração, utilizado no cálculo automático do tempo das ordens de serviço."
+          subtitle="Adicionar item ao catálogo"
+          description="Cadastre produtos ou serviços com nome, preço, foto, categoria, marca e uma descrição completa para apresentar ao cliente."
           city={est.city}
           uf={est.uf}
           showBack
