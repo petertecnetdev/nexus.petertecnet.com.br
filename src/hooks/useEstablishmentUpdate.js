@@ -14,7 +14,7 @@ export default function useEstablishmentUpdate(id, navigate, reset, setValue) {
 
   const resolveImage = (img) => {
     if (!img) return null;
-    if (img.startsWith("http")) return img;
+    if (img.startsWith("http") || img.startsWith("data:") || img.startsWith("blob:")) return img;
     return `${storageUrl || apiBaseUrl.replace("/api", "")}/${img.replace(/^\//, "")}`;
   };
 
@@ -24,13 +24,16 @@ export default function useEstablishmentUpdate(id, navigate, reset, setValue) {
     async function fetchData() {
       try {
         const token = localStorage.getItem("token");
-        const res = await axios.get(`${apiBaseUrl}/establishment/show/${id}`, {
-          headers: { Authorization: `Bearer ${token}` },
+        const res = await axios.get(`${apiBaseUrl}/establishment/view/${id}`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : undefined,
         });
 
         if (!mounted) return;
 
         const est = res.data.establishment || {};
+        const estFiles = Array.isArray(est.files) ? est.files : [];
+        const logoFile = estFiles.find((file) => file.type === "logo")?.public_url;
+        const backgroundFile = estFiles.find((file) => file.type === "background")?.public_url;
 
         reset({
           name: est.name || "",
@@ -41,6 +44,7 @@ export default function useEstablishmentUpdate(id, navigate, reset, setValue) {
           description: est.description || "",
           address: est.address || "",
           city: est.city || "",
+          uf: est.uf || "",
           cep: est.cep || "",
           location: est.location || "",
           instagram_url: est.instagram_url || "",
@@ -58,12 +62,16 @@ export default function useEstablishmentUpdate(id, navigate, reset, setValue) {
             : []
         );
 
-        setLogoPreview(resolveImage(est.logo));
-        setBackgroundPreview(resolveImage(est.background));
+        setLogoPreview(
+          resolveImage(est?.images?.logo || est.logo || logoFile)
+        );
+        setBackgroundPreview(
+          resolveImage(est?.images?.background || est.background || backgroundFile)
+        );
         setSlug(est.slug || "");
       } catch {
         Swal.fire("Erro", "Não foi possível carregar o estabelecimento.", "error");
-        navigate("/dashboard");
+        navigate("/establishment/my");
       } finally {
         if (mounted) setLoading(false);
       }
@@ -79,7 +87,7 @@ export default function useEstablishmentUpdate(id, navigate, reset, setValue) {
     return new Promise((resolve, reject) => {
       if (!file || !file.type.startsWith("image/")) {
         Swal.fire("Formato inválido", "Selecione uma imagem válida.", "error");
-        return reject();
+        return reject(new Error("invalid-image"));
       }
 
       const reader = new FileReader();
@@ -106,47 +114,49 @@ export default function useEstablishmentUpdate(id, navigate, reset, setValue) {
           const ctx = canvas.getContext("2d");
           ctx.drawImage(img, 0, 0, width, height);
 
-          const dataURL = canvas.toDataURL("image/png");
+          const dataURL = canvas.toDataURL("image/jpeg", 0.9);
           setPreview(dataURL);
 
           canvas.toBlob(
             (blob) => {
-              if (!blob) return reject();
-              const resizedFile = new File([blob], "upload.png", { type: "image/png" });
+              if (!blob) return reject(new Error("image-conversion-failed"));
+              const resizedFile = new File([blob], "upload.jpg", { type: "image/jpeg" });
               setFiles((prev) => ({ ...prev, [key]: resizedFile }));
               resolve();
             },
-            "image/png",
+            "image/jpeg",
             0.9
           );
         };
+        img.onerror = () => reject(new Error("image-load-failed"));
       };
+      reader.onerror = () => reject(new Error("file-read-failed"));
       reader.readAsDataURL(file);
     });
   };
 
   const handleLogoChange = async (e) => {
-    const file = e.target.files && e.target.files[0];
-    if (file) await processAndResizeImage(file, 150, 150, setLogoPreview, "logo");
+    const file = e.target.files?.[0];
+    if (file) await processAndResizeImage(file, 600, 600, setLogoPreview, "logo");
   };
 
   const handleBackgroundChange = async (e) => {
-    const file = e.target.files && e.target.files[0];
-    if (file) await processAndResizeImage(file, 1920, 600, setBackgroundPreview, "background");
+    const file = e.target.files?.[0];
+    if (file) await processAndResizeImage(file, 1920, 1080, setBackgroundPreview, "background");
   };
 
   const handleSegmentsChange = (e) => {
     const { value, checked } = e.target;
-    const updated = checked ? [...segments, value] : segments.filter((s) => s !== value);
+    const updated = checked
+      ? Array.from(new Set([...segments, value]))
+      : segments.filter((s) => s !== value);
     setSegments(updated);
     setValue("segments", updated);
   };
 
   const submitUpdate = async (dataInput) => {
     const token = localStorage.getItem("token");
-
     const formData = new FormData();
-    formData.append("_method", "POST");
 
     Object.keys(dataInput).forEach((key) => {
       if (key === "segments") {
@@ -169,7 +179,7 @@ export default function useEstablishmentUpdate(id, navigate, reset, setValue) {
 
       Swal.fire("Sucesso", res.data.message || "Atualizado com sucesso", "success").then(() => {
         const slugResp = res.data?.establishment?.slug || slug;
-        navigate(`/establishment/view/${slugResp}`);
+        navigate(`/catalog/${slugResp}`);
       });
     } catch (err) {
       let msg = "Ocorreu um erro ao atualizar o estabelecimento.";
