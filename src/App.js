@@ -61,6 +61,19 @@ function AppInner() {
       setEstablishments([]);
     };
 
+    const applySession = (data) => {
+      if (!data?.user) {
+        resetAuth();
+        return false;
+      }
+
+      setUser(data.user);
+      setEmployer(data.employer ?? null);
+      setIsEmployer(!!data.is_employer);
+      setEstablishments(Array.isArray(data.establishments) ? data.establishments : []);
+      return true;
+    };
+
     const loadAuth = async () => {
       const token = localStorage.getItem("token");
       if (!token) {
@@ -70,14 +83,11 @@ function AppInner() {
       }
 
       try {
-        const { data } = await api.get("/auth/me", {
+        const { data } = await api.get("/account/context", {
           params: { app_id: appId },
         });
         if (cancelled) return;
-        setUser(data.user ?? null);
-        setEmployer(data.employer ?? null);
-        setIsEmployer(!!data.is_employer);
-        setEstablishments(data.establishments ?? []);
+        applySession(data);
       } catch {
         localStorage.removeItem("token");
         if (!cancelled) resetAuth();
@@ -87,7 +97,19 @@ function AppInner() {
     };
 
     loadAuth();
-    const onAuthChanged = () => loadAuth();
+
+    const onAuthChanged = (event) => {
+      if (cancelled) return;
+
+      if (event?.detail?.user) {
+        applySession(event.detail);
+        setInitialLoading(false);
+        return;
+      }
+
+      loadAuth();
+    };
+
     window.addEventListener("authChanged", onAuthChanged);
     return () => {
       cancelled = true;
@@ -166,7 +188,7 @@ export default function App() {
   return (
     <LoadingProvider>
       <GoogleOAuthProvider
-        clientId={process.env.REACT_APP_GOOGLE_CLIENT_ID}
+        clientId={process.env.REACT_APP_GOOGLE_CLIENT_ID || ""}
         locale="pt-BR"
       >
         <AppInner />
