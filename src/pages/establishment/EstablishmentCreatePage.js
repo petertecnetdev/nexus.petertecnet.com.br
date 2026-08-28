@@ -1,4 +1,3 @@
-// src/pages/establishment/EstablishmentCreatePage.js
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import GlobalNav from "../../components/GlobalNav";
@@ -13,20 +12,20 @@ export default function EstablishmentCreatePage() {
   const { loading, errors, createEstablishment } = useEstablishmentCreate({
     appId,
     onSuccess: (created) => {
-      if (created?.slug) {
-        navigate(`/catalog/${created.slug}`);
-      } else {
-        navigate("/establishment/my");
-      }
+      if (created?.slug) navigate(`/catalog/${created.slug}`);
+      else navigate("/establishment/my");
     },
   });
 
   return (
-    <div className="establishment-root">
+    <div className="establishment-root nexus-establishment-create">
       <GlobalNav />
-
-      <div className="establishment-create-page">
-        <h2 className="title mb-3">Cadastrar Empresa</h2>
+      <main className="establishment-create-page">
+        <div className="establishment-page-heading">
+          <span>Empresa e catálogo</span>
+          <h1>Cadastrar empresa</h1>
+          <p>Cadastre os dados da empresa, escolha a logo e a capa que serão exibidas no catálogo.</p>
+        </div>
 
         <EstablishmentCreateForm
           category=""
@@ -35,7 +34,7 @@ export default function EstablishmentCreatePage() {
           errors={errors}
           onSubmit={createEstablishment}
         />
-      </div>
+      </main>
     </div>
   );
 }
