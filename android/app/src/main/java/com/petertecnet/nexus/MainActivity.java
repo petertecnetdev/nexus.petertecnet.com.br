@@ -1,4 +1,4 @@
-package com.rasoio.app; // ajuste conforme seu ID
+package com.petertecnet.nexus;
 
 import com.getcapacitor.BridgeActivity;
 

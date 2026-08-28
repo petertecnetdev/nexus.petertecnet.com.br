@@ -57,7 +57,7 @@ export default function ItemViewPage() {
     item.imageUrl || item.image_url || item.image || item.images?.cover || PLACEHOLDER;
   const title = establishment?.fantasy || establishment?.name;
   const catalogPath = establishment?.slug
-    ? `/catalogo/${establishment.slug}`
+    ? `/catalog/${establishment.slug}`
     : "/establishments";
 
   return (

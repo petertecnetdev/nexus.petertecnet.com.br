@@ -74,7 +74,7 @@ export default function GlobalCard({
   const handleDetails = () => {
     if (typeof navigate !== "function" || !safeItem.slug) return;
     if (safeItem.type === "establishment") {
-      navigate(`/catalogo/${safeItem.slug}`);
+      navigate(`/catalog/${safeItem.slug}`);
       return;
     }
     navigate(`/item/view/${safeItem.slug}`);
@@ -83,7 +83,7 @@ export default function GlobalCard({
   const handleEstablishmentClick = (event) => {
     event.stopPropagation();
     if (typeof navigate !== "function" || !establishment?.slug) return;
-    navigate(`/catalogo/${establishment.slug}`);
+    navigate(`/catalog/${establishment.slug}`);
   };
 
   const shape = getShape();

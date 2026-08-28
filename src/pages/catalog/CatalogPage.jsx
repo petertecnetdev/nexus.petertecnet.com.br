@@ -53,7 +53,7 @@ export default function CatalogPage() {
     });
   }, [activeItems, query, category]);
 
-  const catalogUrl = `${linkApp}/catalogo/${encodeURIComponent(slug || "")}`;
+  const catalogUrl = `${linkApp}/catalog/${encodeURIComponent(slug || "")}`;
   const qrImageUrl = `https://quickchart.io/qr?size=320&text=${encodeURIComponent(catalogUrl)}`;
 
   const copyCatalogUrl = async () => {

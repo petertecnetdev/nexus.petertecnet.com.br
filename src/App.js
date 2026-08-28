@@ -5,6 +5,7 @@ import {
   Routes,
   Route,
   Navigate,
+  useParams,
 } from "react-router-dom";
 import axios from "axios";
 import { GoogleOAuthProvider } from "@react-oauth/google";
@@ -37,6 +38,11 @@ import CatalogPage from "./pages/catalog/CatalogPage";
 import "./index.css";
 
 export const AuthContext = createContext(null);
+
+function CatalogRedirect() {
+  const { slug } = useParams();
+  return <Navigate to={`/catalog/${encodeURIComponent(slug || "")}`} replace />;
+}
 
 function AppInner() {
   const { isLoading } = useContext(LoadingContext);
@@ -127,8 +133,9 @@ function AppInner() {
           <Route path="/password" element={protectedRoute(<PasswordPage />)} />
           <Route path="/logout" element={<LogoutPage />} />
 
-          <Route path="/catalogo/:slug" element={<CatalogPage />} />
-          <Route path="/establishment/view/:slug" element={<CatalogPage />} />
+          <Route path="/catalog/:slug" element={<CatalogPage />} />
+          <Route path="/catalogo/:slug" element={<CatalogRedirect />} />
+          <Route path="/establishment/view/:slug" element={<CatalogRedirect />} />
           <Route path="/establishments" element={<EstablishmentHome />} />
           <Route path="/item/view/:slug" element={<ItemViewPage />} />
           <Route path="/item/:slug" element={<ItemViewPage />} />

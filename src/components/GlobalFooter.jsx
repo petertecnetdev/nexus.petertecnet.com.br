@@ -11,13 +11,14 @@ export default function GlobalFooter() {
 
   const isActive = (path) =>
     location.pathname === path ||
-    location.pathname.startsWith(`${path}/`);
+    (path !== "/" && location.pathname.startsWith(`${path}/`));
 
   return (
     <footer className="inkapfooter">
-      <nav className="inkapfooter__nav">
+      <nav className="inkapfooter__nav" aria-label="Navegação rápida">
         <Link
           to="/"
+          aria-label="Início"
           className={`inkapfooter__item ${isActive("/") ? "active" : ""}`}
         >
           <i className="fas fa-home" />
@@ -25,35 +26,27 @@ export default function GlobalFooter() {
 
         <Link
           to="/establishments"
-          className={`inkapfooter__item ${
-            isActive("/establishments") ? "active" : ""
-          }`}
+          aria-label="Catálogos"
+          className={`inkapfooter__item ${isActive("/establishments") ? "active" : ""}`}
         >
           <i className="fas fa-store" />
         </Link>
 
-        <Link
-          to="/item/services"
-          className={`inkapfooter__item ${
-            isActive("/item/services") ? "active" : ""
-          }`}
-        >
-          <i className="fas fa-bolt" />
-        </Link>
+        {user && (
+          <Link
+            to="/establishment/create"
+            aria-label="Cadastrar empresa"
+            className={`inkapfooter__item ${isActive("/establishment/create") ? "active" : ""}`}
+          >
+            <i className="fas fa-plus-circle" />
+          </Link>
+        )}
 
         <Link
-          to="/employers"
+          to={user ? "/establishment/my" : "/login"}
+          aria-label={user ? "Meus catálogos" : "Entrar"}
           className={`inkapfooter__item ${
-            isActive("/employers") ? "active" : ""
-          }`}
-        >
-          <i className="fas fa-user-tie" />
-        </Link>
-
-        <Link
-          to={user ? "/dashboard" : "/login"}
-          className={`inkapfooter__item ${
-            isActive("/dashboard") || isActive("/login") ? "active" : ""
+            isActive("/establishment/my") || isActive("/login") ? "active" : ""
           }`}
         >
           <i className="fas fa-user-circle" />
