@@ -1,11 +1,13 @@
 // src/pages/catalog/CatalogPage.jsx
 import React, { useMemo, useState } from "react";
-import { Alert, Badge, Col, Container, Form, Row, Spinner } from "react-bootstrap";
+import { Badge, Col, Container, Form, Row } from "react-bootstrap";
 import { useNavigate, useParams } from "react-router-dom";
 import { FaLink, FaWhatsapp } from "react-icons/fa";
 
 import GlobalNav from "../../components/GlobalNav";
 import GlobalCard from "../../components/GlobalCard";
+import NexusFeedback from "../../components/NexusFeedback";
+import ProcessingIndicatorComponent from "../../components/ProcessingIndicatorComponent";
 import useEstablishmentItemsByIdentifier from "../../hooks/useEstablishmentItemsByIdentifier";
 import useWhatsappLink from "../../hooks/useWhatsappLink";
 import { linkApp } from "../../config";
@@ -82,13 +84,9 @@ export default function CatalogPage() {
 
   if (loading) {
     return (
-      <>
-        <GlobalNav />
-        <div className="catalog-loading">
-          <Spinner animation="border" />
-          <span>Carregando catálogo...</span>
-        </div>
-      </>
+      <ProcessingIndicatorComponent
+        messages={["Carregando catálogo…", "Organizando produtos e serviços…"]}
+      />
     );
   }
 
@@ -97,7 +95,14 @@ export default function CatalogPage() {
       <>
         <GlobalNav />
         <Container className="py-5">
-          <Alert variant="danger">{apiError || "Catálogo não encontrado."}</Alert>
+          <NexusFeedback
+            type="error"
+            title="Catálogo indisponível"
+            actionLabel="Ver outros catálogos"
+            onAction={() => navigate("/establishments")}
+          >
+            {apiError || "Não encontramos este catálogo. Ele pode ter sido removido ou o link pode estar incorreto."}
+          </NexusFeedback>
         </Container>
       </>
     );
@@ -152,9 +157,13 @@ export default function CatalogPage() {
         </section>
 
         {filteredItems.length === 0 ? (
-          <Alert variant="secondary" className="mt-4">
-            Nenhum item encontrado com os filtros selecionados.
-          </Alert>
+          <NexusFeedback
+            type="neutral"
+            title="Nenhum item encontrado"
+            className="mt-4"
+          >
+            Tente remover algum filtro ou buscar por outro termo.
+          </NexusFeedback>
         ) : (
           <Row className="g-4 mt-1">
             {filteredItems.map((item) => (
