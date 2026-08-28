@@ -1,18 +1,14 @@
 // src/hooks/useEstablishmentHome.js
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
-import Swal from "sweetalert2";
 
 const getFileUrlByType = (files, type) =>
-  Array.isArray(files) ? files.find((f) => f.type === type)?.public_url ?? null : null;
+  Array.isArray(files) ? files.find((file) => file.type === type)?.public_url ?? null : null;
 
 export default function useEstablishmentHome(apiBaseUrl, appId) {
   const [establishments, setEstablishments] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-
-  const city = localStorage.getItem("selectedCity");
-  const uf = localStorage.getItem("selectedUF");
 
   useEffect(() => {
     let active = true;
@@ -22,57 +18,49 @@ export default function useEstablishmentHome(apiBaseUrl, appId) {
       setError(null);
 
       try {
-        const query =
-          city && uf
-            ? `?city=${encodeURIComponent(city)}&uf=${encodeURIComponent(uf)}`
-            : "";
-
-        const res = await axios.get(`${apiBaseUrl}/establishment/home/${appId}${query}`);
-
+        const response = await axios.get(`${apiBaseUrl}/establishment/home/${appId}`);
         if (!active) return;
 
-        const mappedEstablishments = (res.data?.establishments || []).map((est) => ({
-          ...est,
-          type: "establishment",
-          name: est.name,
-          image: getFileUrlByType(est.files, "logo") || getFileUrlByType(est.files, "background") || null,
-          images: {
-            logo: getFileUrlByType(est.files, "logo"),
-            background: getFileUrlByType(est.files, "background"),
-          },
-        }));
+        const mappedEstablishments = (response.data?.establishments || []).map(
+          (establishment) => ({
+            ...establishment,
+            type: "establishment",
+            name: establishment.fantasy || establishment.name,
+            image:
+              getFileUrlByType(establishment.files, "logo") ||
+              getFileUrlByType(establishment.files, "background") ||
+              null,
+            images: {
+              logo: getFileUrlByType(establishment.files, "logo"),
+              background: getFileUrlByType(establishment.files, "background"),
+            },
+          })
+        );
 
         setEstablishments(mappedEstablishments);
-      } catch (err) {
+      } catch (requestError) {
         if (!active) return;
-
-        const msg =
-          typeof err?.response?.data?.message === "string"
-            ? err.response.data.message
-            : "Erro ao carregar os estabelecimentos.";
-
-        setError(msg);
-
-        Swal.fire({
-          icon: "error",
-          title: "Erro",
-          text: msg,
-        });
+        const message =
+          typeof requestError?.response?.data?.message === "string"
+            ? requestError.response.data.message
+            : "Não foi possível carregar os catálogos.";
+        setError(message);
       } finally {
         if (active) setIsLoading(false);
       }
     }
 
-    if (appId) loadEstablishments();
-    else {
-      setError("app_id não informado.");
+    if (appId) {
+      loadEstablishments();
+    } else {
+      setError("appId não configurado.");
       setIsLoading(false);
     }
 
     return () => {
       active = false;
     };
-  }, [apiBaseUrl, appId, city, uf]);
+  }, [apiBaseUrl, appId]);
 
   return { establishments, isLoading, error };
 }
