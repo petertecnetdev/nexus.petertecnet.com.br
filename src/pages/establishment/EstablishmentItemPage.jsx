@@ -1,6 +1,6 @@
 // src/pages/establishment/EstablishmentItemPage.jsx
 import React from "react";
-import { Container, Row, Col, Spinner, Alert } from "react-bootstrap";
+import { Container, Row, Col, Alert } from "react-bootstrap";
 import { useParams, useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 
@@ -8,8 +8,10 @@ import GlobalNav from "../../components/GlobalNav";
 import EstablishmentHero from "../../components/establishment/EstablishmentHero";
 import GlobalCard from "../../components/GlobalCard";
 import GlobalButton from "../../components/GlobalButton";
+import ProcessingIndicatorComponent from "../../components/ProcessingIndicatorComponent";
 import useEstablishmentItemsBySlug from "../../hooks/useEstablishmentItemsBySlug";
 import api from "../../services/api";
+import { appId } from "../../config";
 
 const fmtBRL = (value) =>
   `R$ ${Number(value || 0).toFixed(2).replace(".", ",")}`;
@@ -30,7 +32,7 @@ export default function EstablishmentItemPage() {
   const handleDelete = async (item) => {
     const result = await Swal.fire({
       title: "Excluir item?",
-      text: `Deseja excluir o item "${item.name}"?`,
+      text: `O item “${item.name}” será removido deste catálogo.`,
       icon: "warning",
       showCancelButton: true,
       confirmButtonText: "Excluir",
@@ -41,29 +43,40 @@ export default function EstablishmentItemPage() {
     if (!result.isConfirmed) return;
 
     try {
-      await api.delete(`/item/${item.id}`);
-      await Swal.fire("Excluído", "Item removido com sucesso.", "success");
+      await api.delete(`/item/${encodeURIComponent(item.id)}`, {
+        params: { app_id: appId },
+        data: { app_id: appId },
+      });
+      await Swal.fire("Item excluído", "O item foi removido do catálogo.", "success");
       reload();
     } catch (error) {
       await Swal.fire(
-        "Erro",
+        "Erro ao excluir item",
         error?.response?.data?.error ||
           error?.response?.data?.message ||
-          "Erro ao excluir item.",
+          "Não foi possível excluir o item.",
         "error"
       );
     }
   };
 
+  if (loading) {
+    return (
+      <ProcessingIndicatorComponent
+        messages={["Carregando itens…", "Preparando seu catálogo…"]}
+      />
+    );
+  }
+
   return (
     <>
       <GlobalNav />
 
-      {!loading && establishment && (
+      {establishment && (
         <EstablishmentHero
           title={establishment.fantasy || establishment.name}
-          subtitle="Produtos e serviços cadastrados"
-          description="Gerencie os produtos e serviços que aparecem no catálogo público desta empresa."
+          subtitle="Itens do catálogo"
+          description="Cadastre, revise e organize os itens que serão apresentados no catálogo público desta empresa."
           city={establishment.city}
           uf={establishment.uf}
           logo={establishment?.images?.logo || establishment.logo}
@@ -75,51 +88,52 @@ export default function EstablishmentItemPage() {
       )}
 
       <Container className="mt-4">
-        {loading && (
-          <div className="d-flex justify-content-center py-5">
-            <Spinner animation="border" />
-          </div>
-        )}
+        {apiError && <Alert variant="danger">{apiError}</Alert>}
 
-        {!loading && apiError && <Alert variant="danger">{apiError}</Alert>}
-
-        {!loading && establishment && (
+        {!apiError && establishment && (
           <>
             <div className="d-flex justify-content-between align-items-center gap-3 mb-4 flex-wrap">
               <div className="text-light-50">
                 {count} {count === 1 ? "item cadastrado" : "itens cadastrados"}
               </div>
 
-              <GlobalButton
-                variant="success"
-                onClick={() =>
-                  navigate(`/item/create/${establishment.slug}`, {
-                    state: {
-                      establishment: {
-                        id: establishment.id,
-                        slug: establishment.slug,
-                        name: establishment.name,
-                        fantasy: establishment.fantasy,
-                        description: establishment.description,
-                        city: establishment.city,
-                        uf: establishment.uf,
-                        logo: establishment?.images?.logo || establishment.logo,
-                        background:
-                          establishment?.images?.background ||
-                          establishment.background,
+              <div className="d-flex gap-2 flex-wrap">
+                <GlobalButton
+                  variant="outline"
+                  onClick={() => navigate(`/catalog/${establishment.slug}`)}
+                >
+                  Ver catálogo
+                </GlobalButton>
+                <GlobalButton
+                  variant="success"
+                  onClick={() =>
+                    navigate(`/item/create/${establishment.slug}`, {
+                      state: {
+                        establishment: {
+                          id: establishment.id,
+                          app_id: establishment.app_id,
+                          slug: establishment.slug,
+                          name: establishment.name,
+                          fantasy: establishment.fantasy,
+                          description: establishment.description,
+                          city: establishment.city,
+                          uf: establishment.uf,
+                          logo: establishment?.images?.logo || establishment.logo,
+                          background:
+                            establishment?.images?.background || establishment.background,
+                        },
                       },
-                    },
-                  })
-                }
-              >
-                + Novo item
-              </GlobalButton>
+                    })
+                  }
+                >
+                  + Novo item
+                </GlobalButton>
+              </div>
             </div>
 
             {count === 0 ? (
               <Alert variant="secondary">
-                Nenhum item cadastrado para esta empresa. Cadastre o primeiro
-                produto ou serviço para começar a montar o catálogo.
+                Este catálogo ainda não possui itens. Cadastre o primeiro item para começar a publicação.
               </Alert>
             ) : (
               <Row className="g-4">
