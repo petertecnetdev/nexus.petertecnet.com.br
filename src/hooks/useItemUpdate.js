@@ -1,14 +1,19 @@
 // src/hooks/useItemUpdate.js
-import { useState, useCallback } from "react";
-import axios from "axios";
+import { useCallback, useState } from "react";
 import Swal from "sweetalert2";
-import { apiBaseUrl } from "../config";
+import { appId } from "../config";
+import api from "../services/api";
 
-function normalizeBoolean(v) {
-  if (v === true || v === 1 || v === "1" || v === "true" || v === "on") return "1";
-  if (v === false || v === 0 || v === "0" || v === "false" || v === "off") return "0";
+function normalizeBoolean(value) {
+  if (value === true || value === 1 || value === "1" || value === "true" || value === "on") return "1";
+  if (value === false || value === 0 || value === "0" || value === "false" || value === "off") return "0";
   return null;
 }
+
+const getApiMessage = (error, fallback) =>
+  error?.response?.data?.message ||
+  error?.response?.data?.error ||
+  fallback;
 
 export default function useItemUpdate(id) {
   const [loading, setLoading] = useState(false);
@@ -16,69 +21,48 @@ export default function useItemUpdate(id) {
 
   const updateItem = useCallback(
     async (values, imageFile, removeImage) => {
+      if (!id) return null;
+
       setLoading(true);
       setApiErrors({});
 
       try {
-        const token = localStorage.getItem("token");
         const formData = new FormData();
+        const payload = { ...values, app_id: appId };
 
-        Object.entries(values || {}).forEach(([key, value]) => {
+        Object.entries(payload).forEach(([key, value]) => {
           if (value === undefined || value === null || value === "") return;
 
-          if (
-            key === "status" ||
-            key === "is_featured" ||
-            key === "limited_by_user"
-          ) {
-            const b = normalizeBoolean(value);
-            if (b !== null) formData.append(key, b);
+          if (key === "status" || key === "is_featured") {
+            const normalized = normalizeBoolean(value);
+            if (normalized !== null) formData.append(key, normalized);
             return;
           }
 
           formData.append(key, value);
         });
 
-        if (removeImage) {
-          formData.append("remove_image", "1");
-        }
+        if (removeImage) formData.append("remove_image", "1");
+        if (imageFile instanceof File) formData.append("image", imageFile);
 
-        if (imageFile instanceof File) {
-          formData.append("image", imageFile);
-        }
+        const { data } = await api.post(`/item/${encodeURIComponent(id)}`, formData);
 
-        const res = await axios.post(
-          `${apiBaseUrl}/item/${id}`,
-          formData,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-
-        Swal.fire({
+        await Swal.fire({
           icon: "success",
-          title: "Sucesso",
-          text: res.data?.message || "Item atualizado com sucesso.",
+          title: "Item atualizado",
+          text: data?.message || "As alterações foram salvas.",
         });
 
-        return res.data;
-      } catch (err) {
-        if (err.response?.status === 422) {
-          setApiErrors(err.response.data?.errors || {});
-          Swal.fire({
-            icon: "error",
-            title: "Erro de validação",
-            text: err.response.data?.error || "Erro de validação.",
-          });
-          return null;
-        }
+        return data;
+      } catch (error) {
+        const validationErrors = error?.response?.data?.errors || {};
+        setApiErrors(validationErrors);
+        const firstValidationMessage = Object.values(validationErrors).flat().find(Boolean);
 
-        Swal.fire({
+        await Swal.fire({
           icon: "error",
-          title: "Erro",
-          text: "Erro interno.",
+          title: error?.response?.status === 422 ? "Revise os dados" : "Erro ao atualizar item",
+          text: firstValidationMessage || getApiMessage(error, "Não foi possível atualizar o item."),
         });
 
         return null;
