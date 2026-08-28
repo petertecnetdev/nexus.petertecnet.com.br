@@ -1,25 +1,18 @@
-import React from "react";
+import React, { useContext } from "react";
 import { useNavigate } from "react-router-dom";
 
-import { apiBaseUrl, appId } from "../config";
-import useHome from "../hooks/useHome";
-
+import { AuthContext } from "../App";
 import GlobalNav from "../components/GlobalNav";
 import GlobalFooter from "../components/GlobalFooter";
-import GlobalCarousel from "../components/GlobalCarousel";
-import NexusFeedback from "../components/NexusFeedback";
-import ProcessingIndicatorComponent from "../components/ProcessingIndicatorComponent";
 
 import "./HomePage.css";
 
 export default function HomePage() {
-  const { establishments, serviceItems, productItems, isLoading, error } =
-    useHome(apiBaseUrl, appId);
+  const { user } = useContext(AuthContext);
   const navigate = useNavigate();
 
-  if (isLoading) {
-    return <ProcessingIndicatorComponent messages={["Carregando catálogos…", "Organizando produtos e serviços…"]} />;
-  }
+  const primaryPath = user ? "/establishment/my" : "/register";
+  const primaryLabel = user ? "Gerenciar meus catálogos" : "Criar meu catálogo";
 
   return (
     <>
@@ -29,25 +22,27 @@ export default function HomePage() {
         <section className="hp-hero">
           <div className="hp-hero__copy">
             <span className="hp-eyebrow">Seu catálogo. Um link. Um QR Code.</span>
-            <h1>Apresente sua empresa e seus itens de um jeito simples.</h1>
+            <h1>Crie e compartilhe o catálogo online da sua empresa.</h1>
             <p>
-              Cadastre sua empresa, organize produtos e serviços e compartilhe um catálogo
-              profissional que funciona em qualquer celular.
+              Cadastre sua empresa, adicione os itens, organize o catálogo e compartilhe
+              um link público feito para abrir rápido em qualquer celular.
             </p>
 
             <div className="hp-hero__actions">
-              <button type="button" className="hp-primary-action" onClick={() => navigate("/register")}>
-                Criar meu catálogo
+              <button type="button" className="hp-primary-action" onClick={() => navigate(primaryPath)}>
+                {primaryLabel}
               </button>
-              <button type="button" className="hp-secondary-action" onClick={() => navigate("/establishments")}>
-                Explorar catálogos
-              </button>
+              {!user && (
+                <button type="button" className="hp-secondary-action" onClick={() => navigate("/login")}>
+                  Já tenho conta
+                </button>
+              )}
             </div>
 
             <div className="hp-benefits" aria-label="Benefícios da Nexus">
-              <span><i className="fas fa-qrcode" /> QR Code automático</span>
-              <span><i className="fas fa-link" /> Link público</span>
-              <span><i className="fas fa-mobile-alt" /> Feito para celular</span>
+              <span><i className="fas fa-building" /> Sua empresa</span>
+              <span><i className="fas fa-box-open" /> Seus itens</span>
+              <span><i className="fas fa-qrcode" /> QR Code e link público</span>
             </div>
           </div>
 
@@ -62,22 +57,50 @@ export default function HomePage() {
           </div>
         </section>
 
-        {error && (
-          <NexusFeedback type="error" title="Não foi possível carregar o conteúdo" className="mb-4">
-            {error}
-          </NexusFeedback>
-        )}
-
-        <section className="hp-content">
+        <section className="hp-content" aria-labelledby="hp-how-title">
           <div className="hp-section-intro">
-            <span className="hp-eyebrow">Descubra</span>
-            <h2>Catálogos publicados na Nexus</h2>
-            <p>Empresas, produtos e serviços organizados em uma experiência direta e fácil de compartilhar.</p>
+            <span className="hp-eyebrow">Como funciona</span>
+            <h2 id="hp-how-title">Do cadastro ao compartilhamento em poucos passos.</h2>
+            <p>
+              A Nexus foi desenhada para manter a operação simples: a empresa administra
+              seu próprio conteúdo e o visitante apenas abre o catálogo e consulta os itens.
+            </p>
           </div>
 
-          <GlobalCarousel title="Catálogos" items={establishments} navigate={navigate} showSchedule={false} />
-          <GlobalCarousel title="Produtos" items={productItems} navigate={navigate} showSchedule={false} />
-          <GlobalCarousel title="Serviços" items={serviceItems} navigate={navigate} showSchedule={false} />
+          <div className="hp-flow-grid">
+            <article className="hp-flow-card">
+              <span>01</span>
+              <h3>Cadastre a empresa</h3>
+              <p>Crie o espaço que terá identidade, informações e catálogo próprios.</p>
+            </article>
+            <article className="hp-flow-card">
+              <span>02</span>
+              <h3>Adicione os itens</h3>
+              <p>Informe nome, descrição, preço, imagem, categoria e disponibilidade quando aplicável.</p>
+            </article>
+            <article className="hp-flow-card">
+              <span>03</span>
+              <h3>Publique o catálogo</h3>
+              <p>Organize a apresentação e disponibilize uma página pública fácil de consultar.</p>
+            </article>
+            <article className="hp-flow-card">
+              <span>04</span>
+              <h3>Compartilhe</h3>
+              <p>Use o link público e o QR Code em redes sociais, balcões, embalagens ou materiais impressos.</p>
+            </article>
+          </div>
+
+          <div className="hp-section-intro hp-section-intro--closing">
+            <span className="hp-eyebrow">Simples por fora</span>
+            <h2>Um catálogo da sua empresa, não um marketplace.</h2>
+            <p>
+              Cada empresa controla o próprio catálogo. Clientes acessam diretamente pelo link
+              ou QR Code, sem precisar criar conta para visualizar os itens.
+            </p>
+            <button type="button" className="hp-primary-action" onClick={() => navigate(primaryPath)}>
+              {primaryLabel}
+            </button>
+          </div>
         </section>
       </main>
 
