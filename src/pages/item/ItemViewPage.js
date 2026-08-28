@@ -1,8 +1,8 @@
 // src/pages/item/ItemViewPage.jsx
-import React, { useEffect, useMemo } from "react";
+import React, { useEffect } from "react";
 import { Badge, Col, Container, Row, Spinner } from "react-bootstrap";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { FaArrowLeft, FaBox, FaClock, FaTag, FaWhatsapp } from "react-icons/fa";
+import { FaArrowLeft, FaTag, FaWhatsapp } from "react-icons/fa";
 
 import GlobalNav from "../../components/GlobalNav";
 import GlobalCard from "../../components/GlobalCard";
@@ -10,22 +10,19 @@ import ShareButton from "../../components/ShareButton";
 import useItemView from "../../hooks/useItemView";
 import useWhatsappLink from "../../hooks/useWhatsappLink";
 import useImageUtils from "../../hooks/useImageUtils";
-import { apiBaseUrl } from "../../config";
 import "./ItemViewPage.css";
 
 const PLACEHOLDER = "/images/logo.png";
 const fmtBRL = (value) =>
   `R$ ${Number(value || 0).toFixed(2).replace(".", ",")}`;
 
+const hasPrice = (value) =>
+  value !== null && value !== undefined && value !== "" && Number.isFinite(Number(value));
+
 export default function ItemViewPage() {
   const { slug } = useParams();
   const navigate = useNavigate();
-  const token = useMemo(() => localStorage.getItem("token"), []);
-  const { item, otherItems, establishment, loading, error } = useItemView(
-    apiBaseUrl,
-    slug,
-    token
-  );
+  const { item, otherItems, establishment, loading, error } = useItemView(slug);
   const whatsappLink = useWhatsappLink(establishment);
   const { imageUrl, handleImgError } = useImageUtils(PLACEHOLDER);
 
@@ -58,7 +55,7 @@ export default function ItemViewPage() {
   const title = establishment?.fantasy || establishment?.name;
   const catalogPath = establishment?.slug
     ? `/catalog/${establishment.slug}`
-    : "/establishments";
+    : "/";
 
   return (
     <div className="item-detail-page">
@@ -77,6 +74,7 @@ export default function ItemViewPage() {
                 alt={item.name}
                 className="item-detail-image"
                 onError={handleImgError}
+                loading="eager"
               />
             </div>
           </Col>
@@ -84,9 +82,7 @@ export default function ItemViewPage() {
           <Col lg={6}>
             <div className="item-detail-panel">
               <div className="d-flex flex-wrap gap-2 mb-3">
-                <Badge bg="info" text="dark">
-                  {item.type === "service" ? "Serviço" : "Produto"}
-                </Badge>
+                {item.type && <Badge bg="info" text="dark">{item.type}</Badge>}
                 {item.category && <Badge bg="secondary">{item.category}</Badge>}
                 {item.subcategory && <Badge bg="secondary">{item.subcategory}</Badge>}
               </div>
@@ -96,17 +92,19 @@ export default function ItemViewPage() {
                 <Link to={catalogPath} className="item-detail-company">{title}</Link>
               )}
 
-              <div className="item-detail-price">{fmtBRL(item.price)}</div>
+              {hasPrice(item.price) && (
+                <div className="item-detail-price">{fmtBRL(item.price)}</div>
+              )}
 
               <div className="item-detail-facts">
                 {item.brand && <span><FaTag /> Marca: {item.brand}</span>}
-                {item.type === "service" && item.duration && (
-                  <span><FaClock /> Duração: {item.duration} min</span>
-                )}
-                {item.type !== "service" && item.stock !== null && item.stock !== undefined && (
-                  <span><FaBox /> Estoque: {item.stock}</span>
-                )}
+                {item.availability && <span>Disponibilidade: {item.availability}</span>}
+                {item.status_label && <span>Status: {item.status_label}</span>}
               </div>
+
+              {item.short_description && (
+                <p className="item-detail-summary">{item.short_description}</p>
+              )}
 
               {item.description && (
                 <div className="item-detail-description">
