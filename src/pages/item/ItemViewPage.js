@@ -1,9 +1,10 @@
 // src/pages/item/ItemViewPage.jsx
-import React, { useEffect } from "react";
+import React, { useContext, useEffect } from "react";
 import { Badge, Col, Container, Row, Spinner } from "react-bootstrap";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { FaArrowLeft, FaTag, FaWhatsapp } from "react-icons/fa";
+import { FaArrowLeft, FaEye, FaPen, FaTag, FaWhatsapp } from "react-icons/fa";
 
+import { AuthContext } from "../../App";
 import GlobalNav from "../../components/GlobalNav";
 import GlobalCard from "../../components/GlobalCard";
 import ShareButton from "../../components/ShareButton";
@@ -22,6 +23,7 @@ const hasPrice = (value) =>
 export default function ItemViewPage() {
   const { slug } = useParams();
   const navigate = useNavigate();
+  const { user } = useContext(AuthContext);
   const { item, otherItems, establishment, loading, error } = useItemView(slug);
   const whatsappLink = useWhatsappLink(establishment);
   const { imageUrl, handleImgError } = useImageUtils(PLACEHOLDER);
@@ -56,15 +58,33 @@ export default function ItemViewPage() {
   const catalogPath = establishment?.slug
     ? `/catalog/${establishment.slug}`
     : "/";
+  const canEdit = Boolean(
+    user && (
+      Number(item.user_id) === Number(user.id) ||
+      Number(establishment?.user_id) === Number(user.id) ||
+      Number(establishment?.created_by) === Number(user.id)
+    )
+  );
 
   return (
     <div className="item-detail-page">
       <GlobalNav />
 
       <Container className="py-4 py-lg-5">
-        <Link to={catalogPath} className="item-detail-back">
-          <FaArrowLeft /> Voltar ao catálogo
-        </Link>
+        <div className="item-detail-toolbar">
+          <Link to={catalogPath} className="item-detail-back">
+            <FaArrowLeft /> Voltar ao catálogo
+          </Link>
+          {canEdit && (
+            <button
+              type="button"
+              className="item-detail-edit"
+              onClick={() => navigate(`/item/update/${item.id}`)}
+            >
+              <FaPen /> Editar item
+            </button>
+          )}
+        </div>
 
         <Row className="g-4 align-items-start mt-1">
           <Col lg={6}>
@@ -85,6 +105,11 @@ export default function ItemViewPage() {
                 {item.type && <Badge bg="info" text="dark">{item.type}</Badge>}
                 {item.category && <Badge bg="secondary">{item.category}</Badge>}
                 {item.subcategory && <Badge bg="secondary">{item.subcategory}</Badge>}
+                {item.total_views != null && (
+                  <span className="item-detail-views">
+                    <FaEye /> {Number(item.total_views || 0).toLocaleString("pt-BR")} visualizações
+                  </span>
+                )}
               </div>
 
               <h1>{item.name}</h1>
@@ -122,6 +147,11 @@ export default function ItemViewPage() {
                 <button type="button" onClick={() => navigate(catalogPath)}>
                   Ver catálogo completo
                 </button>
+                {canEdit && (
+                  <button type="button" className="item-detail-edit-secondary" onClick={() => navigate(`/item/update/${item.id}`)}>
+                    <FaPen /> Alterar este item
+                  </button>
+                )}
               </div>
             </div>
           </Col>
@@ -130,14 +160,13 @@ export default function ItemViewPage() {
         {otherItems?.length > 0 && (
           <section className="item-detail-related">
             <h2>Outros itens deste catálogo</h2>
-            <Row className="g-4">
+            <Row className="g-3">
               {otherItems.slice(0, 8).map((related) => (
                 <Col key={related.id} xs={12} sm={6} lg={3}>
                   <GlobalCard
                     item={related}
                     fmtBRL={fmtBRL}
                     navigate={navigate}
-                    showSchedule={false}
                   />
                 </Col>
               ))}
