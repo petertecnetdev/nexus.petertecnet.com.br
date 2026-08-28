@@ -1,35 +1,20 @@
-// src/hooks/useLogin.js
-import Swal from "sweetalert2";
 import api from "../services/api";
-
 
 export default function useLogin(onSuccess, redirectTo = "/") {
   const setToken = (token) => localStorage.setItem("token", token);
 
-  const extractToken = (p) =>
-    p?.token?.access_token ??
-    p?.token?.original?.access_token ??
-    p?.access_token ??
-    p?.token ??
+  const extractToken = (payload) =>
+    payload?.token?.access_token ??
+    payload?.token?.original?.access_token ??
+    payload?.access_token ??
+    payload?.token ??
     null;
-
-  const showError = (msg) =>
-    Swal.fire({
-      title: "Erro",
-      text: msg,
-      icon: "error",
-      confirmButtonText: "Ok",
-      customClass: {
-        popup: "custom-swal",
-        title: "custom-swal-title",
-        content: "custom-swal-text",
-      },
-    });
 
   const getLocation = () =>
     new Promise((resolve) => {
       if (!navigator.geolocation) {
-        return resolve({ latitude: null, longitude: null });
+        resolve({ latitude: null, longitude: null });
+        return;
       }
 
       navigator.geolocation.getCurrentPosition(
@@ -51,10 +36,20 @@ export default function useLogin(onSuccess, redirectTo = "/") {
     else window.location.href = redirectTo;
   };
 
+  const normalizeLoginError = (error, fallback) => {
+    const message =
+      error?.response?.data?.error ||
+      error?.response?.data?.message ||
+      fallback;
+
+    const normalizedError = new Error(message);
+    normalizedError.cause = error;
+    throw normalizedError;
+  };
+
   const login = async (username, password) => {
     try {
       const location = await getLocation();
-
       const { data } = await api.post("/auth/login", {
         username,
         password,
@@ -62,42 +57,42 @@ export default function useLogin(onSuccess, redirectTo = "/") {
       });
 
       const token = extractToken(data);
-      if (!token) throw new Error("Token não recebido");
+      if (!token) throw new Error("A API não retornou uma sessão válida.");
 
       finalizeLogin(token);
-    } catch (err) {
-      const msg =
-        err?.response?.data?.error ||
-        err?.response?.data?.message ||
-        "Falha no login.";
-      showError(msg);
+      return token;
+    } catch (error) {
+      normalizeLoginError(
+        error,
+        "Não foi possível entrar. Confira seu usuário, e-mail e senha e tente novamente."
+      );
     }
   };
 
   const loginGoogle = async (credential) => {
     try {
-      const location = await getLocation();
+      if (!credential) {
+        throw new Error("Não recebemos a credencial do Google.");
+      }
 
+      const location = await getLocation();
       const { data } = await api.post("/auth/google", {
         token_id: credential,
         ...location,
       });
 
       const token = extractToken(data);
-      if (!token) throw new Error("Token Google não recebido");
+      if (!token) throw new Error("A API não retornou uma sessão válida.");
 
       finalizeLogin(token);
-    } catch (err) {
-      const msg =
-        err?.response?.data?.error ||
-        err?.response?.data?.message ||
-        "Falha no login com Google.";
-      showError(msg);
+      return token;
+    } catch (error) {
+      normalizeLoginError(
+        error,
+        "Não foi possível entrar com o Google. Tente novamente."
+      );
     }
   };
 
-  return {
-    login,
-    loginGoogle,
-  };
+  return { login, loginGoogle };
 }
