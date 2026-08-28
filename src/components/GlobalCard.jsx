@@ -9,6 +9,19 @@ import "./GlobalCard.css";
 const hasPrice = (value) =>
   value !== null && value !== undefined && value !== "" && Number.isFinite(Number(value));
 
+const firstFileUrl = (files) => {
+  if (!Array.isArray(files) || files.length === 0) return null;
+
+  const preferred =
+    files.find((file) => file?.is_primary) ||
+    files.find((file) => file?.type === "image") ||
+    files.find((file) => file?.type === "cover") ||
+    files.find((file) => file?.type === "photo") ||
+    files[0];
+
+  return preferred?.public_url || preferred?.url || preferred?.path || null;
+};
+
 export default function GlobalCard({ item, fmtBRL, navigate, actions }) {
   const { imageUrl, handleImgError: baseHandleImgError } = useImageUtils();
   const cardRef = useRef(null);
@@ -26,16 +39,16 @@ export default function GlobalCard({ item, fmtBRL, navigate, actions }) {
 
   const image = useMemo(() => {
     const paths = [
-      safeItem.image,
       safeItem.image_url,
+      safeItem.image,
       safeItem.avatar,
-      safeItem.files?.find?.((file) => file.type === "image")?.public_url,
       safeItem.images?.cover,
       safeItem.images?.main,
       safeItem.images?.avatar,
+      Array.isArray(safeItem.images?.gallery) ? safeItem.images.gallery[0] : null,
+      firstFileUrl(safeItem.files),
       safeItem.images?.logo,
       safeItem.images?.background,
-      Array.isArray(safeItem.images?.gallery) ? safeItem.images.gallery[0] : null,
     ];
     for (const path of paths) {
       const url = imageUrl(path);
@@ -49,6 +62,7 @@ export default function GlobalCard({ item, fmtBRL, navigate, actions }) {
       establishment?.images?.logo,
       establishment?.logo,
       establishment?.images?.background,
+      firstFileUrl(establishment?.files),
     ];
     for (const path of paths) {
       const url = imageUrl(path);
