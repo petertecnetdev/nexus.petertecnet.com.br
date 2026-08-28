@@ -17,47 +17,35 @@ export default function RegisterPage() {
     <>
       <GlobalNav />
 
-      <div className="rp-wrapper">
-        <div className="rp-bg-effect" />
+      <main className="rp-wrapper">
+        <div className="rp-bg-effect" aria-hidden="true" />
 
         <div className="rp-content">
-          <div className="rp-card">
-            <div className="rp-card__header">
+          <section className="rp-card" aria-labelledby="register-title">
+            <header className="rp-card__header">
               <div className="rp-logo-wrapper">
-                <img
-                  src="/images/logo.png"
-                  alt="Inkap"
-                  className="rp-logo"
-                  onError={(e) => {
-                    e.currentTarget.onerror = null;
-                    e.currentTarget.src = "/images/logo.gif";
-                  }}
-                />
+                <img src="/images/logo.png" alt="Nexus" className="rp-logo" />
               </div>
 
-              <h1 className="rp-title">Criar conta</h1>
+              <h1 id="register-title" className="rp-title">Criar conta</h1>
               <p className="rp-subtitle">
-                Cadastre-se para começar a usar a Inkap
+                Crie sua conta para cadastrar empresas, itens e compartilhar seus catálogos pela Nexus.
               </p>
-            </div>
+            </header>
 
             <div className="rp-card__body">
               <RegisterFormComponent onSuccess={handleSuccess} />
             </div>
 
-            <div className="rp-card__footer">
+            <footer className="rp-card__footer">
               <span>Já possui uma conta?</span>
-              <button
-                type="button"
-                className="rp-link"
-                onClick={() => navigate("/login")}
-              >
+              <button type="button" className="rp-link" onClick={() => navigate("/login")}>
                 Entrar
               </button>
-            </div>
-          </div>
+            </footer>
+          </section>
         </div>
-      </div>
+      </main>
     </>
   );
 }
