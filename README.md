@@ -1,97 +1,66 @@
-# We are using Laravel 9 for jwt authentication based login and signup API. (React.js)
+# Nexus
 
-We are using Laravel 9 for jwt authentication based login and 
-signup API. We use react.js on the frontend.
+Nexus é a plataforma de criação e publicação de catálogos online da Peter Tecnet.
 
-For detailed information, please read Document.pdf.
+O fluxo principal do produto é simples:
 
-## Follow the steps below to run the API.
+**Cadastro/Login → Cadastrar empresa → Cadastrar itens → Publicar catálogo → Gerar/compartilhar QR Code e link público.**
 
-First, update the .env file with your own database information.
+A Nexus não é um marketplace. Cada empresa mantém o próprio catálogo e seus itens, enquanto visitantes acessam o catálogo público sem precisar criar conta.
 
-then run the following commands in order.
+## Arquitetura
 
-php artisan migrate
+- Frontend: React + React Router + React Bootstrap.
+- API: API central Peter Tecnet em `https://api.petertecnet.com.br/api`.
+- Autenticação: token Bearer compartilhado pelo ecossistema Peter Tecnet.
+- Isolamento de domínio: `USER → APP → ESTABLISHMENT → RECURSOS`.
+- Identificador padrão da Nexus: `REACT_APP_ID=2` (configurável por ambiente).
 
-php artisan jwt:secret
+Uma conta pode usar vários aplicativos Peter Tecnet, mas empresas e recursos devem permanecer vinculados ao aplicativo em que foram cadastrados.
 
-## Run the commands below to run the React application.
+## Configuração local
 
+Copie `.env.example` para `.env` e ajuste os valores quando necessário:
+
+```env
+REACT_APP_API_BASE_URL=https://api.petertecnet.com.br/api
+REACT_APP_STORAGE_URL=https://api.petertecnet.com.br/storage
+REACT_APP_PUBLIC_URL=https://nexus.petertecnet.com.br
+REACT_APP_ID=2
+REACT_APP_GOOGLE_CLIENT_ID=your_google_oauth_client_id.apps.googleusercontent.com
+```
+
+Instale as dependências e execute:
+
+```bash
 npm install
+npm start
+```
 
-npm run serve
+## Qualidade
 
-![image](https://user-images.githubusercontent.com/26199757/177057917-2bd7e9c2-0b15-464b-9a0c-57f1d2f6b08c.png)
-![image](https://user-images.githubusercontent.com/26199757/177057920-516f6cc7-3a4d-4dac-bbe8-50d5b9b5c007.png)
-![image](https://user-images.githubusercontent.com/26199757/177057926-1ab15688-9779-4f6e-947b-1a21dc74a89d.png)
+Antes de publicar alterações:
 
-# Getting Started with Create React App
+```bash
+npm run lint
+npm test
+npm run build
+```
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+O repositório também possui o workflow `Nexus Quality`, que executa lint, testes e build em pull requests e nas branches de auditoria.
 
-## Available Scripts
+## Rotas principais
 
-In the project directory, you can run:
+- `/` — apresentação da Nexus.
+- `/login` e `/register` — autenticação.
+- `/establishment/my` — empresas/catálogos do usuário na Nexus.
+- `/establishment/create` — cadastro inicial de empresa.
+- `/establishment/item/:slug` — gerenciamento de itens de uma empresa.
+- `/catalog/:slug` — catálogo público.
+- `/item/:slug` — detalhes públicos de um item.
 
-### `npm start`
+## Produção
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+O catálogo público deve continuar acessível sem autenticação. Operações administrativas de empresa e item devem ser autorizadas pela API, e todas as consultas relevantes devem respeitar o `app_id` da Nexus.
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
-
-### `npm test`
-
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
-
-### `npm run build`
-
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
-
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
-
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+Nunca coloque tokens, chaves privadas ou segredos no bundle React. Variáveis `REACT_APP_*` são públicas por natureza e devem conter apenas configurações que possam ser expostas ao navegador.
