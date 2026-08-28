@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
-import { apiBaseUrl, appId } from "../../config";
 import GlobalNav from "../../components/GlobalNav";
 import LoginFormComponent from "../../components/auth/LoginFormComponent";
 import ProcessingIndicatorComponent from "../../components/ProcessingIndicatorComponent";
@@ -13,9 +12,10 @@ export default function LoginPage() {
   const location = useLocation();
   const [processing, setProcessing] = useState(false);
 
-  const from = location?.state?.from?.pathname || "/";
+  const from = location?.state?.from?.pathname || "/establishment/my";
 
   const handleSuccess = () => {
+    setProcessing(false);
     navigate(from, { replace: true });
   };
 
@@ -51,8 +51,6 @@ export default function LoginPage() {
                 onSuccess={handleSuccess}
                 onError={() => setProcessing(false)}
                 redirectTo={from}
-                apiBaseUrl={apiBaseUrl}
-                appId={appId}
               />
             </div>
           </section>
