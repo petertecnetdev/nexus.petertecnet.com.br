@@ -280,9 +280,17 @@ export default function EstablishmentCreateForm({
     await onSubmit(formData);
   };
 
+  const heroStyle = backgroundPreview
+    ? {
+        backgroundImage: `linear-gradient(rgba(5, 14, 11, 0.7), rgba(5, 14, 11, 0.9)), url("${backgroundPreview}")`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+      }
+    : undefined;
+
   return (
     <>
-      <div className="estab-hero">
+      <div className="estab-hero" style={heroStyle}>
         <div className="estab-hero-inner">
           <div className="estab-logo-bubble">
             {logoPreview ? (
