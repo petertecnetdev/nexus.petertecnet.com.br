@@ -1,36 +1,34 @@
 :root {
-  --nx-bg: #07110e;
-  --nx-bg-2: #0a1713;
-  --nx-surface: #0e1d18;
-  --nx-surface-2: #13271f;
-  --nx-surface-3: #173127;
-  --nx-text: #f6faf8;
-  --nx-muted: #a6b8b0;
-  --nx-soft: #758b82;
-  --nx-primary: #b7f20c;
-  --nx-primary-2: #89dc2f;
-  --nx-green: #42cf84;
-  --nx-green-deep: #177247;
-  --nx-border: rgba(180, 214, 196, .13);
-  --nx-border-strong: rgba(183, 242, 12, .28);
-  --nx-danger: #ff6b6b;
-  --nx-warning: #f6c85f;
-  --nx-success: #4bd791;
+  --nx-bg: #08110e;
+  --nx-bg-2: #0d1713;
+  --nx-surface: #121d19;
+  --nx-surface-2: #17251f;
+  --nx-surface-3: #1d2d26;
+  --nx-text: #f3f7f5;
+  --nx-muted: #c1cdc7;
+  --nx-soft: #91a49b;
+  --nx-primary: #74c69d;
+  --nx-primary-2: #52b788;
+  --nx-green: #40916c;
+  --nx-green-deep: #2d6a4f;
+  --nx-border: rgba(211, 226, 219, .13);
+  --nx-border-strong: rgba(116, 198, 157, .34);
+  --nx-danger: #ff7b7b;
+  --nx-warning: #e7c66b;
+  --nx-success: #74c69d;
   --nx-radius-sm: 10px;
   --nx-radius-md: 14px;
   --nx-radius-lg: 20px;
   --nx-radius-xl: 28px;
-  --nx-shadow-sm: 0 10px 30px rgba(0, 0, 0, .2);
-  --nx-shadow-md: 0 18px 55px rgba(0, 0, 0, .32);
-  --nx-shadow-lg: 0 28px 90px rgba(0, 0, 0, .42);
-  --nx-focus: 0 0 0 3px rgba(183, 242, 12, .2);
-  --nx-gradient: linear-gradient(135deg, #4bd791 0%, #b7f20c 100%);
+  --nx-shadow-sm: 0 10px 28px rgba(0, 0, 0, .18);
+  --nx-shadow-md: 0 18px 50px rgba(0, 0, 0, .28);
+  --nx-shadow-lg: 0 28px 80px rgba(0, 0, 0, .36);
+  --nx-focus: 0 0 0 3px rgba(116, 198, 157, .18);
+  --nx-gradient: linear-gradient(135deg, #74c69d 0%, #52b788 100%);
   --nx-page:
-    radial-gradient(circle at 8% -8%, rgba(75, 215, 145, .12), transparent 30%),
-    radial-gradient(circle at 92% 4%, rgba(183, 242, 12, .07), transparent 25%),
-    linear-gradient(180deg, #07110e 0%, #0a1713 50%, #07110e 100%);
+    radial-gradient(circle at 10% -10%, rgba(82, 183, 136, .07), transparent 32%),
+    linear-gradient(180deg, #08110e 0%, #0d1713 52%, #08110e 100%);
 
-  /* Compatibilidade com componentes herdados enquanto são eliminados. */
   --i-bg: var(--nx-bg);
   --i-bg-soft: var(--nx-bg-2);
   --i-surface: var(--nx-surface);
@@ -42,12 +40,12 @@
   --i-primary-2: var(--nx-primary-2);
   --i-primary-3: var(--nx-green);
   --i-primary-deep: var(--nx-green-deep);
-  --i-accent: #d8ff62;
+  --i-accent: #a8d5bd;
   --i-success: var(--nx-success);
   --i-danger: var(--nx-danger);
   --i-warning: var(--nx-warning);
   --i-border: var(--nx-border);
-  --i-glass: rgba(255, 255, 255, .04);
+  --i-glass: rgba(255, 255, 255, .035);
   --i-radius-sm: var(--nx-radius-sm);
   --i-radius-md: var(--nx-radius-md);
   --i-radius-lg: var(--nx-radius-lg);
@@ -58,9 +56,9 @@
   --i-focus-ring: var(--nx-focus);
   --i-grad-primary: var(--nx-gradient);
   --i-grad-hero: var(--nx-page);
-  --i-glow-sm: 0 0 20px rgba(183, 242, 12, .12);
-  --i-glow-md: 0 0 34px rgba(75, 215, 145, .18);
-  --i-glow-lg: 0 0 58px rgba(75, 215, 145, .2);
+  --i-glow-sm: 0 0 14px rgba(82, 183, 136, .06);
+  --i-glow-md: 0 0 22px rgba(82, 183, 136, .08);
+  --i-glow-lg: 0 0 34px rgba(82, 183, 136, .1);
 }
 
 *, *::before, *::after { box-sizing: border-box; }
@@ -71,7 +69,7 @@ body {
   color: var(--nx-text);
   background: var(--nx-page);
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  line-height: 1.55;
+  line-height: 1.6;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
 }
@@ -81,21 +79,19 @@ button, a { -webkit-tap-highlight-color: transparent; }
 img { max-width: 100%; }
 a { color: inherit; text-decoration: none; }
 a:hover { color: inherit; }
-::selection { color: #07110e; background: rgba(183, 242, 12, .8); }
+::selection { color: #08110e; background: rgba(116, 198, 157, .82); }
 
 #root { isolation: isolate; }
 
-/* Padrão de página para todas as telas ativas. */
 main, .page, .page-wrapper, .auth-page, .establishment-root {
   color: var(--nx-text);
 }
 
 .container, .container-fluid { position: relative; }
 
-/* Superfícies Bootstrap e legadas passam a falar a mesma linguagem. */
 .card, .modal-content, .dropdown-menu, .list-group-item, .accordion-item {
   color: var(--nx-text);
-  background: rgba(14, 29, 24, .92);
+  background: rgba(18, 29, 25, .96);
   border-color: var(--nx-border);
   box-shadow: var(--nx-shadow-sm);
 }
@@ -103,7 +99,6 @@ main, .page, .page-wrapper, .auth-page, .establishment-root {
 .card { border-radius: var(--nx-radius-lg); }
 .modal-content { border-radius: var(--nx-radius-xl); }
 
-/* Formulários consistentes em login, cadastro, empresa, item e conta. */
 .form-control,
 .form-select,
 input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
@@ -111,30 +106,29 @@ textarea,
 select {
   min-height: 46px;
   color: var(--nx-text) !important;
-  background: rgba(9, 24, 19, .9) !important;
-  border: 1px solid rgba(166, 184, 176, .16) !important;
+  background: #101d18 !important;
+  border: 1px solid rgba(193, 205, 199, .18) !important;
   border-radius: 12px !important;
   box-shadow: none !important;
-  transition: border-color .18s ease, box-shadow .18s ease, background .18s ease, transform .18s ease;
+  transition: border-color .18s ease, box-shadow .18s ease, background .18s ease;
 }
 
 textarea { min-height: 116px; }
-input::placeholder, textarea::placeholder { color: var(--nx-soft) !important; opacity: 1; }
+input::placeholder, textarea::placeholder { color: #9caca4 !important; opacity: 1; }
 .form-control:focus,
 .form-select:focus,
 input:focus,
 textarea:focus,
 select:focus {
   color: var(--nx-text) !important;
-  background: rgba(13, 33, 27, .98) !important;
-  border-color: rgba(183, 242, 12, .45) !important;
+  background: #14241d !important;
+  border-color: rgba(116, 198, 157, .58) !important;
   box-shadow: var(--nx-focus) !important;
   outline: none !important;
 }
-label, .form-label { color: #c8d5cf; font-weight: 600; }
-.form-text { color: var(--nx-soft); }
+label, .form-label { color: #d8e1dd; font-weight: 650; }
+.form-text { color: var(--nx-muted); }
 
-/* Botões genéricos e Bootstrap. */
 .btn {
   min-height: 42px;
   border-radius: 12px;
@@ -144,37 +138,35 @@ label, .form-label { color: #c8d5cf; font-weight: 600; }
 .btn:hover { transform: translateY(-1px); }
 .btn:active { transform: translateY(0); }
 .btn-primary, .btn-success {
-  color: #08140f !important;
+  color: #07110d !important;
   background: var(--nx-gradient) !important;
   border-color: transparent !important;
-  box-shadow: 0 8px 24px rgba(75, 215, 145, .14);
+  box-shadow: 0 7px 18px rgba(45, 106, 79, .18);
 }
-.btn-primary:hover, .btn-success:hover { filter: brightness(1.04); box-shadow: 0 12px 32px rgba(75, 215, 145, .2); }
+.btn-primary:hover, .btn-success:hover { filter: brightness(1.02); box-shadow: 0 9px 24px rgba(45, 106, 79, .22); }
 .btn-outline-primary, .btn-outline-light, .btn-dark {
   color: var(--nx-text) !important;
   background: rgba(255, 255, 255, .025) !important;
-  border-color: rgba(183, 242, 12, .2) !important;
+  border-color: rgba(116, 198, 157, .28) !important;
 }
 .btn-outline-primary:hover, .btn-outline-light:hover, .btn-dark:hover {
-  background: rgba(183, 242, 12, .07) !important;
-  border-color: rgba(183, 242, 12, .36) !important;
+  background: rgba(116, 198, 157, .07) !important;
+  border-color: rgba(116, 198, 157, .42) !important;
 }
 
-/* Feedbacks. */
 .alert {
   color: var(--nx-text);
   background: rgba(255, 255, 255, .035);
   border: 1px solid var(--nx-border);
   border-radius: 14px;
 }
-.alert-danger { background: rgba(255, 107, 107, .08); border-color: rgba(255, 107, 107, .22); }
-.alert-success { background: rgba(75, 215, 145, .08); border-color: rgba(75, 215, 145, .22); }
+.alert-danger { background: rgba(255, 123, 123, .08); border-color: rgba(255, 123, 123, .24); }
+.alert-success { background: rgba(116, 198, 157, .08); border-color: rgba(116, 198, 157, .24); }
 .alert-secondary { background: rgba(255, 255, 255, .025); }
 
-/* SweetAlert padronizado. */
 .swal2-popup {
   color: var(--nx-text) !important;
-  background: #0e1d18 !important;
+  background: #121d19 !important;
   border: 1px solid var(--nx-border) !important;
   border-radius: 22px !important;
   box-shadow: var(--nx-shadow-lg) !important;
@@ -182,20 +174,19 @@ label, .form-label { color: #c8d5cf; font-weight: 600; }
 .swal2-title { color: var(--nx-text) !important; }
 .swal2-html-container { color: var(--nx-muted) !important; }
 .swal2-styled { border-radius: 10px !important; font-weight: 700 !important; }
-.swal2-styled.swal2-confirm { color: #08140f !important; background: var(--nx-gradient) !important; }
+.swal2-styled.swal2-confirm { color: #07110d !important; background: var(--nx-gradient) !important; }
 .swal2-styled.swal2-cancel { color: var(--nx-text) !important; background: #263a32 !important; }
 
-/* Helpers visuais compartilhados. */
 .nx-page {
   min-height: calc(100vh - 68px);
   padding: clamp(24px, 4vw, 56px) clamp(16px, 4vw, 48px) 96px;
 }
 .nx-container { width: min(1240px, 100%); margin: 0 auto; }
 .nx-eyebrow { color: var(--nx-primary); font-size: .76rem; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; }
-.nx-title { margin: 0; font-size: clamp(2rem, 5vw, 4.6rem); line-height: 1.02; letter-spacing: -.045em; }
+.nx-title { margin: 0; color: var(--nx-text); font-size: clamp(2rem, 5vw, 4.6rem); line-height: 1.05; letter-spacing: -.035em; text-shadow: none; }
 .nx-lead { color: var(--nx-muted); font-size: clamp(1rem, 1.8vw, 1.16rem); line-height: 1.75; }
 .nx-panel {
-  background: linear-gradient(160deg, rgba(255,255,255,.045), rgba(255,255,255,.018));
+  background: linear-gradient(160deg, rgba(255,255,255,.04), rgba(255,255,255,.018));
   border: 1px solid var(--nx-border);
   border-radius: var(--nx-radius-xl);
   box-shadow: var(--nx-shadow-md);
@@ -207,17 +198,16 @@ label, .form-label { color: #c8d5cf; font-weight: 600; }
   padding: 34px;
   color: var(--nx-muted);
   text-align: center;
-  border: 1px dashed rgba(183, 242, 12, .18);
+  border: 1px dashed rgba(116, 198, 157, .24);
   border-radius: var(--nx-radius-lg);
   background: rgba(255, 255, 255, .02);
 }
 
-/* Scrollbar discreta. */
-* { scrollbar-width: thin; scrollbar-color: #2a463b #08130f; }
+* { scrollbar-width: thin; scrollbar-color: #315347 #0a1511; }
 *::-webkit-scrollbar { width: 10px; height: 10px; }
-*::-webkit-scrollbar-track { background: #08130f; }
-*::-webkit-scrollbar-thumb { background: #2a463b; border-radius: 999px; border: 2px solid #08130f; }
-*::-webkit-scrollbar-thumb:hover { background: #3a5d4f; }
+*::-webkit-scrollbar-track { background: #0a1511; }
+*::-webkit-scrollbar-thumb { background: #315347; border-radius: 999px; border: 2px solid #0a1511; }
+*::-webkit-scrollbar-thumb:hover { background: #42685a; }
 
 :focus-visible { outline: none; box-shadow: var(--nx-focus); }
 
