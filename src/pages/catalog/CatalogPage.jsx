@@ -148,8 +148,8 @@ export default function CatalogPage() {
           <NexusFeedback
             type="error"
             title="Catálogo indisponível"
-            actionLabel="Ver outros catálogos"
-            onAction={() => navigate("/establishments")}
+            actionLabel="Ir para a Nexus"
+            onAction={() => navigate("/")}
           >
             {apiError || "Não encontramos este catálogo. Ele pode ter sido removido ou o link pode estar incorreto."}
           </NexusFeedback>
