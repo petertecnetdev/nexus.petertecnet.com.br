@@ -1,7 +1,7 @@
 import { useRef, useState, useMemo, useCallback } from "react";
 import PropTypes from "prop-types";
 import { Badge } from "react-bootstrap";
-import { FaMapMarkerAlt } from "react-icons/fa";
+import { FaEye, FaMapMarkerAlt } from "react-icons/fa";
 import useImageUtils from "../hooks/useImageUtils";
 import GlobalButton from "./GlobalButton";
 import "./GlobalCard.css";
@@ -82,6 +82,7 @@ export default function GlobalCard({ item, fmtBRL, navigate, actions }) {
   };
 
   const isEstablishment = safeItem.type === "establishment";
+  const totalViews = Number(safeItem.total_views || 0);
 
   const placeholderSvg = useMemo(() => {
     const initials = getInitials();
@@ -112,6 +113,11 @@ export default function GlobalCard({ item, fmtBRL, navigate, actions }) {
           className="carousel-image"
           onError={handleImgError}
         />
+        {!isEstablishment && (
+          <span className="globalcard-view-badge" title={`${totalViews} visualizações`}>
+            <FaEye aria-hidden="true" /> {totalViews.toLocaleString("pt-BR")}
+          </span>
+        )}
       </div>
 
       <div className="carousel-item-content">
