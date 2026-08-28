@@ -7,12 +7,12 @@ import {
   Navigate,
   useParams,
 } from "react-router-dom";
-import axios from "axios";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 
 import ProcessingIndicatorComponent from "./components/ProcessingIndicatorComponent";
 import { LoadingProvider, LoadingContext } from "./contexts/LoadingContext";
-import { apiBaseUrl } from "./config";
+import { appId } from "./config";
+import api from "./services/api";
 
 import HomePage from "./pages/HomePage";
 import LoginPage from "./pages/auth/LoginPage";
@@ -55,20 +55,24 @@ function AppInner() {
   useEffect(() => {
     let cancelled = false;
 
+    const resetAuth = () => {
+      setUser(null);
+      setEmployer(null);
+      setIsEmployer(false);
+      setEstablishments([]);
+    };
+
     const loadAuth = async () => {
       const token = localStorage.getItem("token");
       if (!token) {
-        setUser(null);
-        setEmployer(null);
-        setIsEmployer(false);
-        setEstablishments([]);
+        resetAuth();
         setInitialLoading(false);
         return;
       }
 
       try {
-        const { data } = await axios.get(`${apiBaseUrl}/auth/me`, {
-          headers: { Authorization: `Bearer ${token}` },
+        const { data } = await api.get("/auth/me", {
+          params: { app_id: appId },
         });
         if (cancelled) return;
         setUser(data.user ?? null);
@@ -77,10 +81,7 @@ function AppInner() {
         setEstablishments(data.establishments ?? []);
       } catch {
         localStorage.removeItem("token");
-        setUser(null);
-        setEmployer(null);
-        setIsEmployer(false);
-        setEstablishments([]);
+        if (!cancelled) resetAuth();
       } finally {
         if (!cancelled) setInitialLoading(false);
       }
