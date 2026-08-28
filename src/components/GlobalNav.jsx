@@ -10,7 +10,6 @@ import "./GlobalNav.css";
 
 const publicNavigation = [
   { label: "Início", path: "/", end: true },
-  { label: "Catálogos", path: "/establishments" },
 ];
 
 const accountNavigation = [
