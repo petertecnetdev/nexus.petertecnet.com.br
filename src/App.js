@@ -32,7 +32,6 @@ import EstablishmentCreatePage from "./pages/establishment/EstablishmentCreatePa
 import EstablishmentUpdatePage from "./pages/establishment/EstablishmentUpdatePage";
 import EstablishmentMyPage from "./pages/establishment/EstablishmentMyPage";
 import EstablishmentItemPage from "./pages/establishment/EstablishmentItemPage";
-import EstablishmentHome from "./pages/establishment/EstablishmentHomePage";
 import CatalogPage from "./pages/catalog/CatalogPage";
 
 import "./index.css";
@@ -143,7 +142,7 @@ function AppInner() {
           <Route path="/catalog/:slug" element={<CatalogPage />} />
           <Route path="/catalogo/:slug" element={<CatalogRedirect />} />
           <Route path="/establishment/view/:slug" element={<CatalogRedirect />} />
-          <Route path="/establishments" element={<EstablishmentHome />} />
+          <Route path="/establishments" element={<Navigate to="/" replace />} />
           <Route path="/item/view/:slug" element={<ItemViewPage />} />
           <Route path="/item/:slug" element={<ItemViewPage />} />
 
