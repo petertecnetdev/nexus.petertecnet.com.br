@@ -18,9 +18,18 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+*.log
 
 # OS/editor artifacts
 .DS_Store
+.idea/
+**/.idea/
+*.iml
+.vscode/
 
 # Local helper scripts
 commit.sh
+
+# Temporary local artifacts
+*.tmp
+*.swp
