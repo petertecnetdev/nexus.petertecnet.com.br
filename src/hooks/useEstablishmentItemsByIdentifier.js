@@ -52,7 +52,7 @@ async function fetchAllItemsByApp() {
 
   do {
     const { data } = await api.get(`/item/listbyapp/${appId}`, {
-      params: { page },
+      params: { page, app_id: appId },
     });
 
     const pageItems = Array.isArray(data?.data)
@@ -94,7 +94,8 @@ export default function useEstablishmentItemsByIdentifier(identifier) {
       const encodedIdentifier = encodeURIComponent(identifier);
 
       const establishmentResponse = await api.get(
-        `/establishment/view/${encodedIdentifier}`
+        `/establishment/view/${encodedIdentifier}`,
+        { params: { app_id: appId } }
       );
 
       const resolvedEstablishment = normalizeEstablishment(
@@ -105,21 +106,31 @@ export default function useEstablishmentItemsByIdentifier(identifier) {
         throw new Error("Estabelecimento não encontrado.");
       }
 
+      if (
+        resolvedEstablishment.app_id != null &&
+        Number(resolvedEstablishment.app_id) !== Number(appId)
+      ) {
+        throw new Error("Este catálogo não pertence à Nexus.");
+      }
+
       setEstablishment(resolvedEstablishment);
 
       let resolvedItems = [];
 
       try {
         const { data } = await api.get(
-          `/item/list-by-entity/${encodedIdentifier}`
+          `/item/list-by-entity/${encodedIdentifier}`,
+          { params: { app_id: appId } }
         );
 
         resolvedItems = Array.isArray(data?.items) ? data.items : [];
       } catch (specificEndpointError) {
-        console.warn(
-          "[Nexus] list-by-entity falhou; usando fallback por app.",
-          getApiMessage(specificEndpointError, "Erro ao listar itens")
-        );
+        if (process.env.NODE_ENV !== "production") {
+          console.warn(
+            "[Nexus] list-by-entity indisponível; usando fallback por app.",
+            getApiMessage(specificEndpointError, "Erro ao listar itens")
+          );
+        }
 
         const allAppItems = await fetchAllItemsByApp();
         resolvedItems = allAppItems.filter((item) => {
@@ -132,7 +143,9 @@ export default function useEstablishmentItemsByIdentifier(identifier) {
       }
 
       setItems(
-        resolvedItems.map((item) => normalizeItem(item, resolvedEstablishment))
+        resolvedItems
+          .filter((item) => item?.app_id == null || Number(item.app_id) === Number(appId))
+          .map((item) => normalizeItem(item, resolvedEstablishment))
       );
     } catch (error) {
       setApiError(
