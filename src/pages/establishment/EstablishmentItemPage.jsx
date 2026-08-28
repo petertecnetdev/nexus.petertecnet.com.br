@@ -11,8 +11,8 @@ import GlobalButton from "../../components/GlobalButton";
 import useEstablishmentItemsBySlug from "../../hooks/useEstablishmentItemsBySlug";
 import api from "../../services/api";
 
-const fmtBRL = (v) =>
-  `R$ ${Number(v || 0).toFixed(2).replace(".", ",")}`;
+const fmtBRL = (value) =>
+  `R$ ${Number(value || 0).toFixed(2).replace(".", ",")}`;
 
 export default function EstablishmentItemPage() {
   const { slug } = useParams();
@@ -28,7 +28,7 @@ export default function EstablishmentItemPage() {
   } = useEstablishmentItemsBySlug(slug);
 
   const handleDelete = async (item) => {
-    const res = await Swal.fire({
+    const result = await Swal.fire({
       title: "Excluir item?",
       text: `Deseja excluir o item "${item.name}"?`,
       icon: "warning",
@@ -38,16 +38,18 @@ export default function EstablishmentItemPage() {
       confirmButtonColor: "#d33",
     });
 
-    if (!res.isConfirmed) return;
+    if (!result.isConfirmed) return;
 
     try {
       await api.delete(`/item/${item.id}`);
-      Swal.fire("Excluído", "Item removido com sucesso.", "success");
+      await Swal.fire("Excluído", "Item removido com sucesso.", "success");
       reload();
-    } catch (err) {
-      Swal.fire(
+    } catch (error) {
+      await Swal.fire(
         "Erro",
-        err?.response?.data?.error || "Erro ao excluir item.",
+        error?.response?.data?.error ||
+          error?.response?.data?.message ||
+          "Erro ao excluir item.",
         "error"
       );
     }
@@ -61,11 +63,13 @@ export default function EstablishmentItemPage() {
         <EstablishmentHero
           title={establishment.fantasy || establishment.name}
           subtitle="Produtos e serviços cadastrados"
-          description="Gerencie os produtos e serviços do estabelecimento. Serviços utilizam o tempo de duração para calcular automaticamente o tempo das ordens de serviço."
+          description="Gerencie os produtos e serviços que aparecem no catálogo público desta empresa."
           city={establishment.city}
           uf={establishment.uf}
           logo={establishment?.images?.logo || establishment.logo}
-          background={establishment?.images?.background || establishment.background}
+          background={
+            establishment?.images?.background || establishment.background
+          }
           showBack
         />
       )}
@@ -77,13 +81,15 @@ export default function EstablishmentItemPage() {
           </div>
         )}
 
-        {!loading && apiError && (
-          <Alert variant="danger">{apiError}</Alert>
-        )}
+        {!loading && apiError && <Alert variant="danger">{apiError}</Alert>}
 
         {!loading && establishment && (
           <>
-            <div className="d-flex justify-content-end mb-4">
+            <div className="d-flex justify-content-between align-items-center gap-3 mb-4 flex-wrap">
+              <div className="text-light-50">
+                {count} {count === 1 ? "item cadastrado" : "itens cadastrados"}
+              </div>
+
               <GlobalButton
                 variant="success"
                 onClick={() =>
@@ -97,8 +103,7 @@ export default function EstablishmentItemPage() {
                         description: establishment.description,
                         city: establishment.city,
                         uf: establishment.uf,
-                        logo:
-                          establishment?.images?.logo || establishment.logo,
+                        logo: establishment?.images?.logo || establishment.logo,
                         background:
                           establishment?.images?.background ||
                           establishment.background,
@@ -111,53 +116,54 @@ export default function EstablishmentItemPage() {
               </GlobalButton>
             </div>
 
-            {count === 0 && (
+            {count === 0 ? (
               <Alert variant="secondary">
-                Nenhum item cadastrado para este estabelecimento.
+                Nenhum item cadastrado para esta empresa. Cadastre o primeiro
+                produto ou serviço para começar a montar o catálogo.
               </Alert>
+            ) : (
+              <Row className="g-4">
+                {items.map((item) => (
+                  <Col key={item.id} xs={12} md={6} lg={4}>
+                    <GlobalCard
+                      item={item}
+                      fmtBRL={fmtBRL}
+                      navigate={navigate}
+                      actions={
+                        <div className="d-flex gap-2">
+                          <GlobalButton
+                            variant="outline"
+                            size="sm"
+                            full
+                            onClick={() => navigate(`/item/view/${item.slug}`)}
+                          >
+                            Ver
+                          </GlobalButton>
+
+                          <GlobalButton
+                            variant="warning"
+                            size="sm"
+                            full
+                            onClick={() => navigate(`/item/update/${item.id}`)}
+                          >
+                            Editar
+                          </GlobalButton>
+
+                          <GlobalButton
+                            variant="danger"
+                            size="sm"
+                            full
+                            onClick={() => handleDelete(item)}
+                          >
+                            Excluir
+                          </GlobalButton>
+                        </div>
+                      }
+                    />
+                  </Col>
+                ))}
+              </Row>
             )}
-
-            <Row className="g-4">
-              {items.map((item) => (
-                <Col key={item.id} xs={12} md={6} lg={4}>
-                  <GlobalCard
-                    item={item}
-                    fmtBRL={fmtBRL}
-                    navigate={(path) => navigate(path)}
-                    actions={
-                      <div className="d-flex gap-2">
-                        <GlobalButton
-                          variant="outline"
-                          size="sm"
-                          full
-                          onClick={() => navigate(`/item/${item.slug}`)}
-                        >
-                          Ver
-                        </GlobalButton>
-
-                        <GlobalButton
-                          variant="warning"
-                          size="sm"
-                          full
-                          onClick={() => navigate(`/item/update/${item.id}`)}
-                        >
-                          Editar
-                        </GlobalButton>
-
-                        <GlobalButton
-                          variant="danger"
-                          size="sm"
-                          full
-                          onClick={() => handleDelete(item)}
-                        >
-                          Excluir
-                        </GlobalButton>
-                      </div>
-                    }
-                  />
-                </Col>
-              ))}
-            </Row>
           </>
         )}
       </Container>
