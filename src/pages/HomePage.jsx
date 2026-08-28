@@ -10,6 +10,7 @@ import { appId } from "../config";
 import useImageUtils from "../hooks/useImageUtils";
 
 import "./HomePage.css";
+import "./HomeDiscovery.css";
 
 const formatPrice = (value) => {
   if (value === null || value === undefined || value === "" || !Number.isFinite(Number(value))) return null;
