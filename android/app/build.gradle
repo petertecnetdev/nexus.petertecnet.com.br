@@ -7,11 +7,11 @@ if (keystorePropertiesFile.exists()) {
 apply plugin: 'com.android.application'
 
 android {
-    namespace "com.rasoio.app"
+    namespace "com.petertecnet.nexus"
     compileSdkVersion 33
 
     defaultConfig {
-        applicationId "com.rasoio.app"
+        applicationId "com.petertecnet.nexus"
         minSdkVersion 21
         targetSdkVersion 33
         versionCode 1
