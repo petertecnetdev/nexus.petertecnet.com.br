@@ -6,14 +6,10 @@ import useImageUtils from "../hooks/useImageUtils";
 import GlobalButton from "./GlobalButton";
 import "./GlobalCard.css";
 
-export default function GlobalCard({
-  item,
-  fmtBRL,
-  navigate,
-  showSchedule,
-  openSchedulePopup,
-  actions,
-}) {
+const hasPrice = (value) =>
+  value !== null && value !== undefined && value !== "" && Number.isFinite(Number(value));
+
+export default function GlobalCard({ item, fmtBRL, navigate, actions }) {
   const { imageUrl, handleImgError: baseHandleImgError } = useImageUtils();
   const cardRef = useRef(null);
   const [broken, setBroken] = useState(false);
@@ -60,16 +56,12 @@ export default function GlobalCard({
 
   const getInitials = useCallback(() => {
     if (!safeItem.name) return "?";
-    const parts = safeItem.name.trim().split(" ");
+    const parts = safeItem.name.trim().split(/\s+/).filter(Boolean);
+    if (!parts.length) return "?";
     return parts.length === 1
       ? parts[0][0].toUpperCase()
-      : parts[0][0].toUpperCase() + parts.at(-1)[0].toUpperCase();
-  }, [safeItem]);
-
-  const getShape = useCallback(() => {
-    if (safeItem.type === "establishment") return "img-establishment";
-    return "img-square";
-  }, [safeItem]);
+      : `${parts[0][0]}${parts.at(-1)[0]}`.toUpperCase();
+  }, [safeItem.name]);
 
   const handleDetails = () => {
     if (typeof navigate !== "function" || !safeItem.slug) return;
@@ -86,7 +78,6 @@ export default function GlobalCard({
     navigate(`/catalog/${establishment.slug}`);
   };
 
-  const shape = getShape();
   const isEstablishment = safeItem.type === "establishment";
 
   const placeholderSvg = useMemo(() => {
@@ -100,12 +91,16 @@ export default function GlobalCard({
   return (
     <div
       ref={cardRef}
-      className={`carousel-card hologram-container type-${safeItem.type} ${isEstablishment ? "establishment-horizontal" : ""}`}
+      className={`carousel-card hologram-container type-${safeItem.type || "item"} ${isEstablishment ? "establishment-horizontal" : ""}`}
     >
       <div
-        className={`carousel-image-wrap ${shape}`}
+        className={`carousel-image-wrap ${isEstablishment ? "img-establishment" : "img-square"}`}
         onClick={handleDetails}
+        onKeyDown={(event) => {
+          if ((event.key === "Enter" || event.key === " ") && navigate) handleDetails();
+        }}
         role={navigate ? "button" : undefined}
+        tabIndex={navigate ? 0 : undefined}
       >
         <img
           src={image && !broken ? image : placeholderSvg}
@@ -117,14 +112,36 @@ export default function GlobalCard({
       </div>
 
       <div className="carousel-item-content">
-        <div className="carousel-item-name" onClick={handleDetails} role={navigate ? "button" : undefined}>
+        <div
+          className="carousel-item-name"
+          onClick={handleDetails}
+          onKeyDown={(event) => {
+            if ((event.key === "Enter" || event.key === " ") && navigate) handleDetails();
+          }}
+          role={navigate ? "button" : undefined}
+          tabIndex={navigate ? 0 : undefined}
+        >
           {safeItem.name}
         </div>
 
         {!isEstablishment && establishment?.name && (
-          <div className="globalcard-establishment d-flex align-items-center gap-2 mt-1" role="button" onClick={handleEstablishmentClick}>
+          <div
+            className="globalcard-establishment d-flex align-items-center gap-2 mt-1"
+            role="button"
+            tabIndex={0}
+            onClick={handleEstablishmentClick}
+            onKeyDown={(event) => {
+              if (event.key === "Enter" || event.key === " ") handleEstablishmentClick(event);
+            }}
+          >
             {establishmentLogo && (
-              <img src={establishmentLogo} alt={establishment.name} className="globalcard-establishment-logo" onError={handleImgError} />
+              <img
+                src={establishmentLogo}
+                alt={`Logo de ${establishment.name}`}
+                className="globalcard-establishment-logo"
+                onError={handleImgError}
+                loading="lazy"
+              />
             )}
             <span className="globalcard-establishment-name">{establishment.name}</span>
           </div>
@@ -132,12 +149,12 @@ export default function GlobalCard({
 
         {(safeItem.city || safeItem.uf) && (
           <div className="globalcard-location d-flex align-items-center gap-1 mt-1">
-            <FaMapMarkerAlt size={12} className="text-warning" />
+            <FaMapMarkerAlt size={12} className="text-warning" aria-hidden="true" />
             <span className="text-light-50">{safeItem.city}{safeItem.uf ? ` - ${safeItem.uf}` : ""}</span>
           </div>
         )}
 
-        {safeItem.price !== undefined && (
+        {hasPrice(safeItem.price) && (
           <div className="carousel-item-price">{fmtBRL(safeItem.price)}</div>
         )}
 
@@ -149,32 +166,17 @@ export default function GlobalCard({
           </div>
         )}
 
-        {safeItem.duration !== null && safeItem.duration !== undefined && (
-          <div className="text-light-50 small mb-1">{safeItem.duration} min</div>
-        )}
-
         <div className="d-flex flex-wrap gap-2 mt-2">
           {safeItem.category && <Badge bg="secondary">{safeItem.category}</Badge>}
           {safeItem.brand && <Badge bg="secondary">{safeItem.brand}</Badge>}
-          {safeItem.metrics?.total_views !== undefined && (
-            <Badge bg="secondary" className="px-2 py-1 rounded-pill">
-              {safeItem.metrics.total_views ?? 0} visualizações
-            </Badge>
-          )}
         </div>
 
-        {navigate && (
+        {navigate && safeItem.slug && (
           <div className="mt-2">
             <GlobalButton type="button" size="sm" variant="outline" stopPropagation className="px-4" onClick={handleDetails}>
               Detalhes
             </GlobalButton>
           </div>
-        )}
-
-        {showSchedule && typeof openSchedulePopup === "function" && (
-          <GlobalButton type="button" size="sm" full variant="primary" stopPropagation onClick={() => openSchedulePopup(safeItem)} className="mt-2">
-            Agendar
-          </GlobalButton>
         )}
 
         {actions && <div className="mt-3 establishment-actions-slot">{actions}</div>}
@@ -187,13 +189,9 @@ GlobalCard.propTypes = {
   item: PropTypes.object,
   fmtBRL: PropTypes.func,
   navigate: PropTypes.func,
-  showSchedule: PropTypes.bool,
-  openSchedulePopup: PropTypes.func,
   actions: PropTypes.node,
 };
 
 GlobalCard.defaultProps = {
   fmtBRL: (value) => value,
-  showSchedule: false,
-  openSchedulePopup: null,
 };
