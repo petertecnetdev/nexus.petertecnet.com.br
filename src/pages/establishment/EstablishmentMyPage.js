@@ -17,9 +17,7 @@ export default function EstablishmentMyPage() {
     return (
       <>
         <GlobalNav />
-        <Container className="text-center mt-5">
-          <Spinner animation="border" />
-        </Container>
+        <Container className="text-center mt-5"><Spinner animation="border" /></Container>
       </>
     );
   }
@@ -28,9 +26,7 @@ export default function EstablishmentMyPage() {
     return (
       <>
         <GlobalNav />
-        <Container className="mt-4">
-          <Alert variant="danger">{apiError}</Alert>
-        </Container>
+        <Container className="mt-4"><Alert variant="danger">{apiError}</Alert></Container>
       </>
     );
   }
@@ -42,8 +38,8 @@ export default function EstablishmentMyPage() {
       {heroEstablishment && (
         <EstablishmentHero
           title={heroEstablishment.fantasy || heroEstablishment.name}
-          subtitle="Gestão central dos seus negócios"
-          description="Acompanhe métricas, acesse rapidamente cada estabelecimento e gerencie serviços, itens, colaboradores e pedidos em um só lugar."
+          subtitle="Seus catálogos online"
+          description="Gerencie empresas e itens e compartilhe cada catálogo por link ou QR Code."
           city={heroEstablishment.city}
           uf={heroEstablishment.uf}
           logo={heroEstablishment?.images?.logo}
@@ -53,32 +49,26 @@ export default function EstablishmentMyPage() {
       )}
 
       <Container fluid className="establishment-my-wrapper mt-4">
-        {/* ✅ Botão de criar novo estabelecimento */}
         <Row className="mb-3">
           <Col xs={12} className="d-flex justify-content-end">
-            <Button
-              variant="primary"
-              onClick={() => navigate("/establishment/create")}
-            >
-              + Novo Estabelecimento
+            <Button variant="primary" onClick={() => navigate("/establishment/create")}>
+              + Cadastrar empresa
             </Button>
           </Col>
         </Row>
 
         {establishments.length === 0 && (
           <Row>
-            <Col xs={12} className="text-center text-muted">
-              Nenhum estabelecimento encontrado.
+            <Col xs={12}>
+              <Alert variant="secondary">
+                Você ainda não cadastrou nenhuma empresa. Cadastre a primeira para criar seu catálogo online.
+              </Alert>
             </Col>
           </Row>
         )}
 
         {establishments.map((est) => (
-          <EstablishmentDashboard
-            key={est.id}
-            establishment={est}
-            navigate={navigate}
-          />
+          <EstablishmentDashboard key={est.id} establishment={est} navigate={navigate} />
         ))}
       </Container>
     </>
