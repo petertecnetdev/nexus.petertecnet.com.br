@@ -1,12 +1,11 @@
 // src/pages/catalog/CatalogPage.jsx
 import React, { useMemo, useState } from "react";
 import { Alert, Badge, Col, Container, Form, Row, Spinner } from "react-bootstrap";
-import { Link, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { FaLink, FaWhatsapp } from "react-icons/fa";
 
 import GlobalNav from "../../components/GlobalNav";
 import GlobalCard from "../../components/GlobalCard";
-import GlobalButton from "../../components/GlobalButton";
 import useEstablishmentItemsByIdentifier from "../../hooks/useEstablishmentItemsByIdentifier";
 import useWhatsappLink from "../../hooks/useWhatsappLink";
 import { linkApp } from "../../config";
@@ -21,6 +20,7 @@ function normalizeText(value) {
 
 export default function CatalogPage() {
   const { slug } = useParams();
+  const navigate = useNavigate();
   const { establishment, items, loading, apiError } =
     useEstablishmentItemsByIdentifier(slug);
   const [query, setQuery] = useState("");
@@ -48,14 +48,8 @@ export default function CatalogPage() {
         category === "all" || normalizeText(item.category) === normalizeText(category);
       if (!matchesCategory) return false;
       if (!needle) return true;
-
-      return [
-        item.name,
-        item.description,
-        item.category,
-        item.subcategory,
-        item.brand,
-      ].some((value) => normalizeText(value).includes(needle));
+      return [item.name, item.description, item.category, item.subcategory, item.brand]
+        .some((value) => normalizeText(value).includes(needle));
     });
   }, [activeItems, query, category]);
 
@@ -79,11 +73,11 @@ export default function CatalogPage() {
           url: catalogUrl,
         });
         return;
-      } catch {
-        return;
+      } catch (error) {
+        if (error?.name === "AbortError") return;
       }
     }
-    copyCatalogUrl();
+    await copyCatalogUrl();
   };
 
   if (loading) {
@@ -103,9 +97,7 @@ export default function CatalogPage() {
       <>
         <GlobalNav />
         <Container className="py-5">
-          <Alert variant="danger">
-            {apiError || "Catálogo não encontrado."}
-          </Alert>
+          <Alert variant="danger">{apiError || "Catálogo não encontrado."}</Alert>
         </Container>
       </>
     );
@@ -121,11 +113,9 @@ export default function CatalogPage() {
 
       <section
         className="catalog-hero"
-        style={
-          background
-            ? { backgroundImage: `linear-gradient(rgba(2,8,18,.76), rgba(2,8,18,.92)), url(${background})` }
-            : undefined
-        }
+        style={background ? {
+          backgroundImage: `linear-gradient(rgba(2,8,18,.76), rgba(2,8,18,.92)), url(${background})`,
+        } : undefined}
       >
         <Container>
           <div className="catalog-hero__content">
@@ -172,18 +162,8 @@ export default function CatalogPage() {
                 <GlobalCard
                   item={item}
                   fmtBRL={fmtBRL}
-                  navigate={() => {}}
+                  navigate={navigate}
                   showSchedule={false}
-                  actions={
-                    <GlobalButton
-                      full
-                      variant="outline"
-                      as={Link}
-                      to={`/item/${item.slug}`}
-                    >
-                      Ver detalhes
-                    </GlobalButton>
-                  }
                 />
               </Col>
             ))}
@@ -200,9 +180,7 @@ export default function CatalogPage() {
             </p>
             <div className="catalog-share__url">{catalogUrl}</div>
             <div className="catalog-share__actions">
-              <button type="button" onClick={copyCatalogUrl}>
-                <FaLink /> Copiar link
-              </button>
+              <button type="button" onClick={copyCatalogUrl}><FaLink /> Copiar link</button>
               <button type="button" onClick={shareCatalog}>Compartilhar</button>
               {whatsappLink && (
                 <a href={whatsappLink} target="_blank" rel="noreferrer">
