@@ -1,4 +1,3 @@
-// src/pages/HomePage.jsx
 import React from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -8,6 +7,7 @@ import useHome from "../hooks/useHome";
 import GlobalNav from "../components/GlobalNav";
 import GlobalFooter from "../components/GlobalFooter";
 import GlobalCarousel from "../components/GlobalCarousel";
+import ProcessingIndicatorComponent from "../components/ProcessingIndicatorComponent";
 
 import "./HomePage.css";
 
@@ -17,27 +17,7 @@ export default function HomePage() {
   const navigate = useNavigate();
 
   if (isLoading) {
-    return (
-      <>
-        <GlobalNav />
-        <div className="hp-wrapper hp-centered">
-          <div className="hp-loading">Carregando…</div>
-        </div>
-        <GlobalFooter />
-      </>
-    );
-  }
-
-  if (error) {
-    return (
-      <>
-        <GlobalNav />
-        <div className="hp-wrapper hp-centered">
-          <div className="hp-loading">{error}</div>
-        </div>
-        <GlobalFooter />
-      </>
-    );
+    return <ProcessingIndicatorComponent messages={["Carregando catálogos…", "Organizando produtos e serviços…"]} />;
   }
 
   return (
@@ -45,26 +25,55 @@ export default function HomePage() {
       <GlobalNav />
 
       <main className="hp-wrapper">
-        <GlobalCarousel
-          title="Catálogos"
-          items={establishments}
-          navigate={navigate}
-          showSchedule={false}
-        />
+        <section className="hp-hero">
+          <div className="hp-hero__copy">
+            <span className="hp-eyebrow">Seu catálogo. Um link. Um QR Code.</span>
+            <h1>Apresente sua empresa e seus itens de um jeito simples.</h1>
+            <p>
+              Cadastre sua empresa, organize produtos e serviços e compartilhe um catálogo
+              profissional que funciona em qualquer celular.
+            </p>
 
-        <GlobalCarousel
-          title="Serviços"
-          items={serviceItems}
-          navigate={navigate}
-          showSchedule={false}
-        />
+            <div className="hp-hero__actions">
+              <button type="button" className="hp-primary-action" onClick={() => navigate("/register")}>
+                Criar meu catálogo
+              </button>
+              <button type="button" className="hp-secondary-action" onClick={() => navigate("/establishments")}>
+                Explorar catálogos
+              </button>
+            </div>
 
-        <GlobalCarousel
-          title="Produtos"
-          items={productItems}
-          navigate={navigate}
-          showSchedule={false}
-        />
+            <div className="hp-benefits" aria-label="Benefícios da Nexus">
+              <span><i className="fas fa-qrcode" /> QR Code automático</span>
+              <span><i className="fas fa-link" /> Link público</span>
+              <span><i className="fas fa-mobile-alt" /> Feito para celular</span>
+            </div>
+          </div>
+
+          <div className="hp-hero__visual" aria-hidden="true">
+            <div className="hp-orbit hp-orbit--one" />
+            <div className="hp-orbit hp-orbit--two" />
+            <div className="hp-logo-card">
+              <img src="/images/logo.png" alt="" />
+              <strong>Nexus</strong>
+              <span>catálogo online</span>
+            </div>
+          </div>
+        </section>
+
+        {error && <div className="hp-error">{error}</div>}
+
+        <section className="hp-content">
+          <div className="hp-section-intro">
+            <span className="hp-eyebrow">Descubra</span>
+            <h2>Catálogos publicados na Nexus</h2>
+            <p>Empresas, produtos e serviços organizados em uma experiência direta e fácil de compartilhar.</p>
+          </div>
+
+          <GlobalCarousel title="Catálogos" items={establishments} navigate={navigate} showSchedule={false} />
+          <GlobalCarousel title="Produtos" items={productItems} navigate={navigate} showSchedule={false} />
+          <GlobalCarousel title="Serviços" items={serviceItems} navigate={navigate} showSchedule={false} />
+        </section>
       </main>
 
       <GlobalFooter />
