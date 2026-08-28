@@ -1,9 +1,9 @@
-// src/components/auth/LoginFormComponent.jsx
 import React, { useState } from "react";
 import { Form, Button } from "react-bootstrap";
 import { GoogleLogin } from "@react-oauth/google";
 import PropTypes from "prop-types";
 import useLogin from "../../hooks/useLogin";
+import NexusFeedback from "../NexusFeedback";
 import "./LoginFormComponent.css";
 
 export default function LoginFormComponent({
@@ -14,35 +14,65 @@ export default function LoginFormComponent({
 }) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
 
   const { login, loginGoogle } = useLogin(
     (token) => {
+      setErrorMessage("");
       onSuccess?.(token);
     },
     redirectTo
   );
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    setErrorMessage("");
     onStart?.();
-    login(username, password).catch(() => onError?.());
+
+    try {
+      await login(username, password);
+    } catch (error) {
+      setErrorMessage(error?.message || "Não foi possível entrar na sua conta.");
+      onError?.(error);
+    }
   };
 
-  const handleGoogleSuccess = (credentialResponse) => {
+  const handleGoogleSuccess = async (credentialResponse) => {
+    setErrorMessage("");
     onStart?.();
-    loginGoogle(credentialResponse?.credential || null).catch(() =>
-      onError?.()
-    );
+
+    try {
+      await loginGoogle(credentialResponse?.credential || null);
+    } catch (error) {
+      setErrorMessage(error?.message || "Não foi possível entrar com o Google.");
+      onError?.(error);
+    }
+  };
+
+  const handleGoogleError = () => {
+    const message = "O Google não concluiu o acesso. Tente novamente ou use seu e-mail e senha.";
+    setErrorMessage(message);
+    onError?.(new Error(message));
   };
 
   return (
     <Form onSubmit={handleSubmit} className="login-form-component mt-4">
+      {errorMessage && (
+        <NexusFeedback type="error" title="Não conseguimos entrar" compact className="mb-3">
+          {errorMessage}
+        </NexusFeedback>
+      )}
+
       <Form.Control
         type="text"
         placeholder="Usuário ou e-mail"
         className="neon-input mb-3"
         value={username}
-        onChange={(e) => setUsername(e.target.value)}
+        onChange={(event) => {
+          setUsername(event.target.value);
+          if (errorMessage) setErrorMessage("");
+        }}
+        autoComplete="username"
         required
       />
 
@@ -51,7 +81,11 @@ export default function LoginFormComponent({
         placeholder="Senha"
         className="neon-input mb-4"
         value={password}
-        onChange={(e) => setPassword(e.target.value)}
+        onChange={(event) => {
+          setPassword(event.target.value);
+          if (errorMessage) setErrorMessage("");
+        }}
+        autoComplete="current-password"
         required
       />
 
@@ -62,7 +96,7 @@ export default function LoginFormComponent({
       <div className="w-100 mb-3 d-flex justify-content-center">
         <GoogleLogin
           onSuccess={handleGoogleSuccess}
-          onError={onError}
+          onError={handleGoogleError}
           width="100%"
           theme="outline"
           size="large"
