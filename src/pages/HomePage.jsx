@@ -7,6 +7,7 @@ import useHome from "../hooks/useHome";
 import GlobalNav from "../components/GlobalNav";
 import GlobalFooter from "../components/GlobalFooter";
 import GlobalCarousel from "../components/GlobalCarousel";
+import NexusFeedback from "../components/NexusFeedback";
 import ProcessingIndicatorComponent from "../components/ProcessingIndicatorComponent";
 
 import "./HomePage.css";
@@ -61,7 +62,11 @@ export default function HomePage() {
           </div>
         </section>
 
-        {error && <div className="hp-error">{error}</div>}
+        {error && (
+          <NexusFeedback type="error" title="Não foi possível carregar o conteúdo" className="mb-4">
+            {error}
+          </NexusFeedback>
+        )}
 
         <section className="hp-content">
           <div className="hp-section-intro">
