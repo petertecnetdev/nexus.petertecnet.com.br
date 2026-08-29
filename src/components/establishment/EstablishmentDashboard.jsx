@@ -22,7 +22,7 @@ export default function EstablishmentDashboard({ establishment, navigate, onDele
   const location = [establishment.city, establishment.uf].filter(Boolean).join(" - ");
 
   return (
-    <article className="company-card">
+    <article className="company-card" data-card-kind="establishment">
       <button
         type="button"
         className="company-card__visual"
@@ -30,12 +30,26 @@ export default function EstablishmentDashboard({ establishment, navigate, onDele
         aria-label={`Abrir catálogo de ${name}`}
       >
         <img src={image} alt={name} loading="lazy" />
+        <span className="company-card__entity-badge">
+          <i className="fas fa-building" aria-hidden="true" />
+          Estabelecimento
+        </span>
         <span className="company-card__status">
           <span className="company-card__status-dot" /> catálogo
         </span>
       </button>
 
       <div className="company-card__body">
+        <div className="company-card__kind-row" aria-hidden="true">
+          <span className="company-card__kind-icon">
+            <i className="fas fa-store" />
+          </span>
+          <span>
+            <strong>Empresa</strong>
+            <small>contém catálogo e itens</small>
+          </span>
+        </div>
+
         <div className="company-card__title-row">
           <div className="company-card__title-wrap">
             <h2 title={name}>{name}</h2>
