@@ -14,18 +14,78 @@
 }
 .carousel-card::before { content:""; position:absolute; z-index:2; inset:0 auto auto 0; width:100%; height:3px; background:var(--nx-gradient); opacity:.9; }
 .carousel-card:hover { transform:translateY(-3px); border-color:#8dbce5; box-shadow:0 20px 46px rgba(16,38,72,.16); }
+
+/* ITEM: card comercial, vertical, azul e orientado a produto/serviço. */
+.carousel-card.item-commerce-card {
+  border-color: #c7d9ed;
+  background:
+    radial-gradient(circle at 100% 0%, rgba(33,134,201,.11), transparent 34%),
+    linear-gradient(155deg, #ffffff 0%, #f5f9fd 100%);
+  box-shadow: 0 14px 34px rgba(18,60,97,.12);
+}
+.carousel-card.item-commerce-card::before { background: linear-gradient(90deg, #123c61, #175cd3, #2186c9); }
+.carousel-card.item-commerce-card:hover { border-color:#6ea7d7; box-shadow:0 22px 48px rgba(18,60,97,.19); }
+
+/* ESTABELECIMENTO dentro do GlobalCard: mantém linguagem institucional e formato próprio. */
+.carousel-card.establishment-horizontal {
+  border-color: rgba(183,242,12,.25);
+  background: linear-gradient(145deg, #0c1713, #101d18);
+  color: #f4f7f5;
+}
+.carousel-card.establishment-horizontal::before { background: var(--nx-gradient); }
+.carousel-card.establishment-horizontal .carousel-item-name { color:#f4f7f5; }
+.carousel-card.establishment-horizontal .carousel-item-name:hover { color:var(--nx-primary); }
+.carousel-card.establishment-horizontal .text-light-50 { color:rgba(236,244,239,.66)!important; }
+
 .carousel-image-wrap { position:relative; width:100%; aspect-ratio:4/3; overflow:hidden; border:1px solid #d4dfeb; border-radius:14px; background:#e9f0f7; cursor:pointer; }
+.item-commerce-card .carousel-image-wrap { aspect-ratio: 1/1; border-color:#cadbeb; background:#eaf2f9; }
+.establishment-horizontal .carousel-image-wrap { aspect-ratio:16/9; border-color:rgba(183,242,12,.14); background:#07100d; }
 .carousel-image { width:100%; height:100%; display:block; object-fit:cover; transition:transform .32s ease, filter .32s ease; }
 .carousel-image-wrap:hover .carousel-image { transform:scale(1.035); }
-.img-round { border-radius:50%; } .img-establishment { border-radius:14px; } .img-square { border-radius:12px; }
+.img-round { border-radius:50%; }
+.img-establishment { border-radius:14px; }
+.img-square { border-radius:12px; }
+
+.globalcard-entity-badge {
+  position:absolute;
+  z-index:4;
+  top:9px;
+  left:9px;
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding:6px 9px;
+  border-radius:8px;
+  backdrop-filter:blur(9px);
+  font-size:.64rem;
+  font-weight:900;
+  letter-spacing:.055em;
+  text-transform:uppercase;
+  pointer-events:none;
+}
+.globalcard-entity-badge--item { color:#fff; border:1px solid rgba(255,255,255,.25); background:rgba(18,60,97,.9); box-shadow:0 5px 16px rgba(9,38,67,.22); }
+.globalcard-entity-badge--establishment { color:#efffc3; border:1px solid rgba(217,255,113,.28); background:rgba(8,20,13,.88); }
+
 .globalcard-view-badge { position:absolute; z-index:3; right:8px; bottom:8px; display:inline-flex; align-items:center; gap:5px; padding:5px 8px; border:1px solid rgba(255,255,255,.18); border-radius:999px; color:#fff; background:rgba(11,23,48,.84); backdrop-filter:blur(8px); box-shadow:0 6px 18px rgba(0,0,0,.22); font-size:.7rem; font-weight:800; pointer-events:none; }
 .carousel-item-content { display:flex; flex:1; flex-direction:column; gap:7px; padding:12px 4px 4px; }
+
+.globalcard-item-context { display:flex; align-items:center; gap:8px; margin-bottom:2px; padding:0 0 9px; border-bottom:1px solid #dbe7f2; }
+.globalcard-item-context__icon { width:30px; height:30px; flex:0 0 30px; display:grid; place-items:center; border:1px solid #bfd5e9; border-radius:9px; color:#175cd3; background:#edf5fc; }
+.globalcard-item-context > span:last-child { display:flex; flex-direction:column; line-height:1.12; }
+.globalcard-item-context strong { color:#175cd3; font-size:.69rem; font-weight:900; letter-spacing:.07em; text-transform:uppercase; }
+.globalcard-item-context small { margin-top:3px; color:#72849a; font-size:.64rem; }
+
 .carousel-item-name { margin:0; color:#14243c; font-size:1rem; font-weight:850; line-height:1.3; cursor:pointer; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+.item-commerce-card .carousel-item-name { font-size:1.04rem; font-weight:900; }
 .carousel-item-name:hover { color:#175cd3; }
 .globalcard-establishment { display:inline-flex; align-items:center; color:#53677f; font-size:.79rem; font-weight:600; transition:color .16s ease; }
 .globalcard-establishment:hover { color:#175cd3; }
 .globalcard-establishment-logo { width:22px; height:22px; object-fit:cover; border:1px solid #d2deea; border-radius:7px; }
+.globalcard-establishment-prefix { color:#8493a5; font-size:.69rem; text-transform:uppercase; letter-spacing:.05em; }
+.globalcard-establishment-name { font-weight:750; }
 .globalcard-location { color:#657890; font-size:.77rem; }
+.item-commerce-card .globalcard-location svg { color:#2186c9; }
+
 .carousel-item-price {
   width:fit-content;
   margin:7px 0 3px;
@@ -40,10 +100,19 @@
   font-weight:900;
   letter-spacing:.01em;
 }
+.item-commerce-card .carousel-item-price { margin-top:9px; font-size:1.18rem; }
 .carousel-card .text-light-50 { color:#5c6f86 !important; font-size:.82rem; line-height:1.55; }
 .carousel-card .badge { color:#455b73; background:#edf3f8 !important; border:1px solid #d2deea; border-radius:999px; font-size:.68rem; font-weight:750; }
 .carousel-card .gbtn { border-radius:10px; }
 .carousel-card .gbtn-primary { color:#fff; background:var(--nx-gradient); box-shadow:none; }
 .carousel-card .gbtn-primary:hover { filter:brightness(1.04); }
+.item-commerce-card .gbtn-outline { border-color:#b9cee2; color:#244e74; background:#f7fbff; }
+.item-commerce-card .gbtn-outline:hover { border-color:#6fa6d5; color:#143f67; background:#edf6fd; }
 .establishment-actions-slot { margin-top:9px; padding-top:9px; border-top:1px solid #dbe4ef; }
-@media (max-width:576px) { .carousel-card{padding:8px;border-radius:16px}.carousel-image-wrap{border-radius:12px}.carousel-item-price{font-size:1.08rem;padding:8px 11px} }
+
+@media (max-width:576px) {
+  .carousel-card{padding:8px;border-radius:16px}
+  .carousel-image-wrap{border-radius:12px}
+  .carousel-item-price{font-size:1.08rem;padding:8px 11px}
+  .globalcard-entity-badge{font-size:.59rem;padding:5px 8px}
+}
