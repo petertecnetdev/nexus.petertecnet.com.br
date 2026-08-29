@@ -37,6 +37,7 @@ import CatalogPage from "./pages/catalog/CatalogPage";
 import "./index.css";
 import "./styles/readability.css";
 import "./styles/form-contrast-dark.css";
+import "./styles/page-consistency.css";
 
 export const AuthContext = createContext(null);
 
