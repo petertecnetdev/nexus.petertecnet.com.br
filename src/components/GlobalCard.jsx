@@ -96,6 +96,13 @@ export default function GlobalCard({ item, fmtBRL, navigate, actions }) {
   };
 
   const isEstablishment = safeItem.type === "establishment";
+  const normalizedType = String(safeItem.type || safeItem.category || "item").toLowerCase();
+  const itemTypeLabel = normalizedType === "service"
+    ? "Serviço"
+    : normalizedType === "product"
+      ? "Produto"
+      : "Item";
+  const itemTypeIcon = normalizedType === "service" ? "fa-screwdriver-wrench" : "fa-box";
   const totalViews = Number(safeItem.total_views || 0);
 
   const placeholderSvg = useMemo(() => {
@@ -109,7 +116,8 @@ export default function GlobalCard({ item, fmtBRL, navigate, actions }) {
   return (
     <div
       ref={cardRef}
-      className={`carousel-card hologram-container type-${safeItem.type || "item"} ${isEstablishment ? "establishment-horizontal" : ""}`}
+      className={`carousel-card hologram-container type-${safeItem.type || "item"} ${isEstablishment ? "establishment-horizontal" : "item-commerce-card"}`}
+      data-card-kind={isEstablishment ? "establishment" : "item"}
     >
       <div
         className={`carousel-image-wrap ${isEstablishment ? "img-establishment" : "img-square"}`}
@@ -127,6 +135,12 @@ export default function GlobalCard({ item, fmtBRL, navigate, actions }) {
           className="carousel-image"
           onError={handleImgError}
         />
+
+        <span className={`globalcard-entity-badge ${isEstablishment ? "globalcard-entity-badge--establishment" : "globalcard-entity-badge--item"}`}>
+          <i className={`fas ${isEstablishment ? "fa-building" : itemTypeIcon}`} aria-hidden="true" />
+          {isEstablishment ? "Estabelecimento" : `Item · ${itemTypeLabel}`}
+        </span>
+
         {!isEstablishment && (
           <span className="globalcard-view-badge" title={`${totalViews} visualizações`}>
             <FaEye aria-hidden="true" /> {totalViews.toLocaleString("pt-BR")}
@@ -135,6 +149,18 @@ export default function GlobalCard({ item, fmtBRL, navigate, actions }) {
       </div>
 
       <div className="carousel-item-content">
+        {!isEstablishment && (
+          <div className="globalcard-item-context" aria-hidden="true">
+            <span className="globalcard-item-context__icon">
+              <i className={`fas ${itemTypeIcon}`} />
+            </span>
+            <span>
+              <strong>{itemTypeLabel}</strong>
+              <small>item do catálogo</small>
+            </span>
+          </div>
+        )}
+
         <div
           className="carousel-item-name"
           onClick={handleDetails}
@@ -166,13 +192,14 @@ export default function GlobalCard({ item, fmtBRL, navigate, actions }) {
                 loading="lazy"
               />
             )}
+            <span className="globalcard-establishment-prefix">Em</span>
             <span className="globalcard-establishment-name">{establishment.name}</span>
           </div>
         )}
 
         {(safeItem.city || safeItem.uf) && (
           <div className="globalcard-location d-flex align-items-center gap-1 mt-1">
-            <FaMapMarkerAlt size={12} className="text-warning" aria-hidden="true" />
+            <FaMapMarkerAlt size={12} aria-hidden="true" />
             <span className="text-light-50">{safeItem.city}{safeItem.uf ? ` - ${safeItem.uf}` : ""}</span>
           </div>
         )}
@@ -197,7 +224,7 @@ export default function GlobalCard({ item, fmtBRL, navigate, actions }) {
         {navigate && safeItem.slug && (
           <div className="mt-2">
             <GlobalButton type="button" size="sm" variant="outline" stopPropagation className="px-4" onClick={handleDetails}>
-              Detalhes
+              {isEstablishment ? "Ver catálogo" : "Ver item"}
             </GlobalButton>
           </div>
         )}
