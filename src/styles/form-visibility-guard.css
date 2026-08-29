@@ -1,78 +1,132 @@
 /* =========================================================
-   NEXUS — Form visibility guard
-   Loaded last to guarantee readable values in every field.
+   NEXUS — Global form visibility guard
+   Loaded last. This is the final authority for field contrast
+   on auth, create, edit, account, establishment and item pages.
    ========================================================= */
 
-:root {
-  color-scheme: dark;
+:root { color-scheme: dark; }
+
+/* Canonical editor/page surfaces. */
+#root .establishment-root,
+#root .nexus-establishment-editor,
+#root .establishment-create-page,
+#root .item-create-root,
+#root .item-create-page,
+#root .item-update-root,
+#root .item-update-page,
+#root .user-update-page,
+#root .auth-page {
+  color: var(--nx-text, #f7fbff) !important;
 }
 
-input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
-textarea,
-select,
-.form-control,
-.form-select {
+/* All text-like controls. #root raises specificity above legacy page CSS. */
+#root input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+#root textarea,
+#root select,
+#root .form-control,
+#root .form-select,
+#root .input-group .form-control,
+#root .input-group .form-select,
+#root .form-group input,
+#root .form-group textarea,
+#root .form-group select,
+#root .establishment-create-page input,
+#root .establishment-create-page textarea,
+#root .establishment-create-page select,
+#root .item-create-page input,
+#root .item-create-page textarea,
+#root .item-create-page select,
+#root .item-update-page input,
+#root .item-update-page textarea,
+#root .item-update-page select,
+#root .user-update-page input,
+#root .user-update-page textarea,
+#root .user-update-page select {
   color: #f7fbff !important;
   -webkit-text-fill-color: #f7fbff !important;
   caret-color: #69d7ff !important;
+  background: #0d1a2b !important;
   background-color: #0d1a2b !important;
   border-color: #426887 !important;
+  opacity: 1 !important;
 }
 
-input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):focus,
-textarea:focus,
-select:focus,
-.form-control:focus,
-.form-select:focus {
+#root input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):focus,
+#root textarea:focus,
+#root select:focus,
+#root .form-control:focus,
+#root .form-select:focus,
+#root .form-group input:focus,
+#root .form-group textarea:focus,
+#root .form-group select:focus,
+#root .establishment-create-page input:focus,
+#root .establishment-create-page textarea:focus,
+#root .establishment-create-page select:focus,
+#root .item-create-page input:focus,
+#root .item-create-page textarea:focus,
+#root .item-create-page select:focus,
+#root .item-update-page input:focus,
+#root .item-update-page textarea:focus,
+#root .item-update-page select:focus,
+#root .user-update-page input:focus,
+#root .user-update-page textarea:focus,
+#root .user-update-page select:focus {
   color: #ffffff !important;
   -webkit-text-fill-color: #ffffff !important;
   caret-color: #69d7ff !important;
+  background: #132840 !important;
   background-color: #132840 !important;
   border-color: #59c7ff !important;
   box-shadow: 0 0 0 4px rgba(89,199,255,.18) !important;
+  outline: none !important;
 }
 
-input::placeholder,
-textarea::placeholder,
-.form-control::placeholder {
+#root input::placeholder,
+#root textarea::placeholder,
+#root .form-control::placeholder {
   color: #91a8bc !important;
   -webkit-text-fill-color: #91a8bc !important;
   opacity: 1 !important;
 }
 
-select option,
-select optgroup,
-.form-select option,
-.form-select optgroup {
+/* Native select popup must also use the dark theme. */
+#root select option,
+#root select optgroup,
+#root .form-select option,
+#root .form-select optgroup {
   color: #f7fbff !important;
+  -webkit-text-fill-color: #f7fbff !important;
   background: #0d1a2b !important;
+  background-color: #0d1a2b !important;
 }
 
-input:disabled,
-textarea:disabled,
-select:disabled,
-.form-control:disabled,
-.form-select:disabled,
-input[readonly],
-textarea[readonly],
-.form-control[readonly] {
+/* Read-only and disabled values stay visible instead of being faded away. */
+#root input:disabled,
+#root textarea:disabled,
+#root select:disabled,
+#root .form-control:disabled,
+#root .form-select:disabled,
+#root input[readonly],
+#root textarea[readonly],
+#root .form-control[readonly] {
   color: #c7d7e5 !important;
   -webkit-text-fill-color: #c7d7e5 !important;
+  background: #102237 !important;
   background-color: #102237 !important;
   border-color: #31506e !important;
   opacity: 1 !important;
 }
 
-/* Browser autofill must never turn fields into white-on-white. */
-input:-webkit-autofill,
-input:-webkit-autofill:hover,
-input:-webkit-autofill:focus,
-textarea:-webkit-autofill,
-textarea:-webkit-autofill:hover,
-textarea:-webkit-autofill:focus,
-select:-webkit-autofill,
-select:-webkit-autofill:hover,
-select:-webkit-autofill:focus {
+/* Chrome / Edge / Safari autofill. */
+#root input:-webkit-autofill,
+#root input:-webkit-autofill:hover,
+#root input:-webkit-autofill:focus,
+#root textarea:-webkit-autofill,
+#root textarea:-webkit-autofill:hover,
+#root textarea:-webkit-autofill:focus,
+#root select:-webkit-autofill,
+#root select:-webkit-autofill:hover,
+#root select:-webkit-autofill:focus {
   -webkit-text-fill-color: #f7fbff !important;
   caret-color: #69d7ff !important;
   -webkit-box-shadow: 0 0 0 1000px #0d1a2b inset !important;
@@ -81,79 +135,83 @@ select:-webkit-autofill:focus {
   transition: background-color 9999s ease-out 0s;
 }
 
-input:-moz-autofill,
-textarea:-moz-autofill,
-select:-moz-autofill {
+#root input:-moz-autofill,
+#root textarea:-moz-autofill,
+#root select:-moz-autofill {
   color: #f7fbff !important;
   background-color: #0d1a2b !important;
 }
 
-/* Date/time/month fields keep the native control visible on dark surfaces. */
-input[type="date"],
-input[type="time"],
-input[type="datetime-local"],
-input[type="month"],
-input[type="week"] {
-  color-scheme: dark;
-}
+/* Dates/times: native icon and native text both stay visible. */
+#root input[type="date"],
+#root input[type="time"],
+#root input[type="datetime-local"],
+#root input[type="month"],
+#root input[type="week"] { color-scheme: dark; }
 
-input[type="date"]::-webkit-calendar-picker-indicator,
-input[type="time"]::-webkit-calendar-picker-indicator,
-input[type="datetime-local"]::-webkit-calendar-picker-indicator,
-input[type="month"]::-webkit-calendar-picker-indicator,
-input[type="week"]::-webkit-calendar-picker-indicator {
+#root input[type="date"]::-webkit-calendar-picker-indicator,
+#root input[type="time"]::-webkit-calendar-picker-indicator,
+#root input[type="datetime-local"]::-webkit-calendar-picker-indicator,
+#root input[type="month"]::-webkit-calendar-picker-indicator,
+#root input[type="week"]::-webkit-calendar-picker-indicator {
   filter: invert(1) brightness(1.25);
-  opacity: .82;
+  opacity: .86;
   cursor: pointer;
 }
 
-/* File fields: keep both filename and action button legible. */
-input[type="file"],
-.form-control[type="file"] {
+/* File controls. */
+#root input[type="file"],
+#root .form-control[type="file"] {
   color: #dce9f4 !important;
   -webkit-text-fill-color: #dce9f4 !important;
-  background-color: #0d1a2b !important;
+  background: #0d1a2b !important;
 }
 
-input[type="file"]::file-selector-button,
-.form-control[type="file"]::file-selector-button,
-input[type="file"]::-webkit-file-upload-button {
+#root input[type="file"]::file-selector-button,
+#root .form-control[type="file"]::file-selector-button,
+#root input[type="file"]::-webkit-file-upload-button {
   color: #06111d !important;
+  -webkit-text-fill-color: #06111d !important;
   background: linear-gradient(135deg,#46b9f2 0%,#59c7ff 58%,#69d7ff 100%) !important;
   border: 0 !important;
 }
 
-/* Bootstrap floating labels can otherwise sit over a light pseudo background. */
-.form-floating > label {
-  color: #91a8bc !important;
+/* Labels/help text around all forms. */
+#root .establishment-create-page label,
+#root .item-create-page label,
+#root .item-update-page label,
+#root .user-update-page label,
+#root .form-label,
+#root form label,
+#root form legend {
+  color: #eef6fc !important;
 }
 
-.form-floating > .form-control:focus ~ label,
-.form-floating > .form-control:not(:placeholder-shown) ~ label,
-.form-floating > .form-select ~ label {
-  color: #bdccda !important;
+#root .form-text,
+#root form small:not(.text-danger) {
+  color: #b7c9d8 !important;
 }
 
-.form-floating > .form-control:focus ~ label::after,
-.form-floating > .form-control:not(:placeholder-shown) ~ label::after,
-.form-floating > .form-select ~ label::after {
-  background-color: #0d1a2b !important;
-}
+/* Bootstrap floating labels. */
+#root .form-floating > label { color: #91a8bc !important; }
+#root .form-floating > .form-control:focus ~ label,
+#root .form-floating > .form-control:not(:placeholder-shown) ~ label,
+#root .form-floating > .form-select ~ label { color: #bdccda !important; }
+#root .form-floating > .form-control:focus ~ label::after,
+#root .form-floating > .form-control:not(:placeholder-shown) ~ label::after,
+#root .form-floating > .form-select ~ label::after { background-color: #0d1a2b !important; }
 
-/* Search controls can inherit browser-native white backgrounds. */
-input[type="search"]::-webkit-search-cancel-button {
-  filter: invert(1);
-}
+#root input[type="search"]::-webkit-search-cancel-button { filter: invert(1); }
 
-/* Validation must preserve readable field values. */
-.was-validated .form-control:valid,
-.form-control.is-valid,
-.was-validated .form-select:valid,
-.form-select.is-valid,
-.was-validated .form-control:invalid,
-.form-control.is-invalid,
-.was-validated .form-select:invalid,
-.form-select.is-invalid {
+/* Bootstrap validation must never reintroduce a light field. */
+#root .was-validated .form-control:valid,
+#root .form-control.is-valid,
+#root .was-validated .form-select:valid,
+#root .form-select.is-valid,
+#root .was-validated .form-control:invalid,
+#root .form-control.is-invalid,
+#root .was-validated .form-select:invalid,
+#root .form-select.is-invalid {
   color: #f7fbff !important;
   -webkit-text-fill-color: #f7fbff !important;
   background-color: #0d1a2b !important;
