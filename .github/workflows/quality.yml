@@ -25,6 +25,9 @@ jobs:
       - name: Install dependencies
         run: npm install --no-audit --no-fund
 
+      - name: Audit Nexus CSS palette
+        run: node scripts/audit-nexus-css.js
+
       - name: Lint
         run: npm run lint
 
