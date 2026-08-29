@@ -1,0 +1,197 @@
+/* Nexus dark form contrast override: improves readability across create/edit/settings forms. */
+:root {
+  --nx-form-shell: #07111f;
+  --nx-form-shell-2: #0b1829;
+  --nx-form-section: #10233a;
+  --nx-form-border: #294967;
+  --nx-form-border-strong: #3b6f99;
+  --nx-field-bg: #0d1a2b;
+  --nx-field-bg-hover: #102137;
+  --nx-field-bg-focus: #132840;
+  --nx-field-border: #426887;
+  --nx-field-text: #f4f9fd;
+  --nx-field-label: #ffffff;
+  --nx-field-help: #c3d4e3;
+  --nx-field-placeholder: #8da5b9;
+  --nx-form-accent: #59c7ff;
+  --nx-form-accent-strong: #1ea7ed;
+  --nx-form-error: #ffb4bb;
+  --nx-form-success: #8ce8bd;
+}
+
+body {
+  background: linear-gradient(180deg, #081321 0%, #0c1a2a 48%, #0a1624 100%) !important;
+}
+
+.establishment-root,
+.user-update-page,
+.establishment-create-page,
+.establishment-update-page,
+.item-create-root,
+.item-update-root,
+.auth-page {
+  background: transparent !important;
+}
+
+.card:has(form),
+.nx-panel:has(form),
+.modal-content:has(form),
+.user-update-page form,
+.establishment-create-page form,
+.establishment-update-page form,
+.item-create-page form,
+.item-update-page form,
+.auth-card form,
+.auth-form {
+  background: linear-gradient(155deg, #0d1d30, #081421) !important;
+  border: 1px solid #294967 !important;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, .36) !important;
+}
+
+form .form-group {
+  background: #0c1b2c !important;
+  border: 1px solid #294967 !important;
+}
+
+form .form-group:hover {
+  background: #0f2237 !important;
+  border-color: #37668d !important;
+}
+
+form .form-group:focus-within {
+  background: #112841 !important;
+  border-color: #59c7ff !important;
+  box-shadow: 0 0 0 3px rgba(89, 199, 255, .11) !important;
+}
+
+form label,
+form .form-label,
+form legend {
+  color: #ffffff !important;
+  font-weight: 850 !important;
+  text-shadow: none !important;
+}
+
+form .form-control,
+form .form-select,
+form input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+form textarea,
+form select {
+  color: #f7fbff !important;
+  background: #0d1a2b !important;
+  border: 2px solid #426887 !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.025), 0 5px 16px rgba(0,0,0,.16) !important;
+}
+
+form .form-control:hover,
+form .form-select:hover,
+form input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):hover,
+form textarea:hover,
+form select:hover {
+  background: #102137 !important;
+  border-color: #5683a6 !important;
+}
+
+form .form-control:focus,
+form .form-select:focus,
+form input:focus,
+form textarea:focus,
+form select:focus {
+  color: #ffffff !important;
+  background: #132840 !important;
+  border-color: #59c7ff !important;
+  box-shadow: 0 0 0 4px rgba(89,199,255,.16), 0 10px 26px rgba(0,0,0,.22) !important;
+}
+
+form input::placeholder,
+form textarea::placeholder {
+  color: #8da5b9 !important;
+  opacity: 1 !important;
+}
+
+form select option {
+  color: #f6fbff !important;
+  background: #0d1a2b !important;
+}
+
+form .form-text,
+form small,
+form .text-muted,
+form .help-text,
+form .field-hint {
+  color: #c3d4e3 !important;
+}
+
+form input:disabled,
+form select:disabled,
+form textarea:disabled,
+form .form-control:disabled,
+form input[readonly],
+form textarea[readonly] {
+  color: #9db1c3 !important;
+  background: #091522 !important;
+  border-color: #28445d !important;
+}
+
+form .input-group-text {
+  color: #f6fbff !important;
+  background: #17304a !important;
+  border-color: #426887 !important;
+}
+
+form .form-check-label {
+  color: #eef7ff !important;
+}
+
+form .form-check-input {
+  background-color: #0d1a2b !important;
+  border-color: #5d829f !important;
+}
+
+form input[type="file"] {
+  color: #eaf5fc !important;
+  background: #0b1828 !important;
+  border-color: #3f6686 !important;
+}
+
+form h2,
+form h3,
+form h4,
+form .section-title {
+  color: #ffffff !important;
+}
+
+form .invalid-feedback,
+form .text-danger,
+form .error,
+form [role="alert"] {
+  color: #ffe9eb !important;
+  background: #3a1720 !important;
+  border-color: #7e3442 !important;
+}
+
+form .valid-feedback,
+form .text-success {
+  color: #caffdf !important;
+}
+
+form input:-webkit-autofill,
+form input:-webkit-autofill:hover,
+form input:-webkit-autofill:focus {
+  -webkit-text-fill-color: #f7fbff !important;
+  box-shadow: 0 0 0 1000px #0d1a2b inset !important;
+  caret-color: #ffffff !important;
+}
+
+.establishment-create-page .title,
+.establishment-update-page .title,
+.user-update-page .title,
+.item-create-page .item-title,
+.item-update-page .item-title {
+  color: #f8fbff !important;
+}
+
+.establishment-create-page form,
+.establishment-update-page form {
+  color: #f7fbff !important;
+}
