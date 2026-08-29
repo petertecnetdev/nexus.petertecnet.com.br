@@ -1,92 +1,294 @@
-/* Nexus readability layer: consistent contrast across all forms and management screens. */
+/* Nexus form system: high contrast, clear hierarchy, easy scanning. */
 :root {
-  --nx-field-bg: #f7fafc;
+  --nx-form-shell: #0f1c2b;
+  --nx-form-shell-2: #13243a;
+  --nx-form-section: #182d45;
+  --nx-form-border: #31506e;
+  --nx-form-border-strong: #4b779e;
+  --nx-field-bg: #f8fbff;
   --nx-field-bg-focus: #ffffff;
-  --nx-field-border: #aebfd1;
-  --nx-field-text: #13243b;
-  --nx-field-label: #1d3553;
-  --nx-field-placeholder: #71849a;
-  --nx-form-surface: #eaf1f7;
-  --nx-form-surface-2: #f1f6fa;
+  --nx-field-border: #9db5ca;
+  --nx-field-text: #102238;
+  --nx-field-label: #f4f8fc;
+  --nx-field-help: #bfd0df;
+  --nx-field-placeholder: #667b90;
+  --nx-form-accent: #59c7ff;
+  --nx-form-accent-soft: rgba(89, 199, 255, .16);
+  --nx-form-error: #ff8f9b;
+  --nx-form-success: #77dfae;
 }
 
+/* ---------- FORM SHELLS / CARDS ---------- */
+form {
+  color: var(--nx-field-label);
+}
+
+.card:has(form),
+.nx-panel:has(form),
+.modal-content:has(form),
+.user-update-page form,
+.establishment-create-page form,
+.establishment-update-page form,
+.item-create-page form,
+.item-update-page form,
+.auth-card form,
+.auth-form {
+  background:
+    radial-gradient(circle at 100% 0%, rgba(89,199,255,.08), transparent 30%),
+    linear-gradient(155deg, var(--nx-form-shell-2), var(--nx-form-shell)) !important;
+  border: 1px solid var(--nx-form-border) !important;
+  border-radius: 22px !important;
+  box-shadow: 0 20px 55px rgba(4, 12, 22, .24) !important;
+}
+
+/* Give field groups their own visual block so label + input + message read together. */
+form .form-group,
+form .mb-3,
+form .mb-4,
+form .field-group,
+form .form-field {
+  position: relative;
+}
+
+form .form-group {
+  padding: 12px 13px !important;
+  background: rgba(255,255,255,.035) !important;
+  border: 1px solid rgba(128,173,208,.24) !important;
+  border-radius: 14px !important;
+  gap: 7px !important;
+}
+
+form .form-group:focus-within {
+  background: rgba(89,199,255,.055) !important;
+  border-color: rgba(89,199,255,.55) !important;
+  box-shadow: 0 0 0 3px rgba(89,199,255,.07) !important;
+}
+
+/* ---------- LABELS ---------- */
+form label,
+form .form-label,
+form legend {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 6px !important;
+  color: var(--nx-field-label) !important;
+  font-size: .88rem !important;
+  font-weight: 850 !important;
+  line-height: 1.3 !important;
+  letter-spacing: .015em !important;
+  text-transform: none !important;
+  text-shadow: 0 1px 2px rgba(0,0,0,.18);
+}
+
+form label::after,
+form .form-label::after {
+  color: #8fa5ba;
+}
+
+/* ---------- INPUTS ---------- */
 form .form-control,
 form .form-select,
 form input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
 form textarea,
 form select {
-  min-height: 48px !important;
-  padding: .76rem .88rem !important;
+  width: 100%;
+  min-height: 50px !important;
+  padding: .78rem .92rem !important;
   color: var(--nx-field-text) !important;
+  caret-color: #175cd3;
   background: var(--nx-field-bg) !important;
-  border: 1px solid var(--nx-field-border) !important;
+  border: 2px solid var(--nx-field-border) !important;
   border-radius: 12px !important;
-  font-size: .98rem !important;
-  font-weight: 600 !important;
+  font-size: 1rem !important;
+  font-weight: 650 !important;
   line-height: 1.4 !important;
-  box-shadow: inset 0 1px 2px rgba(16,38,72,.035) !important;
+  box-shadow: inset 0 1px 2px rgba(16,38,72,.06), 0 3px 10px rgba(0,0,0,.08) !important;
+  transition: border-color .18s ease, box-shadow .18s ease, background .18s ease, transform .18s ease !important;
 }
-form textarea { min-height: 118px !important; line-height: 1.6 !important; }
+
+form textarea {
+  min-height: 126px !important;
+  line-height: 1.65 !important;
+  resize: vertical;
+}
+
 form input::placeholder,
-form textarea::placeholder { color: var(--nx-field-placeholder) !important; opacity: 1 !important; font-weight: 500 !important; }
+form textarea::placeholder {
+  color: var(--nx-field-placeholder) !important;
+  opacity: 1 !important;
+  font-weight: 520 !important;
+}
+
+form .form-control:hover,
+form .form-select:hover,
+form input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):hover,
+form textarea:hover,
+form select:hover {
+  border-color: #6f93b3 !important;
+}
+
 form .form-control:focus,
 form .form-select:focus,
 form input:focus,
 form textarea:focus,
 form select:focus {
-  color: #0d1f35 !important;
+  color: #0b1d31 !important;
   background: var(--nx-field-bg-focus) !important;
   border-color: #2186c9 !important;
-  box-shadow: 0 0 0 3px rgba(33,134,201,.16) !important;
+  box-shadow: 0 0 0 4px rgba(33,134,201,.20), 0 8px 20px rgba(5,25,45,.15) !important;
   outline: none !important;
 }
-form label,
-form .form-label {
-  color: var(--nx-field-label) !important;
-  font-size: .82rem !important;
-  font-weight: 850 !important;
-  letter-spacing: .035em;
+
+form select option {
+  color: #102238 !important;
+  background: #fff !important;
 }
+
+/* ---------- HELP / VALIDATION MESSAGES ---------- */
 form .form-text,
 form small,
-form .text-muted { color: #566a82 !important; font-size: .82rem; line-height: 1.5; }
+form .text-muted,
+form .help-text,
+form .field-hint {
+  display: block;
+  margin-top: 6px;
+  color: var(--nx-field-help) !important;
+  font-size: .84rem !important;
+  font-weight: 600 !important;
+  line-height: 1.5 !important;
+}
+
+form .invalid-feedback,
+form .text-danger,
+form .error,
+form [role="alert"] {
+  display: block;
+  margin-top: 7px;
+  padding: 7px 9px;
+  color: #ffe3e6 !important;
+  background: rgba(200,63,73,.18) !important;
+  border: 1px solid rgba(255,143,155,.36) !important;
+  border-radius: 9px;
+  font-size: .83rem !important;
+  font-weight: 750 !important;
+  line-height: 1.4;
+}
+
+form .valid-feedback,
+form .text-success {
+  color: #d9ffec !important;
+  font-weight: 700 !important;
+}
+
+/* ---------- DISABLED / READ ONLY ---------- */
 form input:disabled,
 form select:disabled,
 form textarea:disabled,
-form .form-control:disabled {
-  color: #53677f !important;
-  background: #dfe8f1 !important;
-  border-color: #bdcad8 !important;
+form .form-control:disabled,
+form input[readonly],
+form textarea[readonly] {
+  color: #40566c !important;
+  background: #dce6ef !important;
+  border-color: #a7b8c8 !important;
   opacity: 1 !important;
-}
-form option { color: #13243b; background: #fff; }
-
-/* Generic Bootstrap/form cards should not look like blank white sheets. */
-.card:has(form),
-.nx-panel:has(form),
-.modal-content:has(form) {
-  background: linear-gradient(180deg, var(--nx-form-surface-2), var(--nx-form-surface)) !important;
-  border-color: #c8d7e6 !important;
+  cursor: not-allowed;
 }
 
-.input-group-text {
-  color: #284560 !important;
-  background: #dfeaf3 !important;
-  border-color: var(--nx-field-border) !important;
-  font-weight: 750;
+/* ---------- CHECKBOX / RADIO / INPUT GROUP ---------- */
+form .form-check {
+  padding-top: 6px;
+  padding-bottom: 6px;
 }
 
-.form-check-label { color: #263d58 !important; font-weight: 650 !important; }
-.form-check-input { border-color: #879db4 !important; }
-.form-check-input:checked { background-color: #175cd3 !important; border-color: #175cd3 !important; }
+form .form-check-label {
+  color: #eef5fb !important;
+  font-weight: 700 !important;
+}
 
-.invalid-feedback,
-.valid-feedback,
-.text-danger { font-weight: 700; }
+form .form-check-input {
+  border: 2px solid #7f9bb4 !important;
+  background-color: #f8fbff !important;
+}
+
+form .form-check-input:checked {
+  background-color: #175cd3 !important;
+  border-color: #59c7ff !important;
+}
+
+form .input-group-text {
+  color: #eef6fc !important;
+  background: #213b55 !important;
+  border: 2px solid var(--nx-field-border) !important;
+  font-weight: 800 !important;
+}
+
+/* ---------- FILE INPUT ---------- */
+form input[type="file"] {
+  color: #e9f2f9 !important;
+  background: rgba(255,255,255,.05) !important;
+  border: 1px dashed #547797 !important;
+  border-radius: 12px !important;
+  padding: 10px !important;
+}
+
+form input[type="file"]::file-selector-button {
+  margin-right: 10px;
+  padding: 8px 12px;
+  color: #fff;
+  background: #175cd3;
+  border: 0;
+  border-radius: 9px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+/* ---------- SECTION TITLES INSIDE FORMS ---------- */
+form h2,
+form h3,
+form h4,
+form .section-title {
+  color: #f7fbff !important;
+  font-weight: 850 !important;
+}
+
+form hr {
+  border-color: rgba(151,183,207,.25) !important;
+  opacity: 1;
+}
+
+/* ---------- AUTOFILL ---------- */
+form input:-webkit-autofill,
+form input:-webkit-autofill:hover,
+form input:-webkit-autofill:focus {
+  -webkit-text-fill-color: #102238 !important;
+  box-shadow: 0 0 0 1000px #f8fbff inset !important;
+}
+
+/* ---------- RESPONSIVE ---------- */
+@media (max-width: 768px) {
+  .card:has(form),
+  .nx-panel:has(form),
+  .modal-content:has(form),
+  .user-update-page form,
+  .establishment-create-page form,
+  .establishment-update-page form,
+  .item-create-page form,
+  .item-update-page form {
+    border-radius: 17px !important;
+  }
+}
 
 @media (max-width: 576px) {
   form .form-control,
   form .form-select,
   form input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
-  form select { font-size: 1rem !important; }
+  form select,
+  form textarea {
+    font-size: 1rem !important;
+  }
+
+  form .form-group {
+    padding: 10px !important;
+  }
 }
