@@ -26,7 +26,7 @@
 .hp-logo-card span { color:#b5c7d7; font-size:.82rem; }
 .hp-orbit { position:absolute; width:min(360px,90vw); aspect-ratio:1; border:1px solid rgba(89,199,255,.16); border-radius:50%; }
 .hp-orbit::after { content:""; position:absolute; top:8%; left:50%; width:9px; height:9px; border-radius:50%; background:#65d1ff; box-shadow:0 0 18px rgba(89,199,255,.75); }
-.hp-orbit--one { animation:hpOrbit 9s linear infinite; }.hp-orbit--two { width:min(300px,76vw); animation:hpOrbit 6.5s linear reverse infinite; border-color:rgba(183,242,12,.14); }.hp-orbit--two::after { background:#c9f84b; box-shadow:0 0 18px rgba(183,242,12,.55); }
+.hp-orbit--one { animation:hpOrbit 9s linear infinite; }.hp-orbit--two { width:min(300px,76vw); animation:hpOrbit 6.5s linear reverse infinite; border-color:rgba(70,185,242,.16); }.hp-orbit--two::after { background:#69d7ff; box-shadow:0 0 18px rgba(70,185,242,.55); }
 .hp-content { width:min(1320px,100%); margin:0 auto; padding-top:24px; }
 .hp-section-intro { max-width:760px; margin-bottom:32px; }.hp-section-intro h2 { margin:8px 0 10px; color:#fff; font-size:clamp(1.8rem,3.5vw,3rem); font-weight:900; letter-spacing:-.035em; }
 .hp-flow-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:16px; }
