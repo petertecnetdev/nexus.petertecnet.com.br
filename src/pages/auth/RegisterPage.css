@@ -1,67 +1,14 @@
-.rp-wrapper {
-  position: relative;
-  min-height: calc(100vh - 68px);
-  padding: 28px 16px 80px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-  background:
-    radial-gradient(circle at 82% 8%, rgba(183,242,12,.075), transparent 28%),
-    radial-gradient(circle at 12% 88%, rgba(75,215,145,.1), transparent 30%);
-}
-
-.rp-bg-effect {
-  position: absolute;
-  width: 520px;
-  height: 520px;
-  left: -220px;
-  bottom: -250px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(75,215,145,.1), transparent 68%);
-  filter: blur(80px);
-  pointer-events: none;
-}
-
-.rp-content { position: relative; z-index: 1; width: 100%; max-width: 500px; }
-.rp-card {
-  padding: clamp(28px, 5vw, 42px);
-  background: linear-gradient(155deg, rgba(255,255,255,.045), rgba(255,255,255,.015));
-  border: 1px solid var(--nx-border);
-  border-radius: 24px;
-  box-shadow: var(--nx-shadow-lg);
-  backdrop-filter: blur(18px);
-}
-.rp-card__header { margin-bottom: 26px; text-align: center; }
-.rp-logo-wrapper {
-  width: 84px;
-  height: 84px;
-  margin: 0 auto 16px;
-  display: grid;
-  place-items: center;
-  border-radius: 50%;
-  background: rgba(183,242,12,.035);
-  border: 1px solid rgba(183,242,12,.14);
-  box-shadow: 0 14px 38px rgba(0,0,0,.24);
-}
-.rp-logo { width: 68px; height: 68px; object-fit: contain; border-radius: 50%; filter: drop-shadow(0 0 12px rgba(183,242,12,.14)); }
-.rp-title { margin: 0 0 7px; color: var(--nx-text); font-size: 1.7rem; font-weight: 820; letter-spacing: -.025em; }
-.rp-subtitle { margin: 0; color: var(--nx-muted); font-size: .94rem; line-height: 1.6; }
-.rp-card__body { margin-top: 22px; }
-.rp-card__footer { margin-top: 24px; color: var(--nx-muted); font-size: .88rem; text-align: center; }
-.rp-link {
-  margin-left: 5px;
-  padding: 0;
-  color: var(--nx-primary);
-  background: none;
-  border: 0;
-  font-weight: 750;
-  cursor: pointer;
-}
-.rp-link:hover { color: #dbff72; text-decoration: underline; }
-
-@media (max-width: 480px) {
-  .rp-wrapper { align-items: flex-start; padding-top: 20px; }
-  .rp-card { padding: 26px 18px; border-radius: 19px; }
-  .rp-title { font-size: 1.5rem; }
-}
+.rp-wrapper { position:relative; min-height:calc(100vh - 68px); padding:28px 16px 80px; display:flex; align-items:center; justify-content:center; overflow:hidden; background:radial-gradient(circle at 82% 8%,rgba(89,199,255,.08),transparent 28%),radial-gradient(circle at 12% 88%,rgba(70,185,242,.08),transparent 30%); }
+.rp-bg-effect { position:absolute; width:520px; height:520px; left:-220px; bottom:-250px; pointer-events:none; border-radius:50%; background:radial-gradient(circle,rgba(89,199,255,.10),transparent 68%); filter:blur(80px); }
+.rp-content { position:relative; z-index:1; width:100%; max-width:500px; }
+.rp-card { padding:clamp(28px,5vw,42px); color:var(--nx-text); background:linear-gradient(155deg,#142a40,#0d1e30); border:1px solid var(--nx-border); border-radius:24px; box-shadow:var(--nx-shadow-lg); backdrop-filter:blur(18px); }
+.rp-card__header { margin-bottom:26px; text-align:center; }
+.rp-logo-wrapper { width:84px; height:84px; margin:0 auto 16px; display:grid; place-items:center; border:1px solid rgba(101,209,255,.20); border-radius:50%; background:rgba(89,199,255,.055); box-shadow:0 14px 38px rgba(0,0,0,.24); }
+.rp-logo { width:68px; height:68px; object-fit:contain; border-radius:50%; filter:drop-shadow(0 0 12px rgba(89,199,255,.16)); }
+.rp-title { margin:0 0 7px; color:#fff; font-size:1.7rem; font-weight:820; letter-spacing:-.025em; }
+.rp-subtitle { margin:0; color:var(--nx-muted); font-size:.94rem; line-height:1.6; }
+.rp-card__body { margin-top:22px; }
+.rp-card__footer { margin-top:24px; color:var(--nx-muted); font-size:.88rem; text-align:center; }
+.rp-link { margin-left:5px; padding:0; color:#65d1ff; background:none; border:0; font-weight:750; cursor:pointer; }
+.rp-link:hover { color:#a8e7ff; text-decoration:underline; }
+@media(max-width:480px){.rp-wrapper{align-items:flex-start;padding-top:20px}.rp-card{padding:26px 18px;border-radius:19px}.rp-title{font-size:1.5rem}}
