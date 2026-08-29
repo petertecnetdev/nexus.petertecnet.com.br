@@ -1,250 +1,31 @@
-/* =========================================================
-   EmailVerifyPage — Inkap Neon Purple (usa tokens do index.css)
-   Arquivo: EmailVerifyPage.css
-   ========================================================= */
-
-.main-container {
-  min-height: 100vh;
-  padding: clamp(18px, 3vw, 40px) 12px;
-  background: var(--i-grad-hero);
-  position: relative;
-  overflow: hidden;
-}
-
-/* Glow decorativo de fundo */
-.main-container::before,
-.main-container::after {
-  content: "";
-  position: absolute;
-  inset: -40%;
-  pointer-events: none;
-  background:
-    radial-gradient(520px 360px at 20% 15%, rgba(180,108,255,.18), transparent 60%),
-    radial-gradient(520px 360px at 85% 25%, rgba(123,44,255,.16), transparent 58%),
-    radial-gradient(620px 420px at 55% 80%, rgba(159,77,255,.12), transparent 62%);
-  filter: blur(10px);
-  opacity: .9;
-}
-
-.main-container::after {
-  inset: -55%;
-  opacity: .55;
-  filter: blur(22px);
-}
-
-/* Centralização do conteúdo */
-.section-row {
-  position: relative;
-  z-index: 1;
-  min-height: calc(100vh - 110px);
-  align-items: center;
-}
-
-.card-component {
-  background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
-  border: 1px solid rgba(180,108,255,.22);
-  border-radius: var(--i-radius-xl);
-  box-shadow: 0 14px 46px rgba(0,0,0,.70);
-  overflow: hidden;
-  position: relative;
-}
-
-.card-component::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background:
-    radial-gradient(520px 240px at 50% 0%, rgba(180,108,255,.16), transparent 62%),
-    radial-gradient(620px 360px at 20% 120%, rgba(123,44,255,.10), transparent 62%);
-  pointer-events: none;
-}
-
-.section-title {
-  margin: 0;
-  padding: 16px 18px 10px;
-  font-weight: 900;
-  letter-spacing: .6px;
-  text-transform: uppercase;
-  color: var(--i-text);
-  position: relative;
-  z-index: 1;
-}
-
-.section-title::after {
-  content: "";
-  display: block;
-  margin: 12px auto 0;
-  width: 72%;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(180,108,255,.40), transparent);
-}
-
-.card-body {
-  padding: 18px 18px 20px;
-  position: relative;
-  z-index: 1;
-}
-
-/* Logo */
-.logo-container {
-  padding: 6px 0 12px;
-}
-
-.logo-image {
-  width: 120px;
-  max-width: 50%;
-  height: auto;
-  filter: drop-shadow(0 0 10px rgba(180,108,255,.45))
-          drop-shadow(0 0 26px rgba(123,44,255,.25));
-  transform: translateZ(0);
-}
-
-/* Títulos e textos */
-.card-title {
-  margin-top: 4px;
-  font-weight: 900;
-  color: var(--i-text);
-  letter-spacing: .3px;
-}
-
-.footer-text {
-  margin: 10px auto 16px;
-  max-width: 560px;
-  color: var(--i-text-muted);
-  line-height: 1.6;
-}
-
-/* Form */
-.form-container {
-  margin-top: 10px;
-}
-
-.form-group {
-  margin-bottom: 14px;
-}
-
-.form-group label,
-.form-group .form-label {
-  margin-bottom: 8px;
-  font-weight: 800;
-  color: var(--i-text);
-  letter-spacing: .2px;
-}
-
-/* Input */
-.input-email,
-.form-control.input-email {
-  background: #0c0816 !important;
-  color: var(--i-text) !important;
-  border: 1px solid rgba(180,108,255,.22) !important;
-  border-radius: var(--i-radius-md) !important;
-  padding: 12px 14px !important;
-  transition:
-    border-color var(--i-speed-2),
-    box-shadow var(--i-speed-2),
-    transform var(--i-speed-2);
-}
-
-.input-email::placeholder {
-  color: rgba(197,173,223,.70);
-}
-
-.input-email:focus,
-.form-control.input-email:focus {
-  border-color: rgba(180,108,255,.58) !important;
-  box-shadow: var(--i-focus-ring) !important;
-  outline: none !important;
-  transform: translateY(-1px);
-}
-
-/* Botões */
-.submit-btn,
-button.submit-btn,
-.btn.submit-btn {
-  width: 100%;
-  height: 46px;
-  border-radius: var(--i-radius-md) !important;
-  font-weight: 900 !important;
-  letter-spacing: .2px;
-  border: 1px solid transparent !important;
-  transition:
-    transform var(--i-speed-2),
-    box-shadow var(--i-speed-2),
-    filter var(--i-speed-2),
-    background var(--i-speed-2),
-    border-color var(--i-speed-2);
-}
-
-/* Primary (Verificar) */
-.btn-primary.submit-btn {
-  background: var(--i-grad-primary) !important;
-  color: #12051f !important;
-  box-shadow: var(--i-glow-sm) !important;
-}
-
-.btn-primary.submit-btn:hover:not(:disabled) {
-  transform: translateY(-1px);
-  box-shadow: var(--i-glow-md) !important;
-  filter: brightness(1.04);
-}
-
-/* Secondary (Reenviar) - estilo outline neon */
-.btn-secondary.submit-btn {
-  background: rgba(180,108,255,.08) !important;
-  color: var(--i-primary) !important;
-  border-color: rgba(180,108,255,.35) !important;
-  box-shadow: none !important;
-}
-
-.btn-secondary.submit-btn:hover:not(:disabled) {
-  background: rgba(180,108,255,.14) !important;
-  box-shadow: var(--i-glow-sm) !important;
-  transform: translateY(-1px);
-}
-
-/* Disabled */
-.submit-btn:disabled,
-.btn:disabled {
-  opacity: .65 !important;
-  cursor: not-allowed !important;
-  transform: none !important;
-  filter: none !important;
-}
-
-/* Ajustes de Card do bootstrap */
-.card-component .card-body {
-  background: transparent !important;
-}
-
-/* SweetAlert (classes customClass já usadas no React) */
-.custom-swal {
-  background: var(--swal-bg) !important;
-  color: var(--swal-text) !important;
-  border: 1px solid var(--swal-border) !important;
-  border-radius: 14px !important;
-  box-shadow: 0 20px 55px rgba(0,0,0,.70), var(--i-glow-sm) !important;
-}
-
-.custom-swal-title {
-  color: var(--i-text) !important;
-  font-weight: 900 !important;
-}
-
-.custom-swal-text {
-  color: var(--i-text-muted) !important;
-}
-
-/* Responsivo */
-@media (max-width: 575.98px) {
-  .card-body {
-    padding: 16px 14px 18px;
-  }
-
-  .logo-image {
-    width: 108px;
-  }
-
-  .section-title {
-    padding: 14px 14px 8px;
-  }
-}
+/* Nexus — email verification */
+.main-container { min-height:100vh; padding:clamp(18px,3vw,40px) 12px; position:relative; overflow:hidden; background:var(--nx-page); }
+.main-container::before,.main-container::after { content:""; position:absolute; inset:-40%; pointer-events:none; background:radial-gradient(520px 360px at 20% 15%,rgba(89,199,255,.12),transparent 60%),radial-gradient(520px 360px at 85% 25%,rgba(70,185,242,.10),transparent 58%),radial-gradient(620px 420px at 55% 80%,rgba(105,215,255,.07),transparent 62%); filter:blur(10px); opacity:.9; }
+.main-container::after { inset:-55%; opacity:.5; filter:blur(22px); }
+.section-row { position:relative; z-index:1; min-height:calc(100vh - 110px); align-items:center; }
+.card-component { position:relative; overflow:hidden; color:var(--nx-text); background:linear-gradient(155deg,#142a40,#0d1e30); border:1px solid var(--nx-border); border-radius:var(--nx-radius-xl); box-shadow:var(--nx-shadow-lg); }
+.card-component::before { content:""; position:absolute; inset:0; pointer-events:none; background:radial-gradient(520px 240px at 50% 0%,rgba(89,199,255,.08),transparent 62%),radial-gradient(620px 360px at 20% 120%,rgba(70,185,242,.06),transparent 62%); }
+.section-title { position:relative; z-index:1; margin:0; padding:16px 18px 10px; color:#fff; font-weight:900; letter-spacing:.6px; text-transform:uppercase; }
+.section-title::after { content:""; display:block; width:72%; height:1px; margin:12px auto 0; background:linear-gradient(90deg,transparent,rgba(101,209,255,.38),transparent); }
+.card-body { position:relative; z-index:1; padding:18px 18px 20px; }
+.logo-container { padding:6px 0 12px; }
+.logo-image { width:120px; max-width:50%; height:auto; filter:drop-shadow(0 0 14px rgba(89,199,255,.18)); transform:translateZ(0); }
+.card-title { margin-top:4px; color:#fff; font-weight:900; letter-spacing:.3px; }
+.footer-text { max-width:560px; margin:10px auto 16px; color:var(--nx-muted); line-height:1.6; }
+.form-container { margin-top:10px; }
+.form-group { margin-bottom:14px; }
+.form-group label,.form-group .form-label { margin-bottom:8px; color:#eef6fc; font-weight:800; letter-spacing:.2px; }
+.input-email,.form-control.input-email { padding:12px 14px!important; color:var(--nx-text)!important; background:#0d1a2b!important; border:1px solid #426887!important; border-radius:var(--nx-radius-md)!important; transition:border-color .2s,box-shadow .2s,transform .2s; }
+.input-email::placeholder { color:#8da5b9; }
+.input-email:focus,.form-control.input-email:focus { border-color:#59c7ff!important; box-shadow:var(--nx-focus)!important; outline:none!important; transform:translateY(-1px); }
+.submit-btn,button.submit-btn,.btn.submit-btn { width:100%; min-height:46px; border-radius:var(--nx-radius-md)!important; font-weight:900!important; border:1px solid transparent!important; transition:transform .2s,box-shadow .2s,filter .2s,background .2s,border-color .2s; }
+.btn-primary.submit-btn { color:#06111d!important; background:var(--nx-gradient)!important; box-shadow:0 10px 26px rgba(70,185,242,.18)!important; }
+.btn-primary.submit-btn:hover:not(:disabled) { transform:translateY(-1px); filter:brightness(1.05); box-shadow:0 14px 34px rgba(70,185,242,.24)!important; }
+.btn-secondary.submit-btn { color:#f5f9fd!important; background:#14283d!important; border-color:#496985!important; box-shadow:none!important; }
+.btn-secondary.submit-btn:hover:not(:disabled) { color:#fff!important; background:#1b3650!important; border-color:#65d1ff!important; transform:translateY(-1px); }
+.submit-btn:disabled,.btn:disabled { opacity:.65!important; cursor:not-allowed!important; transform:none!important; filter:none!important; }
+.card-component .card-body { background:transparent!important; }
+.custom-swal { color:var(--nx-text)!important; background:var(--nx-surface-2)!important; border:1px solid var(--nx-border)!important; border-radius:14px!important; box-shadow:var(--nx-shadow-lg)!important; }
+.custom-swal-title { color:#fff!important; font-weight:900!important; }
+.custom-swal-text { color:var(--nx-muted)!important; }
+@media(max-width:575.98px){.card-body{padding:16px 14px 18px}.logo-image{width:108px}.section-title{padding:14px 14px 8px}}
