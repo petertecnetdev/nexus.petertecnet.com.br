@@ -38,6 +38,7 @@ import "./index.css";
 import "./styles/readability.css";
 import "./styles/form-contrast-dark.css";
 import "./styles/page-consistency.css";
+import "./styles/form-visibility-guard.css";
 
 export const AuthContext = createContext(null);
 
