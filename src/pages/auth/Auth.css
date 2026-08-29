@@ -1,139 +1,64 @@
-/* =========================================================
-   LOGIN PAGE — INKAP / RASOIO DARK NEON
-   ========================================================= */
-
+/* Nexus authentication shell — aligned with HomePage */
 .login-bg {
-  min-height: 100vh;
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
   background:
-    radial-gradient(1200px 600px at 10% -10%, rgba(180,108,255,.18), transparent 60%),
-    radial-gradient(900px 500px at 90% -20%, rgba(123,44,255,.18), transparent 55%),
-    linear-gradient(180deg, #05030a, #05030a);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+    radial-gradient(900px 520px at 10% -10%,rgba(89,199,255,.12),transparent 60%),
+    radial-gradient(760px 460px at 90% -15%,rgba(70,185,242,.09),transparent 58%),
+    linear-gradient(180deg,#081321,#0a1624);
 }
-
-.login-container {
-  padding: 24px;
-}
-
+.login-container { padding:24px; }
 .login-card {
-  background: linear-gradient(180deg, rgba(17,11,29,.95), rgba(11,7,19,.95));
-  border: 1px solid #2a1f3d;
-  border-radius: 20px;
-  box-shadow:
-    0 20px 60px rgba(0,0,0,.75),
-    0 0 30px rgba(180,108,255,.25);
-  backdrop-filter: blur(10px);
+  color:var(--nx-text);
+  background:linear-gradient(155deg,#142a40,#0d1e30);
+  border:1px solid var(--nx-border);
+  border-radius:22px;
+  box-shadow:var(--nx-shadow-lg);
+  backdrop-filter:blur(14px);
 }
-
-.login-card .card-body {
-  padding: 32px 28px 28px;
-}
-
-/* Logo arredondada com aura neon */
+.login-card .card-body { padding:32px 28px 28px; }
 .login-card .logo {
-  width: 140px;
-  height: 140px;
-  object-fit: cover;
-  border-radius: 50%;
-  margin: 0 auto 24px;
-  display: block;
-  background: #0c0816;
-  padding: 10px;
-
-  box-shadow:
-    0 0 0 2px rgba(180,108,255,.35),
-    0 0 22px rgba(180,108,255,.45),
-    0 0 48px rgba(123,44,255,.35);
-
-  transition: transform 200ms ease, box-shadow 200ms ease;
+  width:140px;
+  height:140px;
+  object-fit:cover;
+  display:block;
+  margin:0 auto 24px;
+  padding:10px;
+  border:1px solid rgba(101,209,255,.22);
+  border-radius:50%;
+  background:#0c1c2d;
+  box-shadow:0 0 0 2px rgba(89,199,255,.10),0 0 28px rgba(89,199,255,.14);
+  transition:transform .2s ease,box-shadow .2s ease;
 }
-
-.login-card a:hover .logo {
-  transform: scale(1.05);
-  box-shadow:
-    0 0 0 2px rgba(180,108,255,.6),
-    0 0 34px rgba(180,108,255,.75),
-    0 0 80px rgba(123,44,255,.55);
+.login-card a:hover .logo { transform:scale(1.04); box-shadow:0 0 0 2px rgba(89,199,255,.22),0 0 38px rgba(89,199,255,.20); }
+.login-card input,.login-card select {
+  width:100%;
+  padding:12px 14px;
+  margin-bottom:14px;
+  color:var(--nx-text);
+  background:#0d1a2b;
+  border:1px solid #426887;
+  border-radius:12px;
+  transition:border-color .16s ease,box-shadow .16s ease,background .16s ease;
 }
-
-/* Inputs vindos do LoginFormComponent */
-.login-card input,
-.login-card select {
-  width: 100%;
-  background: #0c0816;
-  color: #f4eaff;
-  border: 1px solid #2a1f3d;
-  border-radius: 12px;
-  padding: 12px 14px;
-  margin-bottom: 14px;
-  transition: border-color 160ms ease, box-shadow 160ms ease;
-}
-
-.login-card input::placeholder {
-  color: #9b7fc2;
-}
-
-.login-card input:focus,
-.login-card select:focus {
-  outline: none;
-  border-color: rgba(180,108,255,.6);
-  box-shadow: 0 0 0 3px rgba(180,108,255,.35);
-}
-
-/* Botão submit */
+.login-card input::placeholder { color:#8da5b9; }
+.login-card input:focus,.login-card select:focus { outline:none; background:#132840; border-color:#59c7ff; box-shadow:var(--nx-focus); }
 .login-card button[type="submit"] {
-  width: 100%;
-  height: 46px;
-  margin-top: 10px;
-  border-radius: 14px;
-  border: none;
-  font-weight: 800;
-  color: #12051f;
-  background: linear-gradient(90deg, #7b2cff, #b46cff, #9f4dff);
-  box-shadow:
-    0 0 16px rgba(180,108,255,.45),
-    inset 0 0 0 1px rgba(255,255,255,.15);
-  transition: transform 180ms ease, box-shadow 180ms ease;
+  width:100%;
+  min-height:46px;
+  margin-top:10px;
+  color:#06111d;
+  background:var(--nx-gradient);
+  border:0;
+  border-radius:14px;
+  font-weight:850;
+  box-shadow:0 10px 26px rgba(70,185,242,.18);
+  transition:transform .18s ease,box-shadow .18s ease,filter .18s ease;
 }
-
-.login-card button[type="submit"]:hover {
-  transform: translateY(-1px);
-  box-shadow:
-    0 0 26px rgba(180,108,255,.65),
-    0 0 60px rgba(123,44,255,.45);
-}
-
-/* Links auxiliares */
-.login-card a {
-  color: #b46cff;
-  font-weight: 600;
-  transition: color 140ms ease, text-shadow 140ms ease;
-}
-
-.login-card a:hover {
-  color: #c084fc;
-  text-shadow: 0 0 10px rgba(180,108,255,.55);
-}
-
-/* Mensagens da API */
-.login-card .alert {
-  background: rgba(180,108,255,.08);
-  border: 1px solid rgba(180,108,255,.25);
-  color: #f4eaff;
-  border-radius: 12px;
-  box-shadow: 0 0 14px rgba(180,108,255,.25);
-}
-
-/* Responsivo */
-@media (max-width: 575px) {
-  .login-card .card-body {
-    padding: 26px 20px 24px;
-  }
-
-  .login-card .logo {
-    width: 120px;
-    height: 120px;
-  }
-}
+.login-card button[type="submit"]:hover { transform:translateY(-1px); filter:brightness(1.06); box-shadow:0 14px 34px rgba(70,185,242,.24); }
+.login-card a { color:#65d1ff; font-weight:650; transition:color .14s ease; }
+.login-card a:hover { color:#a8e7ff; }
+.login-card .alert { color:#dff5ff; background:#102b42; border-color:#2c668d; box-shadow:none; }
+@media(max-width:575px){.login-card .card-body{padding:26px 20px 24px}.login-card .logo{width:120px;height:120px}}
