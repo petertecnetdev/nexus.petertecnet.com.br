@@ -35,6 +35,7 @@ import EstablishmentItemPage from "./pages/establishment/EstablishmentItemPage";
 import CatalogPage from "./pages/catalog/CatalogPage";
 
 import "./index.css";
+import "./styles/readability.css";
 
 export const AuthContext = createContext(null);
 
@@ -77,8 +78,10 @@ function AppInner() {
     const loadAuth = async () => {
       const token = localStorage.getItem("token");
       if (!token) {
-        resetAuth();
-        setInitialLoading(false);
+        if (!cancelled) {
+          resetAuth();
+          setInitialLoading(false);
+        }
         return;
       }
 
@@ -86,8 +89,7 @@ function AppInner() {
         const { data } = await api.get("/account/context", {
           params: { app_id: appId },
         });
-        if (cancelled) return;
-        applySession(data);
+        if (!cancelled) applySession(data);
       } catch {
         localStorage.removeItem("token");
         if (!cancelled) resetAuth();
@@ -95,8 +97,6 @@ function AppInner() {
         if (!cancelled) setInitialLoading(false);
       }
     };
-
-    loadAuth();
 
     const onAuthChanged = (event) => {
       if (cancelled) return;
@@ -110,89 +110,68 @@ function AppInner() {
       loadAuth();
     };
 
+    loadAuth();
     window.addEventListener("authChanged", onAuthChanged);
+
     return () => {
       cancelled = true;
       window.removeEventListener("authChanged", onAuthChanged);
     };
   }, []);
 
-  if (initialLoading) {
-    return (
-      <ProcessingIndicatorComponent
-        messages={["Conectando à Nexus…", "Preparando sua experiência…"]}
-      />
-    );
+  if (initialLoading || isLoading) {
+    return <ProcessingIndicatorComponent />;
   }
 
-  const protectedRoute = (element) =>
-    user ? (
-      user.email_verified_at ? element : <Navigate to="/email-verify" replace />
-    ) : (
-      <Navigate to="/login" replace />
-    );
-
-  const emailVerifiedRoute = (element) =>
-    user ? (
-      !user.email_verified_at ? element : <Navigate to="/establishment/my" replace />
-    ) : (
-      <Navigate to="/login" replace />
-    );
-
-  const restrictedRoute = (element) =>
-    user ? <Navigate to="/establishment/my" replace /> : element;
-
   return (
-    <AuthContext.Provider value={{ user, setUser, employer, isEmployer, establishments }}>
-      {isLoading && (
-        <ProcessingIndicatorComponent
-          messages={["Salvando suas alterações…", "Atualizando a Nexus…"]}
-        />
-      )}
+    <AuthContext.Provider
+      value={{
+        user,
+        setUser,
+        employer,
+        setEmployer,
+        isEmployer,
+        setIsEmployer,
+        establishments,
+        setEstablishments,
+      }}
+    >
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
+        <Route path="/email-verify" element={<EmailVerifyPage />} />
+        <Route path="/logout" element={<LogoutPage />} />
+        <Route path="/password/email" element={<PasswordEmailPage />} />
+        <Route path="/password/reset/:token" element={<PasswordResetPage />} />
+        <Route path="/password" element={<PasswordPage />} />
+        <Route path="/user/update" element={<UserUpdatePage />} />
 
-      <Router>
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/register" element={restrictedRoute(<RegisterPage />)} />
-          <Route path="/login" element={restrictedRoute(<LoginPage />)} />
-          <Route path="/password-email" element={restrictedRoute(<PasswordEmailPage />)} />
-          <Route path="/password-reset" element={restrictedRoute(<PasswordResetPage />)} />
-          <Route path="/email-verify" element={emailVerifiedRoute(<EmailVerifyPage />)} />
-          <Route path="/password" element={protectedRoute(<PasswordPage />)} />
-          <Route path="/logout" element={<LogoutPage />} />
+        <Route path="/item/create/:establishmentId?" element={<ItemCreatePage />} />
+        <Route path="/item/view/:slug" element={<ItemViewPage />} />
+        <Route path="/item/update/:id" element={<ItemUpdatePage />} />
 
-          <Route path="/catalog/:slug" element={<CatalogPage />} />
-          <Route path="/catalogo/:slug" element={<CatalogRedirect />} />
-          <Route path="/establishment/view/:slug" element={<CatalogRedirect />} />
-          <Route path="/establishments" element={<Navigate to="/" replace />} />
-          <Route path="/item/view/:slug" element={<ItemViewPage />} />
-          <Route path="/item/:slug" element={<ItemViewPage />} />
+        <Route path="/establishment/create" element={<EstablishmentCreatePage />} />
+        <Route path="/establishment/update/:id" element={<EstablishmentUpdatePage />} />
+        <Route path="/establishment/my" element={<EstablishmentMyPage />} />
+        <Route path="/establishment/:id/items" element={<EstablishmentItemPage />} />
 
-          <Route path="/user/update" element={protectedRoute(<UserUpdatePage />)} />
-          <Route path="/establishment/create" element={protectedRoute(<EstablishmentCreatePage />)} />
-          <Route path="/establishment/update/:id" element={protectedRoute(<EstablishmentUpdatePage />)} />
-          <Route path="/establishment/my" element={protectedRoute(<EstablishmentMyPage />)} />
-          <Route path="/establishment/item/:slug" element={protectedRoute(<EstablishmentItemPage />)} />
-          <Route path="/item/create/:slug" element={protectedRoute(<ItemCreatePage />)} />
-          <Route path="/item/update/:id" element={protectedRoute(<ItemUpdatePage />)} />
-
-          <Route path="/dashboard" element={<Navigate to="/establishment/my" replace />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </Router>
+        <Route path="/catalog/:slug" element={<CatalogPage />} />
+        <Route path="/establishment/catalog/:slug" element={<CatalogRedirect />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
     </AuthContext.Provider>
   );
 }
 
 export default function App() {
   return (
-    <LoadingProvider>
-      <GoogleOAuthProvider
-        clientId={process.env.REACT_APP_GOOGLE_CLIENT_ID || ""}
-        locale="pt-BR"
-      >
-        <AppInner />
-      </GoogleOAuthProvider>
-    </LoadingProvider>
+    <GoogleOAuthProvider clientId={process.env.REACT_APP_GOOGLE_CLIENT_ID || ""}>
+      <Router>
+        <LoadingProvider>
+          <AppInner />
+        </LoadingProvider>
+      </Router>
+    </GoogleOAuthProvider>
   );
 }
