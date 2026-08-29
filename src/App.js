@@ -35,6 +35,7 @@ import EstablishmentItemPage from "./pages/establishment/EstablishmentItemPage";
 import CatalogPage from "./pages/catalog/CatalogPage";
 
 import "./index.css";
+import "./styles/readability.css";
 
 export const AuthContext = createContext(null);
 

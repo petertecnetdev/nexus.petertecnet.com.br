@@ -11,7 +11,7 @@ export default function PeterTecnetSignature() {
         className="pt-signature__link"
         href={PETER_TECNET_URL}
         target="_blank"
-        rel="noopener"
+        rel="noreferrer noopener"
         aria-label="Desenvolvido pela Peter Tecnet — visitar site oficial"
       >
         <span className="pt-signature__copy">
