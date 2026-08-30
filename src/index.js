@@ -10,7 +10,8 @@ import "@fortawesome/fontawesome-free/css/all.min.css";
 
 startTelemetry({ apiBaseUrl, appSlug, appId });
 
-axios.defaults.headers.common["X-Peter-App"] = "nexus";
+axios.defaults.headers.common["X-Peter-App"] = appSlug;
+axios.defaults.headers.common["X-App-ID"] = String(appId);
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
