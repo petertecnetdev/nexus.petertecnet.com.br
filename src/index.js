@@ -1,5 +1,5 @@
 import { startTelemetry } from "./telemetry";
-import { apiBaseUrl, appSlug } from "./config";
+import { apiBaseUrl, appId, appSlug } from "./config";
 import React from "react";
 import ReactDOM from "react-dom/client";
 import axios from "axios";
@@ -8,7 +8,7 @@ import PeterTecnetSignature from "./components/PeterTecnetSignature";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "@fortawesome/fontawesome-free/css/all.min.css";
 
-startTelemetry({ apiBaseUrl, appSlug });
+startTelemetry({ apiBaseUrl, appSlug, appId });
 
 axios.defaults.headers.common["X-Peter-App"] = "nexus";
 
