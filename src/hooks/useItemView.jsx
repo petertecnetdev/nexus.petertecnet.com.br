@@ -29,29 +29,16 @@ export default function useItemView(slug) {
 
       try {
         const encodedSlug = encodeURIComponent(slug);
-        const itemRes = await api.get(`/item/view/${encodedSlug}`, {
+        const { data } = await api.get(`/nexus/item/${encodedSlug}`, {
           params: { app_id: appId },
           signal: controller.signal,
         });
 
-        const itemData = itemRes.data?.item || null;
-        const establishmentData = itemRes.data?.establishment || null;
+        const itemData = data?.item || null;
+        const establishmentData = data?.establishment || null;
+        const relatedItems = Array.isArray(data?.other_items) ? data.other_items : [];
 
         if (!itemData) throw new Error("Item não encontrado.");
-
-        if (
-          itemData.app_id != null &&
-          Number(itemData.app_id) !== Number(appId)
-        ) {
-          throw new Error("Este item não pertence à Nexus.");
-        }
-
-        if (
-          establishmentData?.app_id != null &&
-          Number(establishmentData.app_id) !== Number(appId)
-        ) {
-          throw new Error("Este catálogo não pertence à Nexus.");
-        }
 
         const establishmentLogo =
           establishmentData?.files?.find?.((file) => file.type === "logo")?.public_url ||
@@ -64,32 +51,9 @@ export default function useItemView(slug) {
             ? { ...establishmentData, logo: establishmentLogo }
             : null
         );
-
-        const identifier = establishmentData?.slug || establishmentData?.id;
-        if (!identifier) {
-          setOtherItems([]);
-          return;
-        }
-
-        const otherItemsRes = await api.get(
-          `/item/list-others/${encodeURIComponent(identifier)}`,
-          {
-            params: { app_id: appId },
-            signal: controller.signal,
-          }
-        );
-
-        const list = Array.isArray(otherItemsRes.data?.items)
-          ? otherItemsRes.data.items
-          : Array.isArray(otherItemsRes.data)
-            ? otherItemsRes.data
-            : [];
-
         setOtherItems(
-          list
-            .filter((candidate) => candidate.id !== itemData.id)
+          relatedItems
             .filter((candidate) => Number(candidate.status ?? 1) !== 0)
-            .filter((candidate) => candidate?.app_id == null || Number(candidate.app_id) === Number(appId))
             .map((candidate) => ({
               ...candidate,
               image: normalizeImage(candidate),
