@@ -28,6 +28,9 @@ jobs:
       - name: Audit Nexus CSS palette
         run: node scripts/audit-nexus-css.js
 
+      - name: Audit entity image fallbacks
+        run: node scripts/audit-entity-image-fallbacks.js
+
       - name: Lint
         run: npm run lint
 
