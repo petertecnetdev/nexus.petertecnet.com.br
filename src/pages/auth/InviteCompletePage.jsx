@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Form, Button, Spinner } from "react-bootstrap";
 import axios from "axios";
 import Swal from "sweetalert2";
@@ -6,10 +7,11 @@ import { apiBaseUrl } from "../../config";
 
 export default function InviteCompleteFormComponent({ redirectTo }) {
   const [loading, setLoading] = useState(false);
+  const [searchParams] = useSearchParams();
 
   const [form, setForm] = useState({
-    email: "",
-    verification_code: "",
+    email: searchParams.get("email") || "",
+    verification_code: searchParams.get("code") || "",
     password: ""
   });
 
