@@ -5,12 +5,18 @@ import useImageUtils from "../../hooks/useImageUtils";
 import EstablishmentActionsBar from "./EstablishmentActionsBar";
 import "./EstablishmentDashboard.css";
 
-export default function EstablishmentDashboard({ establishment, navigate, onDelete, deleting }) {
+export default function EstablishmentDashboard({ establishment, navigate, onDelete, deleting, onActivate, activating }) {
   const { imageUrl } = useImageUtils();
   const name = establishment.fantasy || establishment.name || "Empresa";
+  const catalogActive = Boolean(establishment.catalog_active);
+  const catalogId = establishment.catalog_establishment_id || establishment.id;
+  const catalogSlug = establishment.catalog_slug || establishment.slug;
+  const sourceAppName = establishment?.source_app?.name || establishment?.source_app?.slug || "Peter Tecnet";
 
   const image = useMemo(() => {
-    const files = Array.isArray(establishment.files) ? establishment.files : [];
+    const files = Array.isArray(establishment.catalog_files) && establishment.catalog_files.length
+      ? establishment.catalog_files
+      : (Array.isArray(establishment.files) ? establishment.files : []);
     const logo =
       establishment?.images?.logo ||
       establishment.logo ||
@@ -20,33 +26,45 @@ export default function EstablishmentDashboard({ establishment, navigate, onDele
   }, [establishment, imageUrl]);
 
   const location = [establishment.city, establishment.uf].filter(Boolean).join(" - ");
+  const openCatalog = () => {
+    if (!catalogActive || !catalogSlug) return;
+    navigate(`/catalog/${catalogSlug}`);
+  };
+
+  const effectiveEstablishment = {
+    ...establishment,
+    id: catalogId,
+    slug: catalogSlug,
+  };
 
   return (
-    <article className="company-card" data-card-kind="establishment">
+    <article className={`company-card ${catalogActive ? "is-catalog-active" : "is-catalog-available"}`} data-card-kind="establishment">
       <button
         type="button"
         className="company-card__visual"
-        onClick={() => navigate(`/catalog/${establishment.slug}`)}
-        aria-label={`Abrir catálogo de ${name}`}
+        onClick={openCatalog}
+        aria-label={catalogActive ? `Abrir catálogo de ${name}` : `${name} ainda não possui catálogo Nexus`}
+        disabled={!catalogActive}
       >
         <img src={image} alt={name} loading="lazy" />
         <span className="company-card__entity-badge">
           <i className="fas fa-building" aria-hidden="true" />
-          Estabelecimento
+          Empresa
         </span>
-        <span className="company-card__status">
-          <span className="company-card__status-dot" /> catálogo
+        <span className={`company-card__status ${catalogActive ? "is-active" : "is-available"}`}>
+          <span className="company-card__status-dot" />
+          {catalogActive ? "catálogo ativo" : "sem catálogo"}
         </span>
       </button>
 
       <div className="company-card__body">
-        <div className="company-card__kind-row" aria-hidden="true">
+        <div className="company-card__kind-row">
           <span className="company-card__kind-icon">
-            <i className="fas fa-store" />
+            <i className="fas fa-layer-group" />
           </span>
           <span>
-            <strong>Empresa</strong>
-            <small>contém catálogo e itens</small>
+            <strong>{catalogActive ? "Catálogo Nexus" : "Empresa disponível"}</strong>
+            <small>Origem: {sourceAppName}</small>
           </span>
         </div>
 
@@ -59,15 +77,17 @@ export default function EstablishmentDashboard({ establishment, navigate, onDele
               </span>
             )}
           </div>
-          <button
-            type="button"
-            className="company-card__quick-open"
-            onClick={() => navigate(`/catalog/${establishment.slug}`)}
-            aria-label="Abrir catálogo"
-            title="Abrir catálogo"
-          >
-            <i className="fas fa-arrow-up-right-from-square" aria-hidden="true" />
-          </button>
+          {catalogActive && (
+            <button
+              type="button"
+              className="company-card__quick-open"
+              onClick={openCatalog}
+              aria-label="Abrir catálogo"
+              title="Abrir catálogo"
+            >
+              <i className="fas fa-arrow-up-right-from-square" aria-hidden="true" />
+            </button>
+          )}
         </div>
 
         {establishment.description && (
@@ -78,11 +98,25 @@ export default function EstablishmentDashboard({ establishment, navigate, onDele
           </p>
         )}
 
-        <EstablishmentActionsBar
-          establishment={establishment}
-          onDelete={onDelete}
-          deleting={deleting}
-        />
+        {catalogActive ? (
+          <EstablishmentActionsBar
+            establishment={effectiveEstablishment}
+            onDelete={onDelete}
+            deleting={deleting}
+          />
+        ) : (
+          <div className="company-card__activate-wrap">
+            <button
+              type="button"
+              className="company-card__activate"
+              onClick={() => onActivate?.(establishment)}
+              disabled={activating}
+            >
+              <i className={activating ? "fas fa-circle-notch fa-spin" : "fas fa-qrcode"} aria-hidden="true" />
+              {activating ? "Criando catálogo…" : "Criar catálogo na Nexus"}
+            </button>
+          </div>
+        )}
       </div>
     </article>
   );
@@ -93,8 +127,12 @@ EstablishmentDashboard.propTypes = {
   navigate: PropTypes.func.isRequired,
   onDelete: PropTypes.func.isRequired,
   deleting: PropTypes.bool,
+  onActivate: PropTypes.func,
+  activating: PropTypes.bool,
 };
 
 EstablishmentDashboard.defaultProps = {
   deleting: false,
+  onActivate: null,
+  activating: false,
 };
