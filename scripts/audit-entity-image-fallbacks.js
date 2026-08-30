@@ -8,7 +8,8 @@ const violations = [];
 const forbidden = [
   { re: /\|\|\s*["']\/images\/logo\.png["']/g, label: 'logo Nexus usado como fallback de entidade' },
   { re: /(?:PLACEHOLDER|FALLBACK|DEFAULT_IMAGE)\s*=\s*["']\/images\/logo\.png["']/g, label: 'logo Nexus definido como placeholder de entidade' },
-  { re: /itemdefault\.(?:png|jpe?g|webp)/gi, label: 'placeholder genérico de item' },
+  { re: /["']\/images\/placeholder\.(?:png|jpe?g|webp)["']/gi, label: 'placeholder genérico em vez de iniciais' },
+  { re: /item[-_]?default\.(?:png|jpe?g|webp)/gi, label: 'placeholder genérico de item' },
   { re: /establishment[-_]?default\.(?:png|jpe?g|webp)/gi, label: 'placeholder genérico de empresa' },
   { re: /menu-cover-placeholder\.(?:png|jpe?g|webp)/gi, label: 'placeholder genérico de catálogo' },
 ];
