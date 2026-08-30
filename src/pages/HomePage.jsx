@@ -18,6 +18,33 @@ const formatPrice = (value) => {
   return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(Number(value));
 };
 
+const getInitials = (name) => {
+  const parts = String(name || "").trim().split(/\s+/).filter(Boolean);
+  if (!parts.length) return "?";
+  if (parts.length === 1) return parts[0][0].toUpperCase();
+  return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
+};
+
+function DiscoveryItemMedia({ image, name }) {
+  const [failed, setFailed] = useState(false);
+  const showImage = Boolean(image) && !failed;
+
+  return (
+    <div className={`hp-item-card__image ${showImage ? "" : "hp-item-card__image--initials"}`}>
+      {showImage ? (
+        <img src={image} alt={name || "Item"} loading="lazy" onError={() => setFailed(true)} />
+      ) : (
+        <span aria-label={`Sem foto: ${name || "item"}`}>{getInitials(name)}</span>
+      )}
+    </div>
+  );
+}
+
+DiscoveryItemMedia.propTypes = {
+  image: PropTypes.string,
+  name: PropTypes.string,
+};
+
 function Rail({ title, subtitle, children, railRef }) {
   const move = (direction) => {
     railRef.current?.scrollBy({ left: direction * Math.max(280, railRef.current.clientWidth * 0.82), behavior: "smooth" });
@@ -196,7 +223,7 @@ export default function HomePage() {
               railRef={itemsRail}
             >
               {discovery.items.slice(0, 32).map((item) => {
-                const image = imageUrl(item?.images?.avatar || item?.images?.gallery?.[0]) || "/images/logo.png";
+                const image = imageUrl(item?.images?.avatar || item?.images?.gallery?.[0] || item?.image || item?.image_url);
                 const price = formatPrice(item.price);
                 return (
                   <article
@@ -209,7 +236,7 @@ export default function HomePage() {
                     role="button"
                     tabIndex={0}
                   >
-                    <div className="hp-item-card__image"><img src={image} alt={item.name} loading="lazy" /></div>
+                    <DiscoveryItemMedia image={image} name={item.name} />
                     <div className="hp-item-card__body">
                       <span className="hp-item-card__company">{item.establishment?.name || "Catálogo Nexus"}</span>
                       <h3>{item.name}</h3>
