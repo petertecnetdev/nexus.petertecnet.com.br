@@ -3,44 +3,33 @@ import React from "react";
 import PropTypes from "prop-types";
 import { Card, Button } from "react-bootstrap";
 import { Link } from "react-router-dom";
-import { storageUrl } from "../../config";
+import EntityImage from "../EntityImage";
 import EstablishmentActionsBar from "./EstablishmentActionsBar";
 import EstablishmentTodaySnapshot from "./EstablishmentTodaySnapshot";
 
 export default function EstablishmentMyCard({ establishment, metrics }) {
-  const handleLogoError = (e) => {
-    e.target.onerror = null;
-    e.target.src = "/images/logo.png";
-  };
+  const name = establishment.fantasy || establishment.name || "Empresa";
+  const files = Array.isArray(establishment.files) ? establishment.files : [];
+  const images = [
+    establishment?.images?.logo,
+    establishment.logo,
+    files.find((file) => file?.type === "logo")?.public_url,
+    establishment?.images?.background,
+    files.find((file) => file?.is_primary)?.public_url,
+    files[0]?.public_url,
+  ];
 
   return (
     <Card className="dashboard-establishment-card h-100">
       <Card.Body>
         <div className="dashboard-establishment-header mb-3">
-          <img
-            src={`${storageUrl}/${establishment.logo || "logo.png"}`}
-            alt={establishment.name}
-            className="dashboard-establishment-logo"
-            onError={handleLogoError}
-          />
+          <EntityImage src={images} name={name} alt={name} shape="establishment" className="dashboard-establishment-logo" loading="lazy" />
           <div>
-            <div className="dashboard-establishment-name">
-              {establishment.name}
-            </div>
-            <div className="dashboard-establishment-slug">
-              @{establishment.slug}
-            </div>
-            <Button
-              as={Link}
-              to={`/establishment/view/${establishment.slug}`}
-              size="sm"
-              className="dashboard-establishment-btn mx-1 bg-black"
-            >
-              Página
-            </Button>
+            <div className="dashboard-establishment-name">{name}</div>
+            <div className="dashboard-establishment-slug">@{establishment.slug}</div>
+            <Button as={Link} to={`/establishment/view/${establishment.slug}`} size="sm" className="dashboard-establishment-btn mx-1 bg-black">Página</Button>
           </div>
         </div>
-
         <EstablishmentActionsBar establishment={establishment} />
         <EstablishmentTodaySnapshot metrics={metrics} />
       </Card.Body>
@@ -49,18 +38,6 @@ export default function EstablishmentMyCard({ establishment, metrics }) {
 }
 
 EstablishmentMyCard.propTypes = {
-  establishment: PropTypes.shape({
-    id: PropTypes.number.isRequired,
-    slug: PropTypes.string.isRequired,
-    name: PropTypes.string.isRequired,
-    logo: PropTypes.string,
-  }).isRequired,
-  metrics: PropTypes.shape({
-    totalOrders: PropTypes.number,
-    totalValue: PropTypes.string,
-    mostOrderedItem: PropTypes.string,
-    topCustomer: PropTypes.string,
-    avgOrdersPerHour: PropTypes.string,
-    avgTicket: PropTypes.string,
-  }),
+  establishment: PropTypes.shape({ id: PropTypes.number.isRequired, slug: PropTypes.string.isRequired, name: PropTypes.string.isRequired, fantasy: PropTypes.string, logo: PropTypes.string, files: PropTypes.array }),
+  metrics: PropTypes.shape({ totalOrders: PropTypes.number, totalValue: PropTypes.string, mostOrderedItem: PropTypes.string, topCustomer: PropTypes.string, avgOrdersPerHour: PropTypes.string, avgTicket: PropTypes.string }),
 };
