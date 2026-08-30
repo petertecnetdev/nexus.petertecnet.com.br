@@ -71,24 +71,58 @@ export default function HomePage() {
 
   useEffect(() => {
     const controller = new AbortController();
+
     const loadDiscovery = async () => {
       try {
-        setDiscoveryLoading(true); setDiscoveryError(false);
-        const { data: locationData } = await api.get(`/home/${appId}`, { signal: controller.signal });
-        const locationPayload = locationData?.payload || {};
-        const city = locationData?.city || locationPayload?.app?.city || null;
-        const uf = locationData?.uf || locationPayload?.app?.uf || null;
-        const { data: ecosystemData } = await api.get("/nexus/discovery", { params: { app_id: appId, target_city: city || undefined, target_uf: uf || undefined, limit: 100 }, signal: controller.signal });
-        setDiscovery({ establishments: Array.isArray(ecosystemData?.establishments) ? ecosystemData.establishments : [], items: Array.isArray(ecosystemData?.items) ? ecosystemData.items : [], city, uf });
-      } catch (error) { if (error?.code !== "ERR_CANCELED") setDiscoveryError(true); }
-      finally { if (!controller.signal.aborted) setDiscoveryLoading(false); }
+        setDiscoveryLoading(true);
+        setDiscoveryError(false);
+
+        let city = localStorage.getItem("selectedCity") || null;
+        let uf = localStorage.getItem("selectedUF") || null;
+
+        if (!city || !uf) {
+          try {
+            const { data: locationData } = await api.get(`/home/${appId}`, { signal: controller.signal });
+            const locationPayload = locationData?.payload || {};
+            city = city || locationData?.city || locationPayload?.app?.city || null;
+            uf = uf || locationData?.uf || locationPayload?.app?.uf || null;
+          } catch (locationError) {
+            if (locationError?.code === "ERR_CANCELED") throw locationError;
+            // A descoberta da Nexus não depende da geolocalização. Se a detecção
+            // falhar, continuamos carregando todo o ecossistema normalmente.
+          }
+        }
+
+        const { data: ecosystemData } = await api.get("/nexus/discovery", {
+          params: {
+            app_id: appId,
+            city: city || undefined,
+            uf: uf || undefined,
+            limit: 100,
+          },
+          signal: controller.signal,
+        });
+
+        setDiscovery({
+          establishments: Array.isArray(ecosystemData?.establishments) ? ecosystemData.establishments : [],
+          items: Array.isArray(ecosystemData?.items) ? ecosystemData.items : [],
+          city: city || ecosystemData?.scope?.current_city || null,
+          uf: uf || ecosystemData?.scope?.current_uf || null,
+        });
+      } catch (error) {
+        if (error?.code !== "ERR_CANCELED") setDiscoveryError(true);
+      } finally {
+        if (!controller.signal.aborted) setDiscoveryLoading(false);
+      }
     };
-    loadDiscovery(); return () => controller.abort();
+
+    loadDiscovery();
+    return () => controller.abort();
   }, []);
 
   const locationLabel = useMemo(() => {
     const parts = [discovery.city, discovery.uf].filter(Boolean);
-    return parts.length ? parts.join(" - ") : "perto de você";
+    return parts.length ? parts.join(" - ") : "em todo o ecossistema";
   }, [discovery.city, discovery.uf]);
 
   return (
@@ -99,25 +133,25 @@ export default function HomePage() {
       </section>
 
       <section className="hp-discovery" aria-labelledby="hp-discovery-title">
-        <div className="hp-discovery-intro"><div><span className="hp-eyebrow">Perto de você</span><h2 id="hp-discovery-title">O que está disponível {locationLabel}</h2><p>Empresas do ecossistema Peter Tecnet aparecem aqui independentemente do aplicativo em que foram cadastradas.</p></div><div className="hp-location-chip"><FaMapMarkerAlt /> {locationLabel}</div></div>
-        {discoveryLoading && <div className="hp-discovery-skeleton" aria-label="Carregando catálogos locais">{Array.from({ length: 4 }).map((_, index) => <span key={index} />)}</div>}
-        {!discoveryLoading && discoveryError && <div className="hp-discovery-state"><strong>Não conseguimos identificar os catálogos próximos agora.</strong><span>Você ainda pode explorar outras cidades logo abaixo.</span></div>}
+        <div className="hp-discovery-intro"><div><span className="hp-eyebrow">Descoberta Nexus</span><h2 id="hp-discovery-title">Empresas disponíveis {locationLabel}</h2><p>Empresas do ecossistema Peter Tecnet aparecem aqui independentemente do aplicativo em que foram cadastradas. Sua localização apenas organiza a prioridade dos resultados.</p></div><div className="hp-location-chip"><FaMapMarkerAlt /> {locationLabel}</div></div>
+        {discoveryLoading && <div className="hp-discovery-skeleton" aria-label="Carregando empresas">{Array.from({ length: 4 }).map((_, index) => <span key={index} />)}</div>}
+        {!discoveryLoading && discoveryError && <div className="hp-discovery-state"><strong>Não conseguimos carregar as empresas agora.</strong><span>Tente atualizar a página em alguns instantes.</span></div>}
 
         {!discoveryLoading && !discoveryError && discovery.establishments.length > 0 && (
-          <Rail title="Empresas na sua localização" subtitle="Rasoio, Plat, Nexus e demais aplicativos participam da descoberta da Nexus." railRef={companiesRail}>
+          <Rail title="Empresas" subtitle="Empresas de todo o ecossistema, com as mais próximas priorizadas quando sua localização estiver disponível." railRef={companiesRail}>
             {discovery.establishments.slice(0, 24).map((establishment) => {
               const companyName = establishment.fantasy || establishment.name || "Empresa";
               const sourceApp = establishment?.source_app?.name || establishment?.app?.name;
               return <article className="hp-company-card" key={establishment.id} onClick={() => navigate(`/catalog/${establishment.slug}`)} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") navigate(`/catalog/${establishment.slug}`); }} role="button" tabIndex={0}>
                 <EntityImage src={getCompanyImages(establishment)} name={companyName} alt={companyName} shape="establishment" loading="lazy" />
-                <div><h3>{companyName}</h3><span><FaMapMarkerAlt /> {[establishment.city, establishment.uf].filter(Boolean).join(" - ") || locationLabel}</span>{sourceApp ? <small>{sourceApp} · {Number(establishment.total_views || 0).toLocaleString("pt-BR")} visualizações</small> : <small><FaEye /> {Number(establishment.total_views || 0).toLocaleString("pt-BR")} visualizações</small>}</div>
+                <div><h3>{companyName}</h3><span><FaMapMarkerAlt /> {[establishment.city, establishment.uf].filter(Boolean).join(" - ") || "Localização não informada"}</span>{sourceApp ? <small>{sourceApp} · {Number(establishment.total_views || 0).toLocaleString("pt-BR")} visualizações</small> : <small><FaEye /> {Number(establishment.total_views || 0).toLocaleString("pt-BR")} visualizações</small>}</div>
               </article>;
             })}
           </Rail>
         )}
 
         {!discoveryLoading && !discoveryError && discovery.items.length > 0 && (
-          <Rail title="Itens perto de você" subtitle="Itens das empresas da região, mesmo quando a empresa nasceu em outro aplicativo Peter Tecnet." railRef={itemsRail}>
+          <Rail title="Itens em destaque" subtitle="Produtos e serviços das empresas do ecossistema Peter Tecnet." railRef={itemsRail}>
             {discovery.items.slice(0, 32).map((item) => {
               const files = Array.isArray(item?.files) ? item.files : [];
               const image = imageUrl(item?.images?.avatar || item?.images?.gallery?.[0] || item?.image_url || item?.image || files.find((file) => file?.is_primary)?.public_url || files.find((file) => file?.type === "image")?.public_url || files[0]?.public_url);
@@ -126,7 +160,7 @@ export default function HomePage() {
             })}
           </Rail>
         )}
-        {!discoveryLoading && !discoveryError && discovery.establishments.length === 0 && discovery.items.length === 0 && <div className="hp-discovery-state"><strong>Ainda não encontramos empresas em {locationLabel}.</strong><span>Explore todas as outras regiões logo abaixo.</span></div>}
+        {!discoveryLoading && !discoveryError && discovery.establishments.length === 0 && discovery.items.length === 0 && <div className="hp-discovery-state"><strong>Ainda não encontramos empresas disponíveis.</strong><span>Assim que houver empresas válidas no ecossistema elas aparecerão aqui.</span></div>}
       </section>
 
       <ExploreCatalogs currentCity={discovery.city} currentUf={discovery.uf} />
