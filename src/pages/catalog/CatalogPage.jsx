@@ -49,6 +49,9 @@ export default function CatalogPage() {
     });
   }, [activeItems, query, category]);
 
+  const hasItems = activeItems.length > 0;
+  const hasActiveFilters = normalizeText(query) !== "" || category !== "all";
+
   const catalogUrl = `${linkApp}/catalog/${encodeURIComponent(slug || "")}`;
   const qrImageUrl = `https://quickchart.io/qr?size=320&text=${encodeURIComponent(catalogUrl)}`;
   const title = establishment?.fantasy || establishment?.name || "Catálogo Nexus";
@@ -121,16 +124,28 @@ export default function CatalogPage() {
       </section>
 
       <Container className="catalog-content py-4">
-        <section className="catalog-toolbar" aria-label="Filtros do catálogo">
-          <Form.Control type="search" aria-label="Buscar itens no catálogo" placeholder="Buscar por nome, descrição, categoria ou marca" value={query} onChange={(event) => setQuery(event.target.value)} />
-          <Form.Select aria-label="Filtrar itens por categoria" value={category} onChange={(event) => setCategory(event.target.value)}>
-            <option value="all">Todas as categorias</option>
-            {categories.map((value) => <option key={value} value={value}>{value}</option>)}
-          </Form.Select>
-          <span className="catalog-toolbar__count" aria-live="polite">{filteredItems.length} {filteredItems.length === 1 ? "item" : "itens"}</span>
-        </section>
+        {hasItems && (
+          <section className="catalog-toolbar" aria-label="Filtros do catálogo">
+            <Form.Control type="search" aria-label="Buscar itens no catálogo" placeholder="Buscar por nome, descrição, categoria ou marca" value={query} onChange={(event) => setQuery(event.target.value)} />
+            <Form.Select aria-label="Filtrar itens por categoria" value={category} onChange={(event) => setCategory(event.target.value)}>
+              <option value="all">Todas as categorias</option>
+              {categories.map((value) => <option key={value} value={value}>{value}</option>)}
+            </Form.Select>
+            <span className="catalog-toolbar__count" aria-live="polite">{filteredItems.length} {filteredItems.length === 1 ? "item" : "itens"}</span>
+          </section>
+        )}
 
-        {filteredItems.length === 0 ? <NexusFeedback type="neutral" title="Nenhum item encontrado" className="mt-4">Tente remover algum filtro ou buscar por outro termo.</NexusFeedback> : <Row className="g-4 mt-1">{filteredItems.map((item) => <Col key={item.id} xs={12} sm={6} lg={4} xl={3}><GlobalCard item={item} fmtBRL={fmtBRL} navigate={navigate} showSchedule={false} /></Col>)}</Row>}
+        {!hasItems ? (
+          <NexusFeedback type="neutral" title="Esta empresa ainda não possui itens cadastrados" className="mt-4">
+            O catálogo de {title} já está disponível na Nexus, mas a empresa ainda não adicionou produtos ou serviços para exibição.
+          </NexusFeedback>
+        ) : filteredItems.length === 0 && hasActiveFilters ? (
+          <NexusFeedback type="neutral" title="Nenhum item encontrado para esta busca" className="mt-4">
+            Não encontramos itens que correspondam aos filtros informados. Tente remover algum filtro ou buscar por outro termo.
+          </NexusFeedback>
+        ) : (
+          <Row className="g-4 mt-1">{filteredItems.map((item) => <Col key={item.id} xs={12} sm={6} lg={4} xl={3}><GlobalCard item={item} fmtBRL={fmtBRL} navigate={navigate} showSchedule={false} /></Col>)}</Row>
+        )}
 
         <section id="compartilhar" className="catalog-share" aria-labelledby="catalog-share-title">
           <div className="catalog-share__copy">
