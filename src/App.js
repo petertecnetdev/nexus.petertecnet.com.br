@@ -22,6 +22,7 @@ import LogoutPage from "./pages/auth/LogoutPage";
 import PasswordEmailPage from "./pages/auth/PasswordEmailPage";
 import PasswordResetPage from "./pages/auth/PasswordResetPage";
 import PasswordPage from "./pages/auth/PasswordPage";
+import InviteCompletePage from "./pages/auth/InviteCompletePage";
 import UserUpdatePage from "./pages/user/UserUpdatePage";
 
 import ItemCreatePage from "./pages/item/ItemCreatePage";
@@ -163,6 +164,7 @@ function AppInner() {
           <Route path="/password-reset" element={restrictedRoute(<PasswordResetPage />)} />
           <Route path="/email-verify" element={emailVerifiedRoute(<EmailVerifyPage />)} />
           <Route path="/password" element={protectedRoute(<PasswordPage />)} />
+          <Route path="/invite-complete" element={restrictedRoute(<InviteCompletePage redirectTo="/login" />)} />
           <Route path="/logout" element={<LogoutPage />} />
 
           <Route path="/catalog/:slug" element={<CatalogPage />} />
