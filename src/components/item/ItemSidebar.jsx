@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from "react";
-import { Card, Button, Badge, Modal } from "react-bootstrap";
+import { Card, Button, Modal } from "react-bootstrap";
 import PropTypes from "prop-types";
 import LoginFormComponent from "../auth/LoginFormComponent";
 import EntityImage from "../EntityImage";
