@@ -6,6 +6,7 @@ import { FaArrowLeft, FaArrowRight, FaEye, FaMapMarkerAlt } from "react-icons/fa
 import { AuthContext } from "../App";
 import GlobalNav from "../components/GlobalNav";
 import GlobalFooter from "../components/GlobalFooter";
+import ExploreCatalogs from "../components/home/ExploreCatalogs";
 import api from "../services/api";
 import { appId } from "../config";
 import useImageUtils from "../hooks/useImageUtils";
@@ -127,10 +128,10 @@ export default function HomePage() {
         <section className="hp-hero">
           <div className="hp-hero__copy">
             <span className="hp-eyebrow">Seu catálogo. Um link. Um QR Code.</span>
-            <h1>Descubra, crie e compartilhe catálogos da sua região.</h1>
+            <h1>Descubra, crie e compartilhe catálogos de qualquer lugar.</h1>
             <p>
-              A Nexus conecta visitantes aos catálogos próximos e dá às empresas uma forma rápida,
-              visual e profissional de apresentar seus itens online.
+              A Nexus prioriza empresas próximas sem limitar a descoberta: explore catálogos da sua cidade,
+              de outras regiões e de lugares que você pretende visitar.
             </p>
 
             <div className="hp-hero__actions">
@@ -146,7 +147,7 @@ export default function HomePage() {
 
             <div className="hp-benefits" aria-label="Benefícios da Nexus">
               <span><i className="fas fa-location-dot" /> Descoberta local</span>
-              <span><i className="fas fa-box-open" /> Itens públicos</span>
+              <span><i className="fas fa-compass" /> Explore outras cidades</span>
               <span><i className="fas fa-qrcode" /> QR Code e link</span>
             </div>
           </div>
@@ -157,7 +158,7 @@ export default function HomePage() {
             <div className="hp-logo-card">
               <img src="/images/logo.png" alt="" />
               <strong>Nexus</strong>
-              <span>catálogos perto de você</span>
+              <span>catálogos de todos os lugares</span>
             </div>
           </div>
         </section>
@@ -165,9 +166,9 @@ export default function HomePage() {
         <section className="hp-discovery" aria-labelledby="hp-discovery-title">
           <div className="hp-discovery-intro">
             <div>
-              <span className="hp-eyebrow">Explore sem login</span>
+              <span className="hp-eyebrow">Perto de você</span>
               <h2 id="hp-discovery-title">O que está disponível {locationLabel}</h2>
-              <p>Empresas e itens públicos são carregados pela localização aproximada do visitante.</p>
+              <p>A localização organiza primeiro os resultados próximos; ela não limita o restante da Nexus.</p>
             </div>
             <div className="hp-location-chip"><FaMapMarkerAlt /> {locationLabel}</div>
           </div>
@@ -181,14 +182,14 @@ export default function HomePage() {
           {!discoveryLoading && discoveryError && (
             <div className="hp-discovery-state">
               <strong>Não conseguimos identificar os catálogos próximos agora.</strong>
-              <span>Você ainda pode acessar catálogos por link ou criar o seu normalmente.</span>
+              <span>Você ainda pode explorar outras cidades logo abaixo.</span>
             </div>
           )}
 
           {!discoveryLoading && !discoveryError && discovery.establishments.length > 0 && (
             <Rail
               title="Empresas na sua localização"
-              subtitle="Abra o catálogo diretamente, sem precisar criar uma conta."
+              subtitle="Resultados próximos aparecem primeiro para facilitar a descoberta local."
               railRef={companiesRail}
             >
               {discovery.establishments.slice(0, 24).map((establishment) => {
@@ -254,11 +255,12 @@ export default function HomePage() {
           {!discoveryLoading && !discoveryError && discovery.establishments.length === 0 && discovery.items.length === 0 && (
             <div className="hp-discovery-state">
               <strong>Ainda não há catálogos publicados em {locationLabel}.</strong>
-              <span>Cadastre uma empresa e seja uma das primeiras a aparecer nesta região.</span>
-              <button type="button" className="hp-primary-action" onClick={() => navigate(primaryPath)}>{primaryLabel}</button>
+              <span>Isso não significa que a Nexus esteja vazia: explore outras regiões logo abaixo.</span>
             </div>
           )}
         </section>
+
+        <ExploreCatalogs currentCity={discovery.city} currentUf={discovery.uf} />
 
         <section className="hp-content" aria-labelledby="hp-how-title">
           <div className="hp-section-intro">
@@ -270,7 +272,7 @@ export default function HomePage() {
           <div className="hp-flow-grid">
             <article className="hp-flow-card"><span>01</span><h3>Cadastre a empresa</h3><p>Crie um espaço próprio com identidade, informações e localização.</p></article>
             <article className="hp-flow-card"><span>02</span><h3>Adicione e edite itens</h3><p>Mantenha fotos, descrição, preço, categoria e disponibilidade sempre atualizados.</p></article>
-            <article className="hp-flow-card"><span>03</span><h3>Ganhe visibilidade</h3><p>Itens e empresas podem aparecer para visitantes da mesma localização, mesmo sem login.</p></article>
+            <article className="hp-flow-card"><span>03</span><h3>Ganhe visibilidade</h3><p>Itens e empresas podem aparecer primeiro para visitantes próximos e também ser descobertos por pessoas de outras regiões.</p></article>
             <article className="hp-flow-card"><span>04</span><h3>Compartilhe e acompanhe</h3><p>Use QR Code, link público e visualizações para entender o interesse pelo catálogo.</p></article>
           </div>
         </section>
