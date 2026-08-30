@@ -24,22 +24,16 @@ export default function useEstablishmentMy(appId) {
       setIsLoading(true);
       setApiError(null);
 
-      const { data } = await api.post(
-        "/establishment/my/app",
-        { app_id: appId },
-        signal ? { signal } : undefined
-      );
+      const { data } = await api.get("/nexus/catalog-companies", {
+        params: { app_id: appId },
+        ...(signal ? { signal } : {}),
+      });
 
-      const list = Array.isArray(data?.establishments) ? data.establishments : [];
-      setEstablishments(
-        list.filter((establishment) =>
-          establishment?.app_id == null || Number(establishment.app_id) === Number(appId)
-        )
-      );
+      setEstablishments(Array.isArray(data?.companies) ? data.companies : []);
     } catch (error) {
       if (error?.code === "ERR_CANCELED") return;
       setEstablishments([]);
-      setApiError(getApiMessage(error, "Erro ao carregar suas empresas."));
+      setApiError(getApiMessage(error, "Erro ao carregar as empresas do seu ecossistema."));
     } finally {
       if (!signal?.aborted) setIsLoading(false);
     }
@@ -51,13 +45,22 @@ export default function useEstablishmentMy(appId) {
     return () => controller.abort();
   }, [fetchEstablishments]);
 
+  const activateCatalog = useCallback(async (sourceId) => {
+    const { data } = await api.post(
+      `/nexus/catalog-companies/${encodeURIComponent(sourceId)}/activate`,
+      { app_id: appId }
+    );
+    await fetchEstablishments();
+    return data?.establishment || null;
+  }, [appId, fetchEstablishments]);
+
   const removeEstablishment = useCallback(async (id) => {
     await api.delete(`/establishment/${encodeURIComponent(id)}`, {
       params: { app_id: appId },
       data: { app_id: appId },
     });
-    setEstablishments((current) => current.filter((item) => Number(item.id) !== Number(id)));
-  }, [appId]);
+    await fetchEstablishments();
+  }, [appId, fetchEstablishments]);
 
   const refresh = useCallback(() => fetchEstablishments(), [fetchEstablishments]);
 
@@ -65,6 +68,7 @@ export default function useEstablishmentMy(appId) {
     establishments,
     isLoading,
     apiError,
+    activateCatalog,
     removeEstablishment,
     refresh,
   };
