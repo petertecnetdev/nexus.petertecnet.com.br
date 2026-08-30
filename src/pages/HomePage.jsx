@@ -26,6 +26,17 @@ const getInitials = (name) => {
   return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
 };
 
+const getCompanyImage = (establishment) => {
+  const files = Array.isArray(establishment?.files) ? establishment.files : [];
+  return establishment?.images?.logo
+    || establishment?.images?.background
+    || establishment?.logo
+    || files.find((file) => file?.type === "logo")?.public_url
+    || files.find((file) => file?.type === "background")?.public_url
+    || files[0]?.public_url
+    || null;
+};
+
 function DiscoveryItemMedia({ image, name }) {
   const [failed, setFailed] = useState(false);
   const showImage = Boolean(image) && !failed;
@@ -95,13 +106,33 @@ export default function HomePage() {
       try {
         setDiscoveryLoading(true);
         setDiscoveryError(false);
-        const { data } = await api.get(`/home/${appId}`, { signal: controller.signal });
-        const payload = data?.payload || {};
+
+        // O endpoint home continua sendo usado apenas para descobrir a localizacao
+        // aproximada do visitante. Os dados exibidos na Nexus vem da descoberta
+        // transversal, que consulta empresas de TODO o ecossistema Peter Tecnet.
+        const { data: locationData } = await api.get(`/home/${appId}`, {
+          signal: controller.signal,
+        });
+
+        const locationPayload = locationData?.payload || {};
+        const city = locationData?.city || locationPayload?.app?.city || null;
+        const uf = locationData?.uf || locationPayload?.app?.uf || null;
+
+        const { data: ecosystemData } = await api.get("/nexus/discovery", {
+          params: {
+            app_id: appId,
+            target_city: city || undefined,
+            target_uf: uf || undefined,
+            limit: 100,
+          },
+          signal: controller.signal,
+        });
+
         setDiscovery({
-          establishments: Array.isArray(payload.establishments) ? payload.establishments : [],
-          items: Array.isArray(payload.items) ? payload.items : [],
-          city: data?.city || payload?.app?.city || null,
-          uf: data?.uf || payload?.app?.uf || null,
+          establishments: Array.isArray(ecosystemData?.establishments) ? ecosystemData.establishments : [],
+          items: Array.isArray(ecosystemData?.items) ? ecosystemData.items : [],
+          city,
+          uf,
         });
       } catch (error) {
         if (error?.code === "ERR_CANCELED") return;
@@ -168,7 +199,7 @@ export default function HomePage() {
             <div>
               <span className="hp-eyebrow">Perto de você</span>
               <h2 id="hp-discovery-title">O que está disponível {locationLabel}</h2>
-              <p>A localização organiza primeiro os resultados próximos; ela não limita o restante da Nexus.</p>
+              <p>Empresas do ecossistema Peter Tecnet aparecem aqui independentemente do aplicativo em que foram cadastradas.</p>
             </div>
             <div className="hp-location-chip"><FaMapMarkerAlt /> {locationLabel}</div>
           </div>
@@ -189,11 +220,12 @@ export default function HomePage() {
           {!discoveryLoading && !discoveryError && discovery.establishments.length > 0 && (
             <Rail
               title="Empresas na sua localização"
-              subtitle="Resultados próximos aparecem primeiro para facilitar a descoberta local."
+              subtitle="Rasoio, Plat, Nexus e demais aplicativos participam da descoberta da Nexus."
               railRef={companiesRail}
             >
               {discovery.establishments.slice(0, 24).map((establishment) => {
-                const image = imageUrl(establishment?.images?.logo || establishment?.images?.background) || "/images/logo.png";
+                const image = imageUrl(getCompanyImage(establishment)) || "/images/logo.png";
+                const sourceApp = establishment?.source_app?.name || establishment?.app?.name;
                 return (
                   <article
                     className="hp-company-card"
@@ -205,11 +237,12 @@ export default function HomePage() {
                     role="button"
                     tabIndex={0}
                   >
-                    <img src={image} alt={establishment.name} loading="lazy" />
+                    <img src={image} alt={establishment.fantasy || establishment.name} loading="lazy" />
                     <div>
-                      <h3>{establishment.name}</h3>
+                      <h3>{establishment.fantasy || establishment.name}</h3>
                       <span><FaMapMarkerAlt /> {[establishment.city, establishment.uf].filter(Boolean).join(" - ") || locationLabel}</span>
-                      <small><FaEye /> {Number(establishment.total_views || 0).toLocaleString("pt-BR")} visualizações</small>
+                      {sourceApp && <small>{sourceApp} · {Number(establishment.total_views || 0).toLocaleString("pt-BR")} visualizações</small>}
+                      {!sourceApp && <small><FaEye /> {Number(establishment.total_views || 0).toLocaleString("pt-BR")} visualizações</small>}
                     </div>
                   </article>
                 );
@@ -220,11 +253,20 @@ export default function HomePage() {
           {!discoveryLoading && !discoveryError && discovery.items.length > 0 && (
             <Rail
               title="Itens perto de você"
-              subtitle="Veja o que as empresas da região estão apresentando em seus catálogos."
+              subtitle="Itens das empresas da região, mesmo quando a empresa nasceu em outro aplicativo Peter Tecnet."
               railRef={itemsRail}
             >
               {discovery.items.slice(0, 32).map((item) => {
-                const image = imageUrl(item?.images?.avatar || item?.images?.gallery?.[0] || item?.image || item?.image_url);
+                const files = Array.isArray(item?.files) ? item.files : [];
+                const image = imageUrl(
+                  item?.images?.avatar
+                  || item?.images?.gallery?.[0]
+                  || item?.image_url
+                  || item?.image
+                  || files.find((file) => file?.is_primary)?.public_url
+                  || files.find((file) => file?.type === "image")?.public_url
+                  || files[0]?.public_url
+                );
                 const price = formatPrice(item.price);
                 return (
                   <article
@@ -239,7 +281,7 @@ export default function HomePage() {
                   >
                     <DiscoveryItemMedia image={image} name={item.name} />
                     <div className="hp-item-card__body">
-                      <span className="hp-item-card__company">{item.establishment?.name || "Catálogo Nexus"}</span>
+                      <span className="hp-item-card__company">{item.establishment?.fantasy || item.establishment?.name || "Catálogo Nexus"}</span>
                       <h3>{item.name}</h3>
                       <div className="hp-item-card__meta">
                         {price && <strong>{price}</strong>}
@@ -254,8 +296,8 @@ export default function HomePage() {
 
           {!discoveryLoading && !discoveryError && discovery.establishments.length === 0 && discovery.items.length === 0 && (
             <div className="hp-discovery-state">
-              <strong>Ainda não há catálogos publicados em {locationLabel}.</strong>
-              <span>Isso não significa que a Nexus esteja vazia: explore outras regiões logo abaixo.</span>
+              <strong>Ainda não encontramos empresas em {locationLabel}.</strong>
+              <span>Explore todas as outras regiões logo abaixo.</span>
             </div>
           )}
         </section>
