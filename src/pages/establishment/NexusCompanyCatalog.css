@@ -1,0 +1,107 @@
+.company-hub__summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin: 0 0 18px;
+}
+
+.company-hub__summary > div {
+  min-width: 0;
+  padding: 18px 20px;
+  border: 1px solid var(--nx-border);
+  border-radius: 18px;
+  background: linear-gradient(155deg, rgba(20,42,64,.95), rgba(13,30,48,.95));
+  box-shadow: var(--nx-shadow-sm);
+}
+
+.company-hub__summary strong {
+  display: block;
+  color: #fff;
+  font-size: clamp(1.35rem, 3vw, 2rem);
+  font-weight: 900;
+  line-height: 1;
+}
+
+.company-hub__summary span {
+  display: block;
+  margin-top: 7px;
+  color: var(--nx-muted);
+  font-size: .84rem;
+  font-weight: 700;
+}
+
+.company-hub__toolbar--ecosystem {
+  display: grid;
+  grid-template-columns: minmax(260px, 1fr) minmax(190px, 240px) minmax(190px, 260px);
+  gap: 12px;
+  align-items: center;
+}
+
+.company-hub__toolbar--ecosystem .form-select {
+  min-height: 46px;
+}
+
+.company-card.is-catalog-available {
+  border-style: dashed;
+}
+
+.company-card.is-catalog-available .company-card__visual {
+  cursor: default;
+}
+
+.company-card.is-catalog-available .company-card__visual:disabled {
+  opacity: 1;
+}
+
+.company-card__status.is-available {
+  color: #d6e3ee;
+  background: rgba(145,168,188,.12);
+  border-color: rgba(145,168,188,.34);
+}
+
+.company-card__status.is-available .company-card__status-dot {
+  background: #91a8bc;
+  box-shadow: none;
+}
+
+.company-card__activate-wrap {
+  margin-top: auto;
+  padding-top: 14px;
+}
+
+.company-card__activate {
+  width: 100%;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 12px;
+  color: #06111d;
+  background: var(--nx-gradient);
+  box-shadow: 0 10px 26px rgba(70,185,242,.18);
+  font-weight: 850;
+  transition: transform .16s ease, filter .16s ease;
+}
+
+.company-card__activate:hover:not(:disabled) {
+  transform: translateY(-1px);
+  filter: brightness(1.06);
+}
+
+.company-card__activate:disabled {
+  opacity: .65;
+  cursor: wait;
+}
+
+@media (max-width: 900px) {
+  .company-hub__summary {
+    grid-template-columns: 1fr;
+  }
+
+  .company-hub__toolbar--ecosystem {
+    grid-template-columns: 1fr;
+  }
+}
