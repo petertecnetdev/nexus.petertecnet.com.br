@@ -3,22 +3,15 @@ import PropTypes from "prop-types";
 import { Badge } from "react-bootstrap";
 import { FaEye, FaMapMarkerAlt } from "react-icons/fa";
 import useImageUtils from "../hooks/useImageUtils";
+import EntityImage from "./EntityImage";
 import GlobalButton from "./GlobalButton";
 import "./GlobalCard.css";
 
-const hasPrice = (value) =>
-  value !== null && value !== undefined && value !== "" && Number.isFinite(Number(value));
+const hasPrice = (value) => value !== null && value !== undefined && value !== "" && Number.isFinite(Number(value));
 
 const firstFileUrl = (files) => {
   if (!Array.isArray(files) || files.length === 0) return null;
-
-  const preferred =
-    files.find((file) => file?.is_primary) ||
-    files.find((file) => file?.type === "image") ||
-    files.find((file) => file?.type === "cover") ||
-    files.find((file) => file?.type === "photo") ||
-    files[0];
-
+  const preferred = files.find((file) => file?.is_primary) || files.find((file) => file?.type === "image") || files.find((file) => file?.type === "cover") || files.find((file) => file?.type === "photo") || files[0];
   return preferred?.public_url || preferred?.url || preferred?.path || null;
 };
 
@@ -27,81 +20,39 @@ export default function GlobalCard({ item, fmtBRL, navigate, actions }) {
   const cardRef = useRef(null);
   const [broken, setBroken] = useState(false);
   const safeItem = useMemo(() => item || {}, [item]);
-  const establishment = useMemo(
-    () => safeItem.establishment || {},
-    [safeItem.establishment]
-  );
+  const establishment = useMemo(() => safeItem.establishment || {}, [safeItem.establishment]);
 
-  const handleImgError = (event) => {
-    baseHandleImgError(event);
-    setBroken(true);
-  };
-
+  const handleImgError = (event) => { baseHandleImgError(event); setBroken(true); };
   const image = useMemo(() => {
-    const paths = [
-      safeItem.image_url,
-      safeItem.image,
-      safeItem.avatar,
-      safeItem.images?.cover,
-      safeItem.images?.main,
-      safeItem.images?.avatar,
-      Array.isArray(safeItem.images?.gallery) ? safeItem.images.gallery[0] : null,
-      firstFileUrl(safeItem.files),
-      safeItem.images?.logo,
-      safeItem.images?.background,
-    ];
-    for (const path of paths) {
-      const url = imageUrl(path);
-      if (url) return url;
-    }
+    const paths = [safeItem.image_url, safeItem.image, safeItem.avatar, safeItem.images?.cover, safeItem.images?.main, safeItem.images?.avatar, Array.isArray(safeItem.images?.gallery) ? safeItem.images.gallery[0] : null, firstFileUrl(safeItem.files), safeItem.images?.logo, safeItem.images?.background];
+    for (const path of paths) { const url = imageUrl(path); if (url) return url; }
     return null;
   }, [safeItem, imageUrl]);
 
-  const establishmentLogo = useMemo(() => {
-    const paths = [
-      establishment?.images?.logo,
-      establishment?.logo,
-      establishment?.images?.background,
-      firstFileUrl(establishment?.files),
-    ];
-    for (const path of paths) {
-      const url = imageUrl(path);
-      if (url) return url;
-    }
-    return null;
-  }, [establishment, imageUrl]);
+  const establishmentImageCandidates = useMemo(() => [
+    establishment?.images?.logo,
+    establishment?.logo,
+    establishment?.images?.background,
+    firstFileUrl(establishment?.files),
+  ], [establishment]);
 
   const getInitials = useCallback(() => {
     if (!safeItem.name) return "?";
     const parts = safeItem.name.trim().split(/\s+/).filter(Boolean);
     if (!parts.length) return "?";
-    return parts.length === 1
-      ? parts[0][0].toUpperCase()
-      : `${parts[0][0]}${parts.at(-1)[0]}`.toUpperCase();
+    return parts.length === 1 ? parts[0][0].toUpperCase() : `${parts[0][0]}${parts.at(-1)[0]}`.toUpperCase();
   }, [safeItem.name]);
 
   const handleDetails = () => {
     if (typeof navigate !== "function" || !safeItem.slug) return;
-    if (safeItem.type === "establishment") {
-      navigate(`/catalog/${safeItem.slug}`);
-      return;
-    }
+    if (safeItem.type === "establishment") { navigate(`/catalog/${safeItem.slug}`); return; }
     navigate(`/item/view/${safeItem.slug}`);
   };
-
-  const handleEstablishmentClick = (event) => {
-    event.stopPropagation();
-    if (typeof navigate !== "function" || !establishment?.slug) return;
-    navigate(`/catalog/${establishment.slug}`);
-  };
+  const handleEstablishmentClick = (event) => { event.stopPropagation(); if (typeof navigate === "function" && establishment?.slug) navigate(`/catalog/${establishment.slug}`); };
 
   const isEstablishment = safeItem.type === "establishment";
   const normalizedType = String(safeItem.type || safeItem.category || "item").toLowerCase();
-  const itemTypeLabel = normalizedType === "service"
-    ? "Serviço"
-    : normalizedType === "product"
-      ? "Produto"
-      : "Item";
+  const itemTypeLabel = normalizedType === "service" ? "Serviço" : normalizedType === "product" ? "Produto" : "Item";
   const itemTypeIcon = normalizedType === "service" ? "fa-screwdriver-wrench" : "fa-box";
   const totalViews = Number(safeItem.total_views || 0);
 
@@ -114,134 +65,34 @@ export default function GlobalCard({ item, fmtBRL, navigate, actions }) {
   if (!item) return null;
 
   return (
-    <div
-      ref={cardRef}
-      className={`carousel-card hologram-container type-${safeItem.type || "item"} ${isEstablishment ? "establishment-horizontal" : "item-commerce-card"}`}
-      data-card-kind={isEstablishment ? "establishment" : "item"}
-    >
-      <div
-        className={`carousel-image-wrap ${isEstablishment ? "img-establishment" : "img-square"}`}
-        onClick={handleDetails}
-        onKeyDown={(event) => {
-          if ((event.key === "Enter" || event.key === " ") && navigate) handleDetails();
-        }}
-        role={navigate ? "button" : undefined}
-        tabIndex={navigate ? 0 : undefined}
-      >
-        <img
-          src={image && !broken ? image : placeholderSvg}
-          alt={safeItem.name || "Item"}
-          loading="lazy"
-          className="carousel-image"
-          onError={handleImgError}
-        />
-
-        <span className={`globalcard-entity-badge ${isEstablishment ? "globalcard-entity-badge--establishment" : "globalcard-entity-badge--item"}`}>
-          <i className={`fas ${isEstablishment ? "fa-building" : itemTypeIcon}`} aria-hidden="true" />
-          {isEstablishment ? "Estabelecimento" : `Item · ${itemTypeLabel}`}
-        </span>
-
-        {!isEstablishment && (
-          <span className="globalcard-view-badge" title={`${totalViews} visualizações`}>
-            <FaEye aria-hidden="true" /> {totalViews.toLocaleString("pt-BR")}
-          </span>
-        )}
+    <div ref={cardRef} className={`carousel-card hologram-container type-${safeItem.type || "item"} ${isEstablishment ? "establishment-horizontal" : "item-commerce-card"}`} data-card-kind={isEstablishment ? "establishment" : "item"}>
+      <div className={`carousel-image-wrap ${isEstablishment ? "img-establishment" : "img-square"}`} onClick={handleDetails} onKeyDown={(event) => { if ((event.key === "Enter" || event.key === " ") && navigate) handleDetails(); }} role={navigate ? "button" : undefined} tabIndex={navigate ? 0 : undefined}>
+        <img src={image && !broken ? image : placeholderSvg} alt={safeItem.name || "Item"} loading="lazy" className="carousel-image" onError={handleImgError} />
+        <span className={`globalcard-entity-badge ${isEstablishment ? "globalcard-entity-badge--establishment" : "globalcard-entity-badge--item"}`}><i className={`fas ${isEstablishment ? "fa-building" : itemTypeIcon}`} aria-hidden="true" />{isEstablishment ? "Estabelecimento" : `Item · ${itemTypeLabel}`}</span>
+        {!isEstablishment && <span className="globalcard-view-badge" title={`${totalViews} visualizações`}><FaEye aria-hidden="true" /> {totalViews.toLocaleString("pt-BR")}</span>}
       </div>
 
       <div className="carousel-item-content">
-        {!isEstablishment && (
-          <div className="globalcard-item-context" aria-hidden="true">
-            <span className="globalcard-item-context__icon">
-              <i className={`fas ${itemTypeIcon}`} />
-            </span>
-            <span>
-              <strong>{itemTypeLabel}</strong>
-              <small>item do catálogo</small>
-            </span>
-          </div>
-        )}
-
-        <div
-          className="carousel-item-name"
-          onClick={handleDetails}
-          onKeyDown={(event) => {
-            if ((event.key === "Enter" || event.key === " ") && navigate) handleDetails();
-          }}
-          role={navigate ? "button" : undefined}
-          tabIndex={navigate ? 0 : undefined}
-        >
-          {safeItem.name}
-        </div>
+        {!isEstablishment && <div className="globalcard-item-context" aria-hidden="true"><span className="globalcard-item-context__icon"><i className={`fas ${itemTypeIcon}`} /></span><span><strong>{itemTypeLabel}</strong><small>item do catálogo</small></span></div>}
+        <div className="carousel-item-name" onClick={handleDetails} onKeyDown={(event) => { if ((event.key === "Enter" || event.key === " ") && navigate) handleDetails(); }} role={navigate ? "button" : undefined} tabIndex={navigate ? 0 : undefined}>{safeItem.name}</div>
 
         {!isEstablishment && establishment?.name && (
-          <div
-            className="globalcard-establishment d-flex align-items-center gap-2 mt-1"
-            role="button"
-            tabIndex={0}
-            onClick={handleEstablishmentClick}
-            onKeyDown={(event) => {
-              if (event.key === "Enter" || event.key === " ") handleEstablishmentClick(event);
-            }}
-          >
-            {establishmentLogo && (
-              <img
-                src={establishmentLogo}
-                alt={`Logo de ${establishment.name}`}
-                className="globalcard-establishment-logo"
-                onError={handleImgError}
-                loading="lazy"
-              />
-            )}
-            <span className="globalcard-establishment-prefix">Em</span>
-            <span className="globalcard-establishment-name">{establishment.name}</span>
+          <div className="globalcard-establishment d-flex align-items-center gap-2 mt-1" role="button" tabIndex={0} onClick={handleEstablishmentClick} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") handleEstablishmentClick(event); }}>
+            <EntityImage src={establishmentImageCandidates} name={establishment.fantasy || establishment.name} alt={`Imagem de ${establishment.fantasy || establishment.name}`} shape="round" className="globalcard-establishment-logo" loading="lazy" />
+            <span className="globalcard-establishment-prefix">Em</span><span className="globalcard-establishment-name">{establishment.fantasy || establishment.name}</span>
           </div>
         )}
 
-        {(safeItem.city || safeItem.uf) && (
-          <div className="globalcard-location d-flex align-items-center gap-1 mt-1">
-            <FaMapMarkerAlt size={12} aria-hidden="true" />
-            <span className="text-light-50">{safeItem.city}{safeItem.uf ? ` - ${safeItem.uf}` : ""}</span>
-          </div>
-        )}
-
-        {hasPrice(safeItem.price) && (
-          <div className="carousel-item-price">{fmtBRL(safeItem.price)}</div>
-        )}
-
-        {safeItem.description && !isEstablishment && (
-          <div className="text-light-50 small mt-1">
-            {safeItem.description.length > 110
-              ? `${safeItem.description.slice(0, 110).trim()}…`
-              : safeItem.description}
-          </div>
-        )}
-
-        <div className="d-flex flex-wrap gap-2 mt-2">
-          {safeItem.category && <Badge bg="secondary">{safeItem.category}</Badge>}
-          {safeItem.brand && <Badge bg="secondary">{safeItem.brand}</Badge>}
-        </div>
-
-        {navigate && safeItem.slug && (
-          <div className="mt-2">
-            <GlobalButton type="button" size="sm" variant="outline" stopPropagation className="px-4" onClick={handleDetails}>
-              {isEstablishment ? "Ver catálogo" : "Ver item"}
-            </GlobalButton>
-          </div>
-        )}
-
+        {(safeItem.city || safeItem.uf) && <div className="globalcard-location d-flex align-items-center gap-1 mt-1"><FaMapMarkerAlt size={12} aria-hidden="true" /><span className="text-light-50">{safeItem.city}{safeItem.uf ? ` - ${safeItem.uf}` : ""}</span></div>}
+        {hasPrice(safeItem.price) && <div className="carousel-item-price">{fmtBRL(safeItem.price)}</div>}
+        {safeItem.description && !isEstablishment && <div className="text-light-50 small mt-1">{safeItem.description.length > 110 ? `${safeItem.description.slice(0, 110).trim()}…` : safeItem.description}</div>}
+        <div className="d-flex flex-wrap gap-2 mt-2">{safeItem.category && <Badge bg="secondary">{safeItem.category}</Badge>}{safeItem.brand && <Badge bg="secondary">{safeItem.brand}</Badge>}</div>
+        {navigate && safeItem.slug && <div className="mt-2"><GlobalButton type="button" size="sm" variant="outline" stopPropagation className="px-4" onClick={handleDetails}>{isEstablishment ? "Ver catálogo" : "Ver item"}</GlobalButton></div>}
         {actions && <div className="mt-3 establishment-actions-slot">{actions}</div>}
       </div>
     </div>
   );
 }
 
-GlobalCard.propTypes = {
-  item: PropTypes.object,
-  fmtBRL: PropTypes.func,
-  navigate: PropTypes.func,
-  actions: PropTypes.node,
-};
-
-GlobalCard.defaultProps = {
-  fmtBRL: (value) => value,
-};
+GlobalCard.propTypes = { item: PropTypes.object, fmtBRL: PropTypes.func, navigate: PropTypes.func, actions: PropTypes.node };
+GlobalCard.defaultProps = { fmtBRL: (value) => value };
