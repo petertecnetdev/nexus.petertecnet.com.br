@@ -1,19 +1,37 @@
-import React from "react";
+import React, { useMemo, useState } from "react";
 import { Card, Button, Badge } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import "./ItemCard.css";
 
-export default function ItemCard({ item, imageUrl, fmtPrice, handleImgError, onDelete }) {
+const getInitials = (name) => {
+  const parts = String(name || "").trim().split(/\s+/).filter(Boolean);
+  if (!parts.length) return "?";
+  if (parts.length === 1) return parts[0][0].toUpperCase();
+  return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
+};
+
+export default function ItemCard({ item, imageUrl, fmtPrice, onDelete }) {
+  const [imageFailed, setImageFailed] = useState(false);
+  const image = imageUrl(item?.image);
+  const initials = useMemo(() => getInitials(item?.name), [item?.name]);
+  const showImage = Boolean(image) && !imageFailed;
+
   return (
     <Card className="iteml-card h-100" bg="black" text="light">
       <div className="iteml-media-wrap">
-        <img
-          src={imageUrl(item.image)}
-          alt={item.name}
-          className="iteml-media"
-          loading="lazy"
-          onError={handleImgError}
-        />
+        {showImage ? (
+          <img
+            src={image}
+            alt={item.name}
+            className="iteml-media"
+            loading="lazy"
+            onError={() => setImageFailed(true)}
+          />
+        ) : (
+          <div className="iteml-media iteml-media--initials" aria-label={`Sem foto: ${item.name || "item"}`}>
+            {initials}
+          </div>
+        )}
       </div>
 
       <Card.Body className="p-3 d-flex flex-column">
