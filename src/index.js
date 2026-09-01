@@ -5,6 +5,7 @@ import ReactDOM from "react-dom/client";
 import axios from "axios";
 import App from "./App";
 import PeterTecnetSignature from "./components/PeterTecnetSignature";
+import PeterAccountGateway from "./components/PeterAccountGateway";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "@fortawesome/fontawesome-free/css/all.min.css";
 
@@ -15,7 +16,9 @@ axios.defaults.headers.common["X-App-ID"] = String(appId);
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
-    <App />
-    <PeterTecnetSignature />
+    <PeterAccountGateway apiBaseUrl={apiBaseUrl} appSlug={appSlug}>
+      <App />
+      <PeterTecnetSignature />
+    </PeterAccountGateway>
   </React.StrictMode>
 );
