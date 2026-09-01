@@ -10,6 +10,7 @@ import {
 import { GoogleOAuthProvider } from "@react-oauth/google";
 
 import ProcessingIndicatorComponent from "./components/ProcessingIndicatorComponent";
+import SeoManager from "./components/SeoManager";
 import { LoadingProvider, LoadingContext } from "./contexts/LoadingContext";
 import { appId } from "./config";
 import api from "./services/api";
@@ -156,6 +157,7 @@ function AppInner() {
       )}
 
       <Router>
+        <SeoManager />
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/register" element={restrictedRoute(<RegisterPage />)} />
