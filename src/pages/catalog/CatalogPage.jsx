@@ -12,7 +12,7 @@ import NexusFeedback from "../../components/NexusFeedback";
 import ProcessingIndicatorComponent from "../../components/ProcessingIndicatorComponent";
 import useEstablishmentItemsByIdentifier from "../../hooks/useEstablishmentItemsByIdentifier";
 import useWhatsappLink from "../../hooks/useWhatsappLink";
-import { linkApp } from "../../config";
+import { apiBaseUrl, appId, linkApp } from "../../config";
 import "./CatalogPage.css";
 
 const fmtBRL = (value) => `R$ ${Number(value || 0).toFixed(2).replace(".", ",")}`;
@@ -56,6 +56,7 @@ export default function CatalogPage() {
   const hasItems = activeItems.length > 0;
   const hasActiveFilters = normalizeText(query) !== "" || category !== "all";
   const catalogUrl = `${linkApp}/catalog/${encodeURIComponent(slug || "")}`;
+  const socialShareUrl = `${apiBaseUrl}/nexus/share/catalog/${encodeURIComponent(slug || "")}?app_id=${encodeURIComponent(appId)}`;
   const title = establishment?.fantasy || establishment?.name || "Catálogo Nexus";
   const files = Array.isArray(establishment?.files) ? establishment.files : [];
   const logoCandidates = [
@@ -101,13 +102,15 @@ export default function CatalogPage() {
   const shareCatalog = async () => {
     if (navigator.share) {
       try {
-        await navigator.share({ title, text: "Confira nosso catálogo online na Nexus.", url: catalogUrl });
+        await navigator.share({ title, text: "Confira nosso catálogo online na Nexus.", url: socialShareUrl });
         return;
       } catch (error) {
         if (error?.name === "AbortError") return;
       }
     }
-    await copyCatalogUrl();
+
+    try { await navigator.clipboard.writeText(socialShareUrl); }
+    catch { window.prompt("Copie o link para compartilhar:", socialShareUrl); }
   };
 
   if (loading) return <ProcessingIndicatorComponent messages={["Carregando catálogo…", "Organizando os itens…"]} />;
@@ -176,7 +179,7 @@ export default function CatalogPage() {
           <div className="catalog-share__copy">
             <Badge bg="secondary">Divulgação</Badge>
             <h2 id="catalog-share-title">Compartilhe este catálogo</h2>
-            <p>O QR Code é gerado dentro da própria Nexus e abre diretamente este catálogo público, sem depender de serviços externos.</p>
+            <p>O QR Code é gerado dentro da própria Nexus. O compartilhamento social usa uma prévia renderizada pela API para WhatsApp e outros robôs de link.</p>
             <div className="catalog-share__url">{catalogUrl}</div>
             <div className="catalog-share__actions">
               <button type="button" onClick={copyCatalogUrl}><FaLink /> Copiar link</button>
