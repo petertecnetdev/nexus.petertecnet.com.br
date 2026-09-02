@@ -1,8 +1,8 @@
 import axios from "axios";
-import { apiBaseUrl, appSlug } from "../config";
+import { apiV1BaseUrl, appSlug } from "../config";
 
 const api = axios.create({
-  baseURL: apiBaseUrl,
+  baseURL: apiV1BaseUrl,
   timeout: 20000,
   headers: {
     Accept: "application/json",
@@ -51,7 +51,7 @@ async function refreshAccessToken() {
   if (!refreshPromise) {
     refreshPromise = axios
       .post(
-        `${apiBaseUrl}/auth/refresh`,
+        `${apiV1BaseUrl}/auth/refresh`,
         {},
         {
           timeout: 15000,
