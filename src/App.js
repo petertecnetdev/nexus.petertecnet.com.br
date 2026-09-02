@@ -36,6 +36,11 @@ import EstablishmentUpdatePage from "./pages/establishment/EstablishmentUpdatePa
 import EstablishmentMyPage from "./pages/establishment/EstablishmentMyPage";
 import EstablishmentItemPage from "./pages/establishment/EstablishmentItemPage";
 import CatalogPage from "./pages/catalog/CatalogPage";
+import CheckoutPage from "./pages/commerce/CheckoutPage";
+import PurchasePage from "./pages/commerce/PurchasePage";
+import MyPurchasesPage from "./pages/commerce/MyPurchasesPage";
+import SellerOrdersPage from "./pages/commerce/SellerOrdersPage";
+import RedeemOrderPage from "./pages/commerce/RedeemOrderPage";
 
 import "./index.css";
 import "./styles/readability.css";
@@ -107,13 +112,11 @@ function AppInner() {
 
     const onAuthChanged = (event) => {
       if (cancelled) return;
-
       if (event?.detail?.user) {
         applySession(event.detail);
         setInitialLoading(false);
         return;
       }
-
       loadAuth();
     };
 
@@ -125,38 +128,16 @@ function AppInner() {
   }, []);
 
   if (initialLoading) {
-    return (
-      <ProcessingIndicatorComponent
-        messages={["Conectando à Nexus…", "Preparando sua experiência…"]}
-      />
-    );
+    return <ProcessingIndicatorComponent messages={["Conectando à Nexus…", "Preparando sua experiência…"]} />;
   }
 
-  const protectedRoute = (element) =>
-    user ? (
-      user.email_verified_at ? element : <Navigate to="/email-verify" replace />
-    ) : (
-      <Navigate to="/login" replace />
-    );
-
-  const emailVerifiedRoute = (element) =>
-    user ? (
-      !user.email_verified_at ? element : <Navigate to="/establishment/my" replace />
-    ) : (
-      <Navigate to="/login" replace />
-    );
-
-  const restrictedRoute = (element) =>
-    user ? <Navigate to="/establishment/my" replace /> : element;
+  const protectedRoute = (element) => user ? (user.email_verified_at ? element : <Navigate to="/email-verify" replace />) : <Navigate to="/login" replace />;
+  const emailVerifiedRoute = (element) => user ? (!user.email_verified_at ? element : <Navigate to="/establishment/my" replace />) : <Navigate to="/login" replace />;
+  const restrictedRoute = (element) => user ? <Navigate to="/establishment/my" replace /> : element;
 
   return (
     <AuthContext.Provider value={{ user, setUser, employer, isEmployer, establishments }}>
-      {isLoading && (
-        <ProcessingIndicatorComponent
-          messages={["Salvando suas alterações…", "Atualizando a Nexus…"]}
-        />
-      )}
-
+      {isLoading && <ProcessingIndicatorComponent messages={["Salvando suas alterações…", "Atualizando a Nexus…"]} />}
       <Router>
         <SeoManager />
         <Routes>
@@ -177,6 +158,12 @@ function AppInner() {
           <Route path="/item/view/:slug" element={<ItemViewPage />} />
           <Route path="/item/:slug" element={<ItemViewPage />} />
 
+          <Route path="/checkout" element={protectedRoute(<CheckoutPage />)} />
+          <Route path="/purchase/:publicId" element={protectedRoute(<PurchasePage />)} />
+          <Route path="/purchases" element={protectedRoute(<MyPurchasesPage />)} />
+          <Route path="/orders/manage" element={protectedRoute(<SellerOrdersPage />)} />
+          <Route path="/redeem/:publicId" element={<RedeemOrderPage />} />
+
           <Route path="/user/update" element={protectedRoute(<UserUpdatePage />)} />
           <Route path="/establishment/create" element={protectedRoute(<EstablishmentCreatePage />)} />
           <Route path="/establishment/update/:id" element={protectedRoute(<EstablishmentUpdatePage />)} />
@@ -196,10 +183,7 @@ function AppInner() {
 export default function App() {
   return (
     <LoadingProvider>
-      <GoogleOAuthProvider
-        clientId={process.env.REACT_APP_GOOGLE_CLIENT_ID || ""}
-        locale="pt-BR"
-      >
+      <GoogleOAuthProvider clientId={process.env.REACT_APP_GOOGLE_CLIENT_ID || ""} locale="pt-BR">
         <AppInner />
       </GoogleOAuthProvider>
     </LoadingProvider>
