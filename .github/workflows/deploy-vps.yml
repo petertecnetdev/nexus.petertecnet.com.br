@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   deploy:
-    # Central Peter Tecnet deploy: staggered SSH, transport retries, serialized builds and latest-run-only delivery.
+    # Central Peter Tecnet deploy: queue-safe SSH retries, non-blocking VPS lock and latest-run-only delivery.
     uses: petertecnetdev/petertecnet.com.br/.github/workflows/reusable-vps-deploy.yml@main
     with:
       deploy_path: /var/www/nexus.petertecnet.com.br
