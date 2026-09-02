@@ -16,7 +16,7 @@ concurrency:
 jobs:
   quality:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
 
     steps:
       - name: Checkout
@@ -44,7 +44,7 @@ jobs:
       - name: Lint
         run: npm run lint
 
-      - name: Tests
+      - name: Unit and integration tests
         run: npm test
         env:
           CI: true
@@ -64,3 +64,23 @@ jobs:
           test -s build/index.html
           test -d build/static/js
           test -d build/static/css
+
+      - name: Install pinned E2E runner
+        run: npm install --no-save --ignore-scripts @playwright/test@1.55.0
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Production E2E smoke tests
+        run: npx playwright test
+        env:
+          CI: true
+
+      - name: Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nexus-playwright-report
+          path: playwright-report/
+          if-no-files-found: ignore
+          retention-days: 7
