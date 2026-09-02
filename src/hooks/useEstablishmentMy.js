@@ -12,8 +12,12 @@ export default function useEstablishmentMy(appId) {
   const [isLoading, setIsLoading] = useState(true);
   const [apiError, setApiError] = useState(null);
 
+  const directoryBase = appId
+    ? `/v1/apps/${encodeURIComponent(appId)}/directory`
+    : null;
+
   const fetchEstablishments = useCallback(async (signal) => {
-    if (!appId) {
+    if (!directoryBase) {
       setEstablishments([]);
       setApiError("Aplicação não identificada.");
       setIsLoading(false);
@@ -24,8 +28,7 @@ export default function useEstablishmentMy(appId) {
       setIsLoading(true);
       setApiError(null);
 
-      const { data } = await api.get("/nexus/catalog-companies", {
-        params: { app_id: appId },
+      const { data } = await api.get(`${directoryBase}/companies`, {
         ...(signal ? { signal } : {}),
       });
 
@@ -37,7 +40,7 @@ export default function useEstablishmentMy(appId) {
     } finally {
       if (!signal?.aborted) setIsLoading(false);
     }
-  }, [appId]);
+  }, [directoryBase]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -46,13 +49,13 @@ export default function useEstablishmentMy(appId) {
   }, [fetchEstablishments]);
 
   const activateCatalog = useCallback(async (sourceId) => {
+    if (!directoryBase) throw new Error("Aplicação não identificada.");
     const { data } = await api.post(
-      `/nexus/catalog-companies/${encodeURIComponent(sourceId)}/activate`,
-      { app_id: appId }
+      `${directoryBase}/companies/${encodeURIComponent(sourceId)}/activate`
     );
     await fetchEstablishments();
     return data?.establishment || null;
-  }, [appId, fetchEstablishments]);
+  }, [directoryBase, fetchEstablishments]);
 
   const removeEstablishment = useCallback(async (id) => {
     await api.delete(`/establishment/${encodeURIComponent(id)}`, {
