@@ -6,10 +6,17 @@ on:
   push:
     branches: [main, "audit/**"]
 
+permissions:
+  contents: read
+
+concurrency:
+  group: nexus-quality-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   quality:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
 
     steps:
       - name: Checkout
@@ -20,10 +27,13 @@ jobs:
         with:
           node-version: 20
           cache: npm
-          cache-dependency-path: package.json
+          cache-dependency-path: package-lock.json
 
-      - name: Install dependencies
-        run: npm install --no-audit --no-fund
+      - name: Install locked dependencies
+        run: npm ci --no-fund
+
+      - name: Audit production dependencies
+        run: npm audit --omit=dev --audit-level=high
 
       - name: Audit Nexus CSS palette
         run: node scripts/audit-nexus-css.js
@@ -48,3 +58,9 @@ jobs:
           REACT_APP_PUBLIC_URL: https://nexus.petertecnet.com.br
           REACT_APP_ID: 2
           REACT_APP_GOOGLE_CLIENT_ID: test.apps.googleusercontent.com
+
+      - name: Verify build artifacts
+        run: |
+          test -s build/index.html
+          test -d build/static/js
+          test -d build/static/css
