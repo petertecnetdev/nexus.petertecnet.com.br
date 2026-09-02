@@ -3,7 +3,12 @@ import api from "../services/api";
 
 export const LoadingContext = createContext({
   isLoading: false,
+  push: () => {},
+  pop: () => {},
 });
+
+const shouldTrackGlobalLoading = (config) =>
+  config?.metadata?.background !== true && config?.skipGlobalLoading !== true;
 
 export function LoadingProvider({ children }) {
   const [count, setCount] = useState(0);
@@ -20,22 +25,28 @@ export function LoadingProvider({ children }) {
   useEffect(() => {
     const reqId = api.interceptors.request.use(
       (config) => {
+        if (!shouldTrackGlobalLoading(config)) return config;
+
+        config.metadata = {
+          ...(config.metadata || {}),
+          globalLoadingTracked: true,
+        };
         push();
         return config;
       },
       (error) => {
-        pop();
+        if (error?.config?.metadata?.globalLoadingTracked) pop();
         return Promise.reject(error);
       }
     );
 
     const resId = api.interceptors.response.use(
       (response) => {
-        pop();
+        if (response?.config?.metadata?.globalLoadingTracked) pop();
         return response;
       },
       (error) => {
-        pop();
+        if (error?.config?.metadata?.globalLoadingTracked) pop();
         return Promise.reject(error);
       }
     );
@@ -47,7 +58,7 @@ export function LoadingProvider({ children }) {
   }, [push, pop]);
 
   return (
-    <LoadingContext.Provider value={{ isLoading }}>
+    <LoadingContext.Provider value={{ isLoading, push, pop }}>
       {children}
     </LoadingContext.Provider>
   );
