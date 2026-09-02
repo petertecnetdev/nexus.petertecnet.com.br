@@ -3,10 +3,20 @@ name: Nexus Android
 on:
   pull_request:
     branches: [main]
-    paths: ['android/**', 'capacitor.config.ts', 'package.json', 'package-lock.json']
+    paths:
+      - 'android/**'
+      - 'capacitor.config.ts'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/android.yml'
   push:
     branches: [main]
-    paths: ['android/**', 'capacitor.config.ts', 'package.json', 'package-lock.json']
+    paths:
+      - 'android/**'
+      - 'capacitor.config.ts'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/android.yml'
 
 permissions:
   contents: read
