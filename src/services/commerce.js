@@ -3,6 +3,9 @@ import { appSlug } from "../config";
 
 const base = `/v1/apps/${encodeURIComponent(appSlug)}/commerce`;
 
+const backgroundConfig = (options = {}) =>
+  options?.background === true ? { metadata: { background: true } } : {};
+
 export async function getCommerceCatalog(slug) {
   const { data } = await api.get(`${base}/catalog/${encodeURIComponent(slug)}`);
   return data?.data || null;
@@ -25,13 +28,19 @@ export async function getMyCommerceOrders(params = {}) {
   return data?.data || null;
 }
 
-export async function getCommerceOrder(publicId) {
-  const { data } = await api.get(`${base}/orders/${encodeURIComponent(publicId)}`);
+export async function getCommerceOrder(publicId, options = {}) {
+  const { data } = await api.get(
+    `${base}/orders/${encodeURIComponent(publicId)}`,
+    backgroundConfig(options)
+  );
   return data?.data || null;
 }
 
-export async function getCommercePayment(publicId) {
-  const { data } = await api.get(`${base}/orders/${encodeURIComponent(publicId)}/payment`);
+export async function getCommercePayment(publicId, options = {}) {
+  const { data } = await api.get(
+    `${base}/orders/${encodeURIComponent(publicId)}/payment`,
+    backgroundConfig(options)
+  );
   return data?.data || null;
 }
 
