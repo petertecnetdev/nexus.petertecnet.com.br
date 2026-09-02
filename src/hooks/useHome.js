@@ -6,7 +6,7 @@ const getFileUrlByType = (files, type) =>
 
 const distributeItems = (items) => {
   const groups = items.reduce((acc, item) => {
-    const establishmentId = item.establishment_id || "unknown";
+    const establishmentId = item.establishment_id || item.entity_id || "unknown";
     if (!acc[establishmentId]) acc[establishmentId] = [];
     acc[establishmentId].push(item);
     return acc;
@@ -40,22 +40,21 @@ export default function useHome(apiBaseUrl, appId) {
 
   useEffect(() => {
     let active = true;
+    const controller = new AbortController();
 
     async function loadHome() {
       setIsLoading(true);
       setError(null);
 
       try {
-        const [establishmentResponse, itemResponse] = await Promise.all([
-          axios.get(`${apiBaseUrl}/establishment/home/${appId}`),
-          axios.get(`${apiBaseUrl}/item/home/${appId}`),
-        ]);
+        const { data } = await axios.get(
+          `${apiBaseUrl}/v1/apps/${encodeURIComponent(appId)}/directory`,
+          { signal: controller.signal }
+        );
 
         if (!active) return;
 
-        const mappedEstablishments = (
-          establishmentResponse.data?.establishments || []
-        ).map((establishment) => ({
+        const mappedEstablishments = (data?.establishments || []).map((establishment) => ({
           ...establishment,
           type: "establishment",
           name: establishment.fantasy || establishment.name,
@@ -69,10 +68,11 @@ export default function useHome(apiBaseUrl, appId) {
           },
         }));
 
-        const mappedItems = (itemResponse.data?.items || [])
+        const mappedItems = (data?.items || [])
           .filter((item) => Number(item.status ?? 1) !== 0)
           .map((item) => ({
             ...item,
+            establishment_id: item.establishment_id || item.entity_id || item.establishment?.id,
             type: item.type,
             image: getFileUrlByType(item.files, "image"),
           }));
@@ -83,7 +83,7 @@ export default function useHome(apiBaseUrl, appId) {
         setServiceItems(orderedItems.filter((item) => item.type === "service"));
         setProductItems(orderedItems.filter((item) => item.type === "product"));
       } catch (requestError) {
-        if (!active) return;
+        if (!active || requestError?.code === "ERR_CANCELED") return;
 
         const message =
           typeof requestError?.response?.data?.message === "string"
@@ -104,6 +104,7 @@ export default function useHome(apiBaseUrl, appId) {
 
     return () => {
       active = false;
+      controller.abort();
     };
   }, [apiBaseUrl, appId]);
 

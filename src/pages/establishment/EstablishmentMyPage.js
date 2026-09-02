@@ -12,7 +12,14 @@ import "./NexusCompanyCatalog.css";
 
 export default function EstablishmentMyPage() {
   const navigate = useNavigate();
-  const { establishments, isLoading, apiError, activateCatalog, removeEstablishment } = useEstablishmentMy(appId);
+  const {
+    establishments,
+    isLoading,
+    apiError,
+    activateCatalog,
+    deactivateCatalog,
+    removeEstablishment,
+  } = useEstablishmentMy(appId);
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [appFilter, setAppFilter] = useState("all");
@@ -61,7 +68,7 @@ export default function EstablishmentMyPage() {
     const name = establishment.fantasy || establishment.name;
     const result = await Swal.fire({
       title: "Criar catálogo na Nexus?",
-      html: `<strong>${name}</strong> já existe no ecossistema Peter Tecnet. A Nexus criará o catálogo desta empresa usando os dados já cadastrados.`,
+      html: `<strong>${name}</strong> já existe no ecossistema Peter Tecnet. A Nexus disponibilizará essa empresa no catálogo usando os dados já cadastrados, sem duplicar o registro de origem.`,
       icon: "question",
       showCancelButton: true,
       confirmButtonText: "Criar catálogo",
@@ -90,11 +97,11 @@ export default function EstablishmentMyPage() {
   const handleDelete = async (establishment) => {
     const name = establishment.fantasy || establishment.name;
     const catalogId = establishment.catalog_establishment_id || establishment.id;
-    const isImported = !establishment.is_nexus_native;
+    const isImported = !establishment.native_to_application;
     const result = await Swal.fire({
       title: isImported ? "Remover catálogo da Nexus?" : "Excluir empresa?",
       html: isImported
-        ? `O catálogo Nexus de <strong>${name}</strong> será removido. A empresa original continuará cadastrada no aplicativo de origem.`
+        ? `O catálogo Nexus de <strong>${name}</strong> será desvinculado. A empresa original e seus dados continuarão cadastrados no aplicativo de origem.`
         : `Você está prestes a excluir <strong>${name}</strong> e os itens vinculados a ela. Esta ação não pode ser desfeita.`,
       icon: "warning",
       showCancelButton: true,
@@ -108,11 +115,15 @@ export default function EstablishmentMyPage() {
 
     try {
       setDeletingId(catalogId);
-      await removeEstablishment(catalogId);
+      if (isImported) {
+        await deactivateCatalog(establishment.id);
+      } else {
+        await removeEstablishment(catalogId);
+      }
       await Swal.fire(
         isImported ? "Catálogo removido" : "Empresa excluída",
         isImported
-          ? "A empresa continua disponível no ecossistema e pode ter um catálogo Nexus criado novamente."
+          ? "A empresa continua disponível no ecossistema e pode ser vinculada novamente à Nexus sem perder o registro de origem."
           : "O estabelecimento e seus itens foram removidos.",
         "success"
       );

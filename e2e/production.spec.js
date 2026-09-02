@@ -6,11 +6,12 @@ async function mockPublicApi(page) {
   await page.route(`${apiBase}/**`, async (route) => {
     const url = route.request().url();
 
-    if (url.includes("/nexus/catalog/catalogo-e2e")) {
+    if (url.includes("/v1/apps/2/directory/catalog/catalogo-e2e")) {
       return route.fulfill({
         status: 200,
         contentType: "application/json",
         body: JSON.stringify({
+          target_application_id: 2,
           establishment: {
             id: 10,
             app_id: 2,
@@ -20,11 +21,14 @@ async function mockPublicApi(page) {
             description: "Catálogo usado para validar a produção.",
             city: "São Paulo",
             uf: "SP",
+            catalog_active: true,
+            native_to_application: true,
             files: [],
           },
           items: [
             {
               id: 99,
+              entity_id: 10,
               app_id: 2,
               name: "Produto E2E",
               slug: "produto-e2e",
@@ -36,6 +40,19 @@ async function mockPublicApi(page) {
               files: [],
             },
           ],
+        }),
+      });
+    }
+
+    if (url.includes("/v1/apps/2/directory")) {
+      return route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({
+          scope: { target_application_id: 2 },
+          locations: [],
+          establishments: [],
+          items: [],
         }),
       });
     }

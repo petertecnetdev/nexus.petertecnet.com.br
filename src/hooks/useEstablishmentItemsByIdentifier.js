@@ -83,9 +83,10 @@ export default function useEstablishmentItemsByIdentifier(identifier) {
 
     try {
       const encodedIdentifier = encodeURIComponent(identifier);
-      const { data } = await api.get(`/nexus/catalog/${encodedIdentifier}`, {
-        params: { app_id: appId },
-      });
+      const encodedApp = encodeURIComponent(appId);
+      const { data } = await api.get(
+        `/v1/apps/${encodedApp}/directory/catalog/${encodedIdentifier}`
+      );
 
       const resolvedEstablishment = normalizeEstablishment(data?.establishment || null);
 
@@ -103,7 +104,7 @@ export default function useEstablishmentItemsByIdentifier(identifier) {
       setApiError(
         getApiMessage(
           error,
-          error?.message || "Erro ao carregar o catálogo Nexus."
+          error?.message || "Erro ao carregar o catálogo."
         )
       );
       setItems([]);

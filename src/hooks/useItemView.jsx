@@ -29,10 +29,11 @@ export default function useItemView(slug) {
 
       try {
         const encodedSlug = encodeURIComponent(slug);
-        const { data } = await api.get(`/item/view/${encodedSlug}`, {
-          params: { app_id: appId },
-          signal: controller.signal,
-        });
+        const encodedApp = encodeURIComponent(appId);
+        const { data } = await api.get(
+          `/v1/apps/${encodedApp}/directory/items/${encodedSlug}`,
+          { signal: controller.signal }
+        );
 
         const itemData = data?.item || null;
         const establishmentData = data?.establishment || null;
