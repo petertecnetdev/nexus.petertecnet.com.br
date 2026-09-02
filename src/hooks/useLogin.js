@@ -12,24 +12,6 @@ export default function useLogin(onSuccess, redirectTo = "/establishment/my") {
     payload?.token ??
     null;
 
-  const getLocation = () =>
-    new Promise((resolve) => {
-      if (!navigator.geolocation) {
-        resolve({ latitude: null, longitude: null });
-        return;
-      }
-
-      navigator.geolocation.getCurrentPosition(
-        (pos) =>
-          resolve({
-            latitude: pos.coords.latitude,
-            longitude: pos.coords.longitude,
-          }),
-        () => resolve({ latitude: null, longitude: null }),
-        { enableHighAccuracy: true, timeout: 5000 }
-      );
-    });
-
   const verifySession = async (token) => {
     setToken(token);
 
@@ -78,12 +60,10 @@ export default function useLogin(onSuccess, redirectTo = "/establishment/my") {
 
   const login = async (username, password) => {
     try {
-      const location = await getLocation();
       const { data } = await api.post("/auth/login", {
         username: String(username || "").trim(),
         password,
         app_id: appId,
-        ...location,
       });
 
       const token = extractToken(data);
@@ -94,7 +74,7 @@ export default function useLogin(onSuccess, redirectTo = "/establishment/my") {
     } catch (error) {
       normalizeLoginError(
         error,
-        "Não foi possível entrar. Confira seu usuário, e-mail e senha e tente novamente."
+        "Não foi possível entrar. Confira seus dados e tente novamente."
       );
     }
   };
@@ -105,11 +85,9 @@ export default function useLogin(onSuccess, redirectTo = "/establishment/my") {
         throw new Error("Não recebemos a credencial do Google.");
       }
 
-      const location = await getLocation();
       const { data } = await api.post("/auth/google", {
         token_id: credential,
         app_id: appId,
-        ...location,
       });
 
       const token = extractToken(data);
