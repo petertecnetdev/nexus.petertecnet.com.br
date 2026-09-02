@@ -88,20 +88,22 @@ export default function HomePage() {
             uf = uf || locationData?.uf || locationPayload?.app?.uf || null;
           } catch (locationError) {
             if (locationError?.code === "ERR_CANCELED") throw locationError;
-            // A descoberta da Nexus não depende da geolocalização. Se a detecção
-            // falhar, continuamos carregando todo o ecossistema normalmente.
+            // A descoberta continua disponível mesmo sem localização; a cidade
+            // serve apenas para ordenar os catálogos válidos para este aplicativo.
           }
         }
 
-        const { data: ecosystemData } = await api.get("/nexus/discovery", {
-          params: {
-            app_id: appId,
-            city: city || undefined,
-            uf: uf || undefined,
-            limit: 100,
-          },
-          signal: controller.signal,
-        });
+        const { data: ecosystemData } = await api.get(
+          `/v1/apps/${encodeURIComponent(appId)}/directory`,
+          {
+            params: {
+              city: city || undefined,
+              uf: uf || undefined,
+              limit: 100,
+            },
+            signal: controller.signal,
+          }
+        );
 
         setDiscovery({
           establishments: Array.isArray(ecosystemData?.establishments) ? ecosystemData.establishments : [],
@@ -122,7 +124,7 @@ export default function HomePage() {
 
   const locationLabel = useMemo(() => {
     const parts = [discovery.city, discovery.uf].filter(Boolean);
-    return parts.length ? parts.join(" - ") : "em todo o ecossistema";
+    return parts.length ? parts.join(" - ") : "em todos os catálogos disponíveis";
   }, [discovery.city, discovery.uf]);
 
   return (
@@ -133,12 +135,12 @@ export default function HomePage() {
       </section>
 
       <section className="hp-discovery" aria-labelledby="hp-discovery-title">
-        <div className="hp-discovery-intro"><div><span className="hp-eyebrow">Descoberta Nexus</span><h2 id="hp-discovery-title">Empresas disponíveis {locationLabel}</h2><p>Empresas do ecossistema Peter Tecnet aparecem aqui independentemente do aplicativo em que foram cadastradas. Sua localização apenas organiza a prioridade dos resultados.</p></div><div className="hp-location-chip"><FaMapMarkerAlt /> {locationLabel}</div></div>
+        <div className="hp-discovery-intro"><div><span className="hp-eyebrow">Descoberta Nexus</span><h2 id="hp-discovery-title">Empresas disponíveis {locationLabel}</h2><p>Empresas cadastradas no ecossistema Peter Tecnet aparecem aqui quando o catálogo está habilitado para a Nexus. A localização apenas organiza a prioridade dos resultados.</p></div><div className="hp-location-chip"><FaMapMarkerAlt /> {locationLabel}</div></div>
         {discoveryLoading && <div className="hp-discovery-skeleton" aria-label="Carregando empresas">{Array.from({ length: 4 }).map((_, index) => <span key={index} />)}</div>}
         {!discoveryLoading && discoveryError && <div className="hp-discovery-state"><strong>Não conseguimos carregar as empresas agora.</strong><span>Tente atualizar a página em alguns instantes.</span></div>}
 
         {!discoveryLoading && !discoveryError && discovery.establishments.length > 0 && (
-          <Rail title="Empresas" subtitle="Empresas de todo o ecossistema, com as mais próximas priorizadas quando sua localização estiver disponível." railRef={companiesRail}>
+          <Rail title="Empresas" subtitle="Catálogos habilitados para a Nexus, com os mais próximos priorizados quando sua localização estiver disponível." railRef={companiesRail}>
             {discovery.establishments.slice(0, 24).map((establishment) => {
               const companyName = establishment.fantasy || establishment.name || "Empresa";
               const sourceApp = establishment?.source_app?.name || establishment?.app?.name;
@@ -151,7 +153,7 @@ export default function HomePage() {
         )}
 
         {!discoveryLoading && !discoveryError && discovery.items.length > 0 && (
-          <Rail title="Itens em destaque" subtitle="Produtos e serviços das empresas do ecossistema Peter Tecnet." railRef={itemsRail}>
+          <Rail title="Itens em destaque" subtitle="Produtos e serviços dos catálogos disponíveis na Nexus." railRef={itemsRail}>
             {discovery.items.slice(0, 32).map((item) => {
               const files = Array.isArray(item?.files) ? item.files : [];
               const image = imageUrl(item?.images?.avatar || item?.images?.gallery?.[0] || item?.image_url || item?.image || files.find((file) => file?.is_primary)?.public_url || files.find((file) => file?.type === "image")?.public_url || files[0]?.public_url);
@@ -160,7 +162,7 @@ export default function HomePage() {
             })}
           </Rail>
         )}
-        {!discoveryLoading && !discoveryError && discovery.establishments.length === 0 && discovery.items.length === 0 && <div className="hp-discovery-state"><strong>Ainda não encontramos empresas disponíveis.</strong><span>Assim que houver empresas válidas no ecossistema elas aparecerão aqui.</span></div>}
+        {!discoveryLoading && !discoveryError && discovery.establishments.length === 0 && discovery.items.length === 0 && <div className="hp-discovery-state"><strong>Ainda não encontramos empresas disponíveis.</strong><span>Assim que houver catálogos habilitados para a Nexus eles aparecerão aqui.</span></div>}
       </section>
 
       <ExploreCatalogs currentCity={discovery.city} currentUf={discovery.uf} />
