@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   deploy:
-    # Central Peter Tecnet deployment engine.
+    # Central Peter Tecnet deployment engine with legacy npm lock compatibility.
     uses: petertecnetdev/petertecnet.com.br/.github/workflows/reusable-vps-deploy.yml@main
     with:
       deploy_path: /var/www/nexus.petertecnet.com.br
