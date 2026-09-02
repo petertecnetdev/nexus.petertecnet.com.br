@@ -27,6 +27,23 @@ const extractToken = (payload) =>
   payload?.token ??
   null;
 
+const emitApiTelemetry = (type, config, extra = {}) => {
+  if (typeof window === "undefined") return;
+  const startedAt = Number(config?.metadata?.nexusStartedAt || 0);
+  const durationMs = startedAt ? Math.max(0, Math.round(performance.now() - startedAt)) : null;
+  window.dispatchEvent(
+    new CustomEvent("nexus:api", {
+      detail: {
+        type,
+        method: String(config?.method || "GET").toUpperCase(),
+        path: String(config?.url || "").split("?")[0].slice(0, 300),
+        duration_ms: durationMs,
+        ...extra,
+      },
+    })
+  );
+};
+
 async function refreshAccessToken() {
   const currentToken = readToken();
   if (!currentToken) throw new Error("Sessão indisponível.");
@@ -63,6 +80,10 @@ api.interceptors.request.use((config) => {
   const token = readToken();
   config.headers = config.headers || {};
   config.headers["X-Peter-App"] = appSlug;
+  config.metadata = {
+    ...(config.metadata || {}),
+    nexusStartedAt: typeof performance !== "undefined" ? performance.now() : 0,
+  };
 
   if (token && !config.headers.Authorization) {
     config.headers.Authorization = `Bearer ${token}`;
@@ -72,7 +93,12 @@ api.interceptors.request.use((config) => {
 });
 
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    emitApiTelemetry("api_success", response?.config, {
+      status: response?.status,
+    });
+    return response;
+  },
   async (error) => {
     const status = error?.response?.status;
     const originalRequest = error?.config || {};
@@ -94,6 +120,11 @@ api.interceptors.response.use(
         // Fall through to a clean logout below.
       }
     }
+
+    emitApiTelemetry("api_error", originalRequest, {
+      status: status || 0,
+      code: String(error?.code || "").slice(0, 80),
+    });
 
     if (status === 401) {
       clearToken();
