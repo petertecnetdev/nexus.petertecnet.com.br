@@ -2,24 +2,28 @@
 import React, { useContext, useEffect } from "react";
 import { Badge, Col, Container, Row, Spinner } from "react-bootstrap";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { FaArrowLeft, FaEye, FaPen, FaTag, FaWhatsapp } from "react-icons/fa";
+import { FaArrowLeft, FaEye, FaPen, FaShoppingCart, FaTag, FaWhatsapp } from "react-icons/fa";
 
 import { AuthContext } from "../../App";
 import GlobalNav from "../../components/GlobalNav";
 import GlobalCard from "../../components/GlobalCard";
 import EntityImage from "../../components/EntityImage";
 import ShareButton from "../../components/ShareButton";
+import { useCommerceCart } from "../../contexts/CommerceCartContext";
 import useItemView from "../../hooks/useItemView";
 import useWhatsappLink from "../../hooks/useWhatsappLink";
 import "./ItemViewPage.css";
+import "../commerce/CommerceCheckoutPage.css";
 
 const fmtBRL = (value) => `R$ ${Number(value || 0).toFixed(2).replace(".", ",")}`;
 const hasPrice = (value) => value !== null && value !== undefined && value !== "" && Number.isFinite(Number(value));
+const canPurchase = (value) => hasPrice(value) && Number(value) > 0;
 
 export default function ItemViewPage() {
   const { slug } = useParams();
   const navigate = useNavigate();
   const { user } = useContext(AuthContext);
+  const { addItem, buyNow, itemCount, subtotal, establishment: cartEstablishment } = useCommerceCart();
   const { item, otherItems, establishment, loading, error } = useItemView(slug);
   const whatsappLink = useWhatsappLink(establishment);
 
@@ -49,6 +53,14 @@ export default function ItemViewPage() {
   const title = establishment?.fantasy || establishment?.name;
   const catalogPath = establishment?.slug ? `/catalog/${establishment.slug}` : "/";
   const canEdit = Boolean(user && (Number(item.user_id) === Number(user.id) || Number(establishment?.user_id) === Number(user.id) || Number(establishment?.created_by) === Number(user.id)));
+  const showingThisCart = Number(cartEstablishment?.id) === Number(establishment?.id) && itemCount > 0;
+
+  const relatedActions = (related) => canPurchase(related?.price) ? (
+    <div className="commerce-purchase-actions">
+      <button type="button" className="commerce-purchase-actions__secondary" onClick={() => addItem(related, establishment)}><FaShoppingCart /> Adicionar</button>
+      <button type="button" className="commerce-purchase-actions__primary" onClick={() => { buyNow(related, establishment); navigate("/checkout"); }}>Comprar</button>
+    </div>
+  ) : null;
 
   return (
     <div className="item-detail-page">
@@ -86,6 +98,13 @@ export default function ItemViewPage() {
               {item.short_description && <p className="item-detail-summary">{item.short_description}</p>}
               {item.description && <div className="item-detail-description"><h2>Descrição</h2><p>{item.description}</p></div>}
 
+              {canPurchase(item.price) && (
+                <div className="commerce-purchase-actions mb-3">
+                  <button type="button" className="commerce-purchase-actions__secondary" onClick={() => addItem(item, establishment)}><FaShoppingCart /> Adicionar ao carrinho</button>
+                  <button type="button" className="commerce-purchase-actions__primary" onClick={() => { buyNow(item, establishment); navigate("/checkout"); }}>Comprar agora</button>
+                </div>
+              )}
+
               <div className="item-detail-actions">
                 {whatsappLink && <a href={whatsappLink} target="_blank" rel="noreferrer" className="item-detail-whatsapp"><FaWhatsapp /> Pedir informações</a>}
                 <button type="button" onClick={() => navigate(catalogPath)}>Ver catálogo completo</button>
@@ -95,8 +114,15 @@ export default function ItemViewPage() {
           </Col>
         </Row>
 
-        {otherItems?.length > 0 && <section className="item-detail-related"><h2>Outros itens deste catálogo</h2><Row className="g-3">{otherItems.slice(0, 8).map((related) => <Col key={related.id} xs={12} sm={6} lg={3}><GlobalCard item={related} fmtBRL={fmtBRL} navigate={navigate} /></Col>)}</Row></section>}
+        {otherItems?.length > 0 && <section className="item-detail-related"><h2>Outros itens deste catálogo</h2><Row className="g-3">{otherItems.slice(0, 8).map((related) => <Col key={related.id} xs={12} sm={6} lg={3}><GlobalCard item={related} fmtBRL={fmtBRL} navigate={navigate} actions={relatedActions(related)} /></Col>)}</Row></section>}
       </Container>
+
+      {showingThisCart && (
+        <div className="commerce-cart-float" role="status">
+          <span><FaShoppingCart /> <strong>{itemCount}</strong> {itemCount === 1 ? "item" : "itens"} · {fmtBRL(subtotal)}</span>
+          <button type="button" onClick={() => navigate("/checkout")}>Finalizar compra</button>
+        </div>
+      )}
       <ShareButton />
     </div>
   );
