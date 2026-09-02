@@ -57,6 +57,14 @@ export default function useEstablishmentMy(appId) {
     return data?.establishment || null;
   }, [directoryBase, fetchEstablishments]);
 
+  const deactivateCatalog = useCallback(async (sourceId) => {
+    if (!directoryBase) throw new Error("Aplicação não identificada.");
+    await api.delete(
+      `${directoryBase}/companies/${encodeURIComponent(sourceId)}/activate`
+    );
+    await fetchEstablishments();
+  }, [directoryBase, fetchEstablishments]);
+
   const removeEstablishment = useCallback(async (id) => {
     await api.delete(`/establishment/${encodeURIComponent(id)}`, {
       params: { app_id: appId },
@@ -72,6 +80,7 @@ export default function useEstablishmentMy(appId) {
     isLoading,
     apiError,
     activateCatalog,
+    deactivateCatalog,
     removeEstablishment,
     refresh,
   };
