@@ -12,6 +12,7 @@ import { GoogleOAuthProvider } from "@react-oauth/google";
 import ProcessingIndicatorComponent from "./components/ProcessingIndicatorComponent";
 import SeoManager from "./components/SeoManager";
 import { LoadingProvider, LoadingContext } from "./contexts/LoadingContext";
+import { CommerceCartProvider } from "./contexts/CommerceCartContext";
 import { appId } from "./config";
 import api from "./services/api";
 
@@ -36,6 +37,10 @@ import EstablishmentUpdatePage from "./pages/establishment/EstablishmentUpdatePa
 import EstablishmentMyPage from "./pages/establishment/EstablishmentMyPage";
 import EstablishmentItemPage from "./pages/establishment/EstablishmentItemPage";
 import CatalogPage from "./pages/catalog/CatalogPage";
+import CommerceCheckoutPage from "./pages/commerce/CommerceCheckoutPage";
+import PurchasePage from "./pages/commerce/PurchasePage";
+import MyPurchasesPage from "./pages/commerce/MyPurchasesPage";
+import RedeemPurchasePage from "./pages/commerce/RedeemPurchasePage";
 
 import "./index.css";
 import "./styles/readability.css";
@@ -151,44 +156,51 @@ function AppInner() {
 
   return (
     <AuthContext.Provider value={{ user, setUser, employer, isEmployer, establishments }}>
-      {isLoading && (
-        <ProcessingIndicatorComponent
-          messages={["Salvando suas alterações…", "Atualizando a Nexus…"]}
-        />
-      )}
+      <CommerceCartProvider>
+        {isLoading && (
+          <ProcessingIndicatorComponent
+            messages={["Salvando suas alterações…", "Atualizando a Nexus…"]}
+          />
+        )}
 
-      <Router>
-        <SeoManager />
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/register" element={restrictedRoute(<RegisterPage />)} />
-          <Route path="/login" element={restrictedRoute(<LoginPage />)} />
-          <Route path="/password-email" element={restrictedRoute(<PasswordEmailPage />)} />
-          <Route path="/password-reset" element={restrictedRoute(<PasswordResetPage />)} />
-          <Route path="/email-verify" element={emailVerifiedRoute(<EmailVerifyPage />)} />
-          <Route path="/password" element={protectedRoute(<PasswordPage />)} />
-          <Route path="/invite-complete" element={restrictedRoute(<InviteCompletePage redirectTo="/login" />)} />
-          <Route path="/logout" element={<LogoutPage />} />
+        <Router>
+          <SeoManager />
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/register" element={restrictedRoute(<RegisterPage />)} />
+            <Route path="/login" element={restrictedRoute(<LoginPage />)} />
+            <Route path="/password-email" element={restrictedRoute(<PasswordEmailPage />)} />
+            <Route path="/password-reset" element={restrictedRoute(<PasswordResetPage />)} />
+            <Route path="/email-verify" element={emailVerifiedRoute(<EmailVerifyPage />)} />
+            <Route path="/password" element={protectedRoute(<PasswordPage />)} />
+            <Route path="/invite-complete" element={restrictedRoute(<InviteCompletePage redirectTo="/login" />)} />
+            <Route path="/logout" element={<LogoutPage />} />
 
-          <Route path="/catalog/:slug" element={<CatalogPage />} />
-          <Route path="/catalogo/:slug" element={<CatalogRedirect />} />
-          <Route path="/establishment/view/:slug" element={<CatalogRedirect />} />
-          <Route path="/establishments" element={<Navigate to="/" replace />} />
-          <Route path="/item/view/:slug" element={<ItemViewPage />} />
-          <Route path="/item/:slug" element={<ItemViewPage />} />
+            <Route path="/catalog/:slug" element={<CatalogPage />} />
+            <Route path="/catalogo/:slug" element={<CatalogRedirect />} />
+            <Route path="/establishment/view/:slug" element={<CatalogRedirect />} />
+            <Route path="/establishments" element={<Navigate to="/" replace />} />
+            <Route path="/item/view/:slug" element={<ItemViewPage />} />
+            <Route path="/item/:slug" element={<ItemViewPage />} />
 
-          <Route path="/user/update" element={protectedRoute(<UserUpdatePage />)} />
-          <Route path="/establishment/create" element={protectedRoute(<EstablishmentCreatePage />)} />
-          <Route path="/establishment/update/:id" element={protectedRoute(<EstablishmentUpdatePage />)} />
-          <Route path="/establishment/my" element={protectedRoute(<EstablishmentMyPage />)} />
-          <Route path="/establishment/item/:slug" element={protectedRoute(<EstablishmentItemPage />)} />
-          <Route path="/item/create/:slug" element={protectedRoute(<ItemCreatePage />)} />
-          <Route path="/item/update/:id" element={protectedRoute(<ItemUpdatePage />)} />
+            <Route path="/checkout" element={protectedRoute(<CommerceCheckoutPage />)} />
+            <Route path="/purchase/:publicId" element={protectedRoute(<PurchasePage />)} />
+            <Route path="/purchases" element={protectedRoute(<MyPurchasesPage />)} />
+            <Route path="/purchase/redeem/:publicId" element={protectedRoute(<RedeemPurchasePage />)} />
 
-          <Route path="/dashboard" element={<Navigate to="/establishment/my" replace />} />
-          <Route path="*" element={<NotFoundPage />} />
-        </Routes>
-      </Router>
+            <Route path="/user/update" element={protectedRoute(<UserUpdatePage />)} />
+            <Route path="/establishment/create" element={protectedRoute(<EstablishmentCreatePage />)} />
+            <Route path="/establishment/update/:id" element={protectedRoute(<EstablishmentUpdatePage />)} />
+            <Route path="/establishment/my" element={protectedRoute(<EstablishmentMyPage />)} />
+            <Route path="/establishment/item/:slug" element={protectedRoute(<EstablishmentItemPage />)} />
+            <Route path="/item/create/:slug" element={protectedRoute(<ItemCreatePage />)} />
+            <Route path="/item/update/:id" element={protectedRoute(<ItemUpdatePage />)} />
+
+            <Route path="/dashboard" element={<Navigate to="/establishment/my" replace />} />
+            <Route path="*" element={<NotFoundPage />} />
+          </Routes>
+        </Router>
+      </CommerceCartProvider>
     </AuthContext.Provider>
   );
 }
