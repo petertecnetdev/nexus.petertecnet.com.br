@@ -5,6 +5,7 @@ import { Link, useParams, useSearchParams } from "react-router-dom";
 import GlobalNav from "../../components/GlobalNav";
 import commerceService from "../../services/CommerceService";
 import "./PurchasePage.css";
+import "./RedeemPurchasePage.css";
 
 const money = (value) => new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(Number(value || 0));
 
@@ -43,7 +44,7 @@ export default function RedeemPurchasePage() {
     try {
       const result = await commerceService.redeem(publicId, token);
       setOrder(result);
-      setMessage(order?.fulfillment === "delivery" ? "Entrega confirmada com sucesso." : "Retirada confirmada com sucesso.");
+      setMessage(result?.fulfillment === "delivery" ? "Entrega confirmada com sucesso." : "Retirada confirmada com sucesso.");
     } catch (err) {
       setError(err?.message || "Não foi possível concluir a entrega.");
     } finally {
