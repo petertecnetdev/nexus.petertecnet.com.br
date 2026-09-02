@@ -29,7 +29,7 @@ export default function useItemView(slug) {
 
       try {
         const encodedSlug = encodeURIComponent(slug);
-        const { data } = await api.get(`/nexus/item/${encodedSlug}`, {
+        const { data } = await api.get(`/item/view/${encodedSlug}`, {
           params: { app_id: appId },
           signal: controller.signal,
         });
