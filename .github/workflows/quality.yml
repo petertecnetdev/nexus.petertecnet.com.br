@@ -7,7 +7,7 @@ on:
     branches: [main, "audit/**"]
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
   group: nexus-quality-${{ github.ref }}
@@ -29,11 +29,22 @@ jobs:
           cache: npm
           cache-dependency-path: package-lock.json
 
+      - name: Repair dependency lock
+        run: npm install --package-lock-only --ignore-scripts --no-audit --no-fund
+
+      - name: Commit repaired lock when needed
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          if ! git diff --quiet -- package-lock.json; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add package-lock.json
+            git commit -m "chore(lock): synchronize npm dependency lock"
+            git push origin HEAD:main
+          fi
+
       - name: Install locked dependencies
         run: npm ci --no-fund
-
-      - name: Install pinned local QR runtime
-        run: npm install --no-save --ignore-scripts qrcodejs@1.0.0
 
       - name: Audit production dependencies
         run: npm audit --omit=dev --audit-level=high
@@ -68,14 +79,11 @@ jobs:
           test -d build/static/js
           test -d build/static/css
 
-      - name: Install pinned E2E runner
-        run: npm install --no-save --ignore-scripts @playwright/test@1.55.0
-
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
 
       - name: Production E2E smoke tests
-        run: npx playwright test
+        run: npm run test:e2e
         env:
           CI: true
 
