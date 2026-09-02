@@ -20,7 +20,7 @@ export default function useItemUpdate(id) {
   const [apiErrors, setApiErrors] = useState({});
 
   const updateItem = useCallback(
-    async (values, imageFile, removeImage) => {
+    async (values, imageFile, removeImage, imageUrl = "") => {
       if (!id) return null;
 
       setLoading(true);
@@ -46,6 +46,26 @@ export default function useItemUpdate(id) {
         if (imageFile instanceof File) formData.append("image", imageFile);
 
         const { data } = await api.post(`/item/${encodeURIComponent(id)}`, formData);
+        const trimmedImageUrl = imageUrl.trim();
+
+        if (trimmedImageUrl && !(imageFile instanceof File)) {
+          const currentFiles = Array.isArray(data?.item?.files) ? data.item.files : [];
+          const imageFiles = currentFiles.filter((file) => file.type === "image" && file.id);
+
+          await Promise.all(
+            imageFiles.map((file) => api.delete(`/file/${encodeURIComponent(file.id)}`))
+          );
+
+          await api.post("/file", {
+            app_id: appId,
+            entity_id: Number(id),
+            entity_name: "item",
+            external_url: trimmedImageUrl,
+            visibility: "public",
+            is_primary: true,
+            position: 0,
+          });
+        }
 
         await Swal.fire({
           icon: "success",
