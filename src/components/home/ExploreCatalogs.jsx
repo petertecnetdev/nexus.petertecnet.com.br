@@ -81,18 +81,20 @@ export default function ExploreCatalogs({ currentCity, currentUf }) {
       try {
         setLoading(true);
         setError(false);
-        const { data } = await api.get("/nexus/discovery", {
-          params: {
-            app_id: appId,
-            city: currentCity || undefined,
-            uf: currentUf || undefined,
-            target_city: selected?.city || undefined,
-            target_uf: selected?.uf || undefined,
-            q: appliedQuery || undefined,
-            limit: 60,
-          },
-          signal: controller.signal,
-        });
+        const { data } = await api.get(
+          `/v1/apps/${encodeURIComponent(appId)}/directory`,
+          {
+            params: {
+              city: currentCity || undefined,
+              uf: currentUf || undefined,
+              target_city: selected?.city || undefined,
+              target_uf: selected?.uf || undefined,
+              q: appliedQuery || undefined,
+              limit: 60,
+            },
+            signal: controller.signal,
+          }
+        );
 
         setCompanies(Array.isArray(data?.establishments) ? data.establishments : []);
         if (Array.isArray(data?.locations)) setLocations(data.locations);
