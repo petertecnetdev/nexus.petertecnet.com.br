@@ -7,6 +7,7 @@ import { FaLink, FaWhatsapp } from "react-icons/fa";
 import GlobalNav from "../../components/GlobalNav";
 import GlobalCard from "../../components/GlobalCard";
 import EntityImage from "../../components/EntityImage";
+import LocalQrCode from "../../components/LocalQrCode";
 import NexusFeedback from "../../components/NexusFeedback";
 import ProcessingIndicatorComponent from "../../components/ProcessingIndicatorComponent";
 import useEstablishmentItemsByIdentifier from "../../hooks/useEstablishmentItemsByIdentifier";
@@ -38,7 +39,10 @@ export default function CatalogPage() {
   const whatsappLink = useWhatsappLink(establishment);
 
   const activeItems = useMemo(() => items.filter((item) => Number(item.status ?? 1) !== 0), [items]);
-  const categories = useMemo(() => [...new Set(activeItems.map((item) => item.category).filter(Boolean).map((value) => String(value).trim()).filter(Boolean))].sort((a, b) => a.localeCompare(b, "pt-BR")), [activeItems]);
+  const categories = useMemo(
+    () => [...new Set(activeItems.map((item) => item.category).filter(Boolean).map((value) => String(value).trim()).filter(Boolean))].sort((a, b) => a.localeCompare(b, "pt-BR")),
+    [activeItems]
+  );
   const filteredItems = useMemo(() => {
     const needle = normalizeText(query);
     return activeItems.filter((item) => {
@@ -51,9 +55,7 @@ export default function CatalogPage() {
 
   const hasItems = activeItems.length > 0;
   const hasActiveFilters = normalizeText(query) !== "" || category !== "all";
-
   const catalogUrl = `${linkApp}/catalog/${encodeURIComponent(slug || "")}`;
-  const qrImageUrl = `https://quickchart.io/qr?size=320&text=${encodeURIComponent(catalogUrl)}`;
   const title = establishment?.fantasy || establishment?.name || "Catálogo Nexus";
   const files = Array.isArray(establishment?.files) ? establishment.files : [];
   const logoCandidates = [
@@ -82,7 +84,11 @@ export default function CatalogPage() {
     setMeta("twitter:description", description);
     if (socialLogo) setMeta("twitter:image", socialLogo);
     let canonical = document.head.querySelector('link[rel="canonical"]');
-    if (!canonical) { canonical = document.createElement("link"); canonical.setAttribute("rel", "canonical"); document.head.appendChild(canonical); }
+    if (!canonical) {
+      canonical = document.createElement("link");
+      canonical.setAttribute("rel", "canonical");
+      document.head.appendChild(canonical);
+    }
     canonical.setAttribute("href", catalogUrl);
     return () => { document.title = previousTitle; };
   }, [catalogUrl, establishment, socialLogo, title]);
@@ -94,8 +100,12 @@ export default function CatalogPage() {
 
   const shareCatalog = async () => {
     if (navigator.share) {
-      try { await navigator.share({ title, text: "Confira nosso catálogo online na Nexus.", url: catalogUrl }); return; }
-      catch (error) { if (error?.name === "AbortError") return; }
+      try {
+        await navigator.share({ title, text: "Confira nosso catálogo online na Nexus.", url: catalogUrl });
+        return;
+      } catch (error) {
+        if (error?.name === "AbortError") return;
+      }
     }
     await copyCatalogUrl();
   };
@@ -103,7 +113,16 @@ export default function CatalogPage() {
   if (loading) return <ProcessingIndicatorComponent messages={["Carregando catálogo…", "Organizando os itens…"]} />;
 
   if (apiError || !establishment) {
-    return <><GlobalNav /><Container className="py-5"><NexusFeedback type="error" title="Catálogo indisponível" actionLabel="Ir para a Nexus" onAction={() => navigate("/")}>{apiError || "Não encontramos este catálogo. Ele pode ter sido removido ou o link pode estar incorreto."}</NexusFeedback></Container></>;
+    return (
+      <>
+        <GlobalNav />
+        <Container className="py-5">
+          <NexusFeedback type="error" title="Catálogo indisponível" actionLabel="Ir para a Nexus" onAction={() => navigate("/")}>
+            {apiError || "Não encontramos este catálogo. Ele pode ter sido removido ou o link pode estar incorreto."}
+          </NexusFeedback>
+        </Container>
+      </>
+    );
   }
 
   return (
@@ -144,17 +163,30 @@ export default function CatalogPage() {
             Não encontramos itens que correspondam aos filtros informados. Tente remover algum filtro ou buscar por outro termo.
           </NexusFeedback>
         ) : (
-          <Row className="g-4 mt-1">{filteredItems.map((item) => <Col key={item.id} xs={12} sm={6} lg={4} xl={3}><GlobalCard item={item} fmtBRL={fmtBRL} navigate={navigate} showSchedule={false} /></Col>)}</Row>
+          <Row className="g-4 mt-1">
+            {filteredItems.map((item) => (
+              <Col key={item.id} xs={12} sm={6} lg={4} xl={3}>
+                <GlobalCard item={item} fmtBRL={fmtBRL} navigate={navigate} showSchedule={false} />
+              </Col>
+            ))}
+          </Row>
         )}
 
         <section id="compartilhar" className="catalog-share" aria-labelledby="catalog-share-title">
           <div className="catalog-share__copy">
-            <Badge bg="secondary">Divulgação</Badge><h2 id="catalog-share-title">Compartilhe este catálogo</h2>
-            <p>O QR Code abre diretamente este catálogo público. Use em balcão, cartão, embalagem, redes sociais ou materiais impressos.</p>
+            <Badge bg="secondary">Divulgação</Badge>
+            <h2 id="catalog-share-title">Compartilhe este catálogo</h2>
+            <p>O QR Code é gerado dentro da própria Nexus e abre diretamente este catálogo público, sem depender de serviços externos.</p>
             <div className="catalog-share__url">{catalogUrl}</div>
-            <div className="catalog-share__actions"><button type="button" onClick={copyCatalogUrl}><FaLink /> Copiar link</button><button type="button" onClick={shareCatalog}>Compartilhar</button>{whatsappLink && <a href={whatsappLink} target="_blank" rel="noreferrer"><FaWhatsapp /> WhatsApp</a>}</div>
+            <div className="catalog-share__actions">
+              <button type="button" onClick={copyCatalogUrl}><FaLink /> Copiar link</button>
+              <button type="button" onClick={shareCatalog}>Compartilhar</button>
+              {whatsappLink && <a href={whatsappLink} target="_blank" rel="noreferrer"><FaWhatsapp /> WhatsApp</a>}
+            </div>
           </div>
-          <div className="catalog-share__qr"><img src={qrImageUrl} alt={`QR Code do catálogo ${title}`} loading="lazy" /><a href={qrImageUrl} target="_blank" rel="noreferrer">Abrir QR Code</a></div>
+          <div className="catalog-share__qr">
+            <LocalQrCode value={catalogUrl} title={title} />
+          </div>
         </section>
       </Container>
     </div>
