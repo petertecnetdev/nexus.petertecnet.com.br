@@ -1,10 +1,11 @@
 import { useRef, useState, useMemo, useCallback } from "react";
 import PropTypes from "prop-types";
 import { Badge } from "react-bootstrap";
-import { FaEye, FaMapMarkerAlt } from "react-icons/fa";
+import { FaEye, FaMapMarkerAlt, FaQrcode, FaTimes } from "react-icons/fa";
 import useImageUtils from "../hooks/useImageUtils";
 import EntityImage from "./EntityImage";
 import GlobalButton from "./GlobalButton";
+import LocalQrCode from "./LocalQrCode";
 import "./GlobalCard.css";
 
 const hasPrice = (value) => value !== null && value !== undefined && value !== "" && Number.isFinite(Number(value));
@@ -15,10 +16,11 @@ const firstFileUrl = (files) => {
   return preferred?.public_url || preferred?.url || preferred?.path || null;
 };
 
-export default function GlobalCard({ item, fmtBRL, navigate, actions }) {
+export default function GlobalCard({ item, fmtBRL, navigate, actions, showQr = false, publicUrl = "" }) {
   const { imageUrl, handleImgError: baseHandleImgError } = useImageUtils();
   const cardRef = useRef(null);
   const [broken, setBroken] = useState(false);
+  const [qrOpen, setQrOpen] = useState(false);
   const safeItem = useMemo(() => item || {}, [item]);
   const establishment = useMemo(() => safeItem.establishment || {}, [safeItem.establishment]);
 
@@ -55,6 +57,11 @@ export default function GlobalCard({ item, fmtBRL, navigate, actions }) {
   const itemTypeLabel = normalizedType === "service" ? "Serviço" : normalizedType === "product" ? "Produto" : "Item";
   const itemTypeIcon = normalizedType === "service" ? "fa-screwdriver-wrench" : "fa-box";
   const totalViews = Number(safeItem.total_views || 0);
+  const qrUrl = useMemo(() => {
+    if (publicUrl) return publicUrl;
+    if (!safeItem.slug || typeof window === "undefined") return "";
+    return `${window.location.origin}/item/${encodeURIComponent(safeItem.slug)}`;
+  }, [publicUrl, safeItem.slug]);
 
   const placeholderSvg = useMemo(() => {
     const initials = getInitials();
@@ -69,24 +76,23 @@ export default function GlobalCard({ item, fmtBRL, navigate, actions }) {
       <div className={`carousel-image-wrap ${isEstablishment ? "img-establishment" : "img-square"}`} onClick={handleDetails} onKeyDown={(event) => { if ((event.key === "Enter" || event.key === " ") && navigate) handleDetails(); }} role={navigate ? "button" : undefined} tabIndex={navigate ? 0 : undefined}>
         <img src={image && !broken ? image : placeholderSvg} alt={safeItem.name || "Item"} loading="lazy" className="carousel-image" onError={handleImgError} />
         <span className={`globalcard-entity-badge ${isEstablishment ? "globalcard-entity-badge--establishment" : "globalcard-entity-badge--item"}`}><i className={`fas ${isEstablishment ? "fa-building" : itemTypeIcon}`} aria-hidden="true" />{isEstablishment ? "Estabelecimento" : `Item · ${itemTypeLabel}`}</span>
+        {!isEstablishment && showQr && qrUrl && (
+          <button type="button" className="globalcard-qr-trigger" aria-label={`Abrir QR Code de ${safeItem.name}`} aria-expanded={qrOpen} onClick={(event) => { event.stopPropagation(); setQrOpen((current) => !current); }}>
+            {qrOpen ? <FaTimes aria-hidden="true" /> : <FaQrcode aria-hidden="true" />}<span>QR</span>
+          </button>
+        )}
         {!isEstablishment && <span className="globalcard-view-badge" title={`${totalViews} visualizações`}><FaEye aria-hidden="true" /> {totalViews.toLocaleString("pt-BR")}</span>}
       </div>
 
       <div className="carousel-item-content">
         {!isEstablishment && <div className="globalcard-item-context" aria-hidden="true"><span className="globalcard-item-context__icon"><i className={`fas ${itemTypeIcon}`} /></span><span><strong>{itemTypeLabel}</strong><small>item do catálogo</small></span></div>}
         <div className="carousel-item-name" onClick={handleDetails} onKeyDown={(event) => { if ((event.key === "Enter" || event.key === " ") && navigate) handleDetails(); }} role={navigate ? "button" : undefined} tabIndex={navigate ? 0 : undefined}>{safeItem.name}</div>
-
-        {!isEstablishment && establishment?.name && (
-          <div className="globalcard-establishment d-flex align-items-center gap-2 mt-1" role="button" tabIndex={0} onClick={handleEstablishmentClick} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") handleEstablishmentClick(event); }}>
-            <EntityImage src={establishmentImageCandidates} name={establishment.fantasy || establishment.name} alt={`Imagem de ${establishment.fantasy || establishment.name}`} shape="round" className="globalcard-establishment-logo" loading="lazy" />
-            <span className="globalcard-establishment-prefix">Em</span><span className="globalcard-establishment-name">{establishment.fantasy || establishment.name}</span>
-          </div>
-        )}
-
+        {!isEstablishment && establishment?.name && <div className="globalcard-establishment d-flex align-items-center gap-2 mt-1" role="button" tabIndex={0} onClick={handleEstablishmentClick} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") handleEstablishmentClick(event); }}><EntityImage src={establishmentImageCandidates} name={establishment.fantasy || establishment.name} alt={`Imagem de ${establishment.fantasy || establishment.name}`} shape="round" className="globalcard-establishment-logo" loading="lazy" /><span className="globalcard-establishment-prefix">Em</span><span className="globalcard-establishment-name">{establishment.fantasy || establishment.name}</span></div>}
         {(safeItem.city || safeItem.uf) && <div className="globalcard-location d-flex align-items-center gap-1 mt-1"><FaMapMarkerAlt size={12} aria-hidden="true" /><span className="text-light-50">{safeItem.city}{safeItem.uf ? ` - ${safeItem.uf}` : ""}</span></div>}
         {hasPrice(safeItem.price) && <div className="carousel-item-price">{fmtBRL(safeItem.price)}</div>}
         {safeItem.description && !isEstablishment && <div className="text-light-50 small mt-1">{safeItem.description.length > 110 ? `${safeItem.description.slice(0, 110).trim()}…` : safeItem.description}</div>}
         <div className="d-flex flex-wrap gap-2 mt-2">{safeItem.category && <Badge bg="secondary">{safeItem.category}</Badge>}{safeItem.brand && <Badge bg="secondary">{safeItem.brand}</Badge>}</div>
+        {showQr && !isEstablishment && qrOpen && qrUrl && <div className="globalcard-qr-panel" onClick={(event) => event.stopPropagation()}><div><strong>Acesso rápido</strong><small>Aponte a câmera para abrir este item direto.</small></div><LocalQrCode value={qrUrl} title={safeItem.name} size={180} /></div>}
         {navigate && safeItem.slug && <div className="mt-2"><GlobalButton type="button" size="sm" variant="outline" stopPropagation className="px-4" onClick={handleDetails}>{isEstablishment ? "Ver catálogo" : "Ver item"}</GlobalButton></div>}
         {actions && <div className="mt-3 establishment-actions-slot">{actions}</div>}
       </div>
@@ -94,5 +100,5 @@ export default function GlobalCard({ item, fmtBRL, navigate, actions }) {
   );
 }
 
-GlobalCard.propTypes = { item: PropTypes.object, fmtBRL: PropTypes.func, navigate: PropTypes.func, actions: PropTypes.node };
+GlobalCard.propTypes = { item: PropTypes.object, fmtBRL: PropTypes.func, navigate: PropTypes.func, actions: PropTypes.node, showQr: PropTypes.bool, publicUrl: PropTypes.string };
 GlobalCard.defaultProps = { fmtBRL: (value) => value };
