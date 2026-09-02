@@ -16,6 +16,7 @@ import { appId } from "./config";
 import api from "./services/api";
 
 import HomePage from "./pages/HomePage";
+import NotFoundPage from "./pages/NotFoundPage";
 import LoginPage from "./pages/auth/LoginPage";
 import RegisterPage from "./pages/auth/RegisterPage";
 import EmailVerifyPage from "./pages/auth/EmailVerifyPage";
@@ -185,7 +186,7 @@ function AppInner() {
           <Route path="/item/update/:id" element={protectedRoute(<ItemUpdatePage />)} />
 
           <Route path="/dashboard" element={<Navigate to="/establishment/my" replace />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
+          <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </Router>
     </AuthContext.Provider>
