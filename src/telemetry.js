@@ -165,6 +165,20 @@ export function startTelemetry({ apiBaseUrl, appSlug, appId, getToken = () => lo
     })
   }
 
+  function onApi(event) {
+    const detail = event?.detail || {}
+    enqueue(detail.type === "api_error" ? "api_error" : "api_request", {
+      label: `${detail.method || "GET"} ${detail.path || "API"}`,
+      target: detail.path || "",
+      metadata: {
+        method: detail.method,
+        status: detail.status,
+        duration_ms: detail.duration_ms,
+        error_code: detail.code,
+      },
+    })
+  }
+
   function onPopState() {
     recordNavigation("popstate")
   }
@@ -196,6 +210,7 @@ export function startTelemetry({ apiBaseUrl, appSlug, appId, getToken = () => lo
   window.addEventListener("popstate", onPopState)
   window.addEventListener("error", onError)
   window.addEventListener("unhandledrejection", onRejection)
+  window.addEventListener("nexus:api", onApi)
   window.addEventListener("scroll", onScroll, { passive: true })
   window.addEventListener("pagehide", onPageHide)
 
@@ -221,6 +236,7 @@ export function startTelemetry({ apiBaseUrl, appSlug, appId, getToken = () => lo
     window.removeEventListener("popstate", onPopState)
     window.removeEventListener("error", onError)
     window.removeEventListener("unhandledrejection", onRejection)
+    window.removeEventListener("nexus:api", onApi)
     window.removeEventListener("scroll", onScroll)
     window.removeEventListener("pagehide", onPageHide)
     window.history.pushState = originalPush
