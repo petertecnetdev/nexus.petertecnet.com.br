@@ -1,71 +1,91 @@
 import React, { useEffect, useRef, useState } from "react";
 import PropTypes from "prop-types";
-import QRCode from "qrcodejs";
+import QRCode from "qrcode";
 
 export default function LocalQrCode({ value, title, size = 320 }) {
-  const hostRef = useRef(null);
+  const canvasRef = useRef(null);
   const [generationError, setGenerationError] = useState(false);
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    const host = hostRef.current;
-    if (!host || !value) return undefined;
+    const canvas = canvasRef.current;
+    if (!canvas || !value) return undefined;
 
-    host.innerHTML = "";
+    let cancelled = false;
     setGenerationError(false);
-    let qr = null;
+    setReady(false);
 
-    try {
-      qr = new QRCode(host, {
-        text: value,
-        width: size,
-        height: size,
-        colorDark: "#000000",
-        colorLight: "#ffffff",
-        correctLevel: QRCode?.CorrectLevel?.H ?? 2,
+    QRCode.toCanvas(canvas, value, {
+      width: size,
+      margin: 2,
+      errorCorrectionLevel: "H",
+      color: {
+        dark: "#000000",
+        light: "#ffffff",
+      },
+    })
+      .then(() => {
+        if (!cancelled) setReady(true);
+      })
+      .catch((error) => {
+        if (cancelled) return;
+        console.error("Nexus QR generation failed", error);
+        setGenerationError(true);
       });
-    } catch (error) {
-      // QR is a convenience surface; a renderer problem must never unmount the
-      // public catalog. The canonical URL remains available for copy/share.
-      console.error("Nexus QR generation failed", error);
-      setGenerationError(true);
-    }
 
     return () => {
-      try {
-        qr?.clear?.();
-      } finally {
-        host.innerHTML = "";
-      }
+      cancelled = true;
+      const context = canvas.getContext?.("2d");
+      context?.clearRect(0, 0, canvas.width, canvas.height);
     };
   }, [size, value]);
 
-  const download = () => {
-    const canvas = hostRef.current?.querySelector("canvas");
-    const image = hostRef.current?.querySelector("img");
-    const dataUrl = canvas?.toDataURL?.("image/png") || image?.src;
-    if (!dataUrl) return;
+  const download = async () => {
+    if (!value) return;
 
-    const anchor = document.createElement("a");
-    anchor.href = dataUrl;
-    anchor.download = `${String(title || "catalogo-nexus")
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "")
-      .replace(/[^a-zA-Z0-9_-]+/g, "-")
-      .replace(/^-+|-+$/g, "")
-      .toLowerCase() || "catalogo-nexus"}-qr.png`;
-    document.body.appendChild(anchor);
-    anchor.click();
-    anchor.remove();
+    try {
+      const dataUrl = await QRCode.toDataURL(value, {
+        width: Math.max(size, 640),
+        margin: 2,
+        errorCorrectionLevel: "H",
+        type: "image/png",
+        color: {
+          dark: "#000000",
+          light: "#ffffff",
+        },
+      });
+
+      const anchor = document.createElement("a");
+      anchor.href = dataUrl;
+      anchor.download = `${String(title || "catalogo-nexus")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^a-zA-Z0-9_-]+/g, "-")
+        .replace(/^-+|-+$/g, "")
+        .toLowerCase() || "catalogo-nexus"}-qr.png`;
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+    } catch (error) {
+      console.error("Nexus QR download failed", error);
+      setGenerationError(true);
+    }
   };
 
   return (
     <div className="nexus-local-qr">
-      <div ref={hostRef} aria-label={`QR Code do catálogo ${title || "Nexus"}`} />
+      <canvas
+        ref={canvasRef}
+        width={size}
+        height={size}
+        aria-label={`QR Code do catálogo ${title || "Nexus"}`}
+        role="img"
+      />
       {generationError ? (
-        <small role="status">QR indisponível neste navegador. Use o link do catálogo.</small>
+        <small role="status">Não foi possível gerar o QR Code. Use o link do catálogo.</small>
       ) : (
-        <button type="button" onClick={download}>
-          Baixar QR Code
+        <button type="button" onClick={download} disabled={!ready}>
+          {ready ? "Baixar QR Code" : "Gerando QR Code…"}
         </button>
       )}
     </div>
