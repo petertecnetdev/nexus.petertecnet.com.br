@@ -2,7 +2,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Badge, Col, Container, Form, Row } from "react-bootstrap";
 import { useNavigate, useParams } from "react-router-dom";
-import { FaLink, FaWhatsapp } from "react-icons/fa";
+import { FaLink, FaShoppingCart, FaWhatsapp } from "react-icons/fa";
 
 import GlobalNav from "../../components/GlobalNav";
 import GlobalCard from "../../components/GlobalCard";
@@ -10,13 +10,16 @@ import EntityImage from "../../components/EntityImage";
 import LocalQrCode from "../../components/LocalQrCode";
 import NexusFeedback from "../../components/NexusFeedback";
 import ProcessingIndicatorComponent from "../../components/ProcessingIndicatorComponent";
+import { useCommerceCart } from "../../contexts/CommerceCartContext";
 import useEstablishmentItemsByIdentifier from "../../hooks/useEstablishmentItemsByIdentifier";
 import useWhatsappLink from "../../hooks/useWhatsappLink";
 import { apiBaseUrl, appId, linkApp } from "../../config";
 import "./CatalogPage.css";
+import "../commerce/CommerceCheckoutPage.css";
 
 const fmtBRL = (value) => `R$ ${Number(value || 0).toFixed(2).replace(".", ",")}`;
 const normalizeText = (value) => String(value || "").trim().toLowerCase();
+const canPurchase = (item) => Number.isFinite(Number(item?.price)) && Number(item.price) > 0;
 
 function setMeta(name, content, property = false) {
   if (!content) return;
@@ -34,6 +37,13 @@ export default function CatalogPage() {
   const { slug } = useParams();
   const navigate = useNavigate();
   const { establishment, items, loading, apiError } = useEstablishmentItemsByIdentifier(slug);
+  const {
+    establishment: cartEstablishment,
+    itemCount,
+    subtotal,
+    addItem,
+    buyNow,
+  } = useCommerceCart();
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("all");
   const whatsappLink = useWhatsappLink(establishment);
@@ -68,6 +78,7 @@ export default function CatalogPage() {
   ];
   const socialLogo = logoCandidates.find(Boolean) || null;
   const background = establishment?.images?.background || establishment?.background || files.find((file) => file?.type === "background")?.public_url;
+  const showingThisCart = Number(cartEstablishment?.id) === Number(establishment?.id) && itemCount > 0;
 
   useEffect(() => {
     if (!establishment) return undefined;
@@ -111,6 +122,20 @@ export default function CatalogPage() {
 
     try { await navigator.clipboard.writeText(socialShareUrl); }
     catch { window.prompt("Copie o link para compartilhar:", socialShareUrl); }
+  };
+
+  const purchaseActions = (item) => {
+    if (!canPurchase(item)) return null;
+    return (
+      <div className="commerce-purchase-actions">
+        <button type="button" className="commerce-purchase-actions__secondary" onClick={() => addItem(item, establishment)}>
+          <FaShoppingCart /> Adicionar
+        </button>
+        <button type="button" className="commerce-purchase-actions__primary" onClick={() => { buyNow(item, establishment); navigate("/checkout"); }}>
+          Comprar agora
+        </button>
+      </div>
+    );
   };
 
   if (loading) return <ProcessingIndicatorComponent messages={["Carregando catálogo…", "Organizando os itens…"]} />;
@@ -169,7 +194,7 @@ export default function CatalogPage() {
           <Row className="g-4 mt-1">
             {filteredItems.map((item) => (
               <Col key={item.id} xs={12} sm={6} lg={4} xl={3}>
-                <GlobalCard item={item} fmtBRL={fmtBRL} navigate={navigate} showSchedule={false} />
+                <GlobalCard item={item} fmtBRL={fmtBRL} navigate={navigate} actions={purchaseActions(item)} />
               </Col>
             ))}
           </Row>
@@ -192,6 +217,13 @@ export default function CatalogPage() {
           </div>
         </section>
       </Container>
+
+      {showingThisCart && (
+        <div className="commerce-cart-float" role="status">
+          <span><FaShoppingCart /> <strong>{itemCount}</strong> {itemCount === 1 ? "item" : "itens"} · {fmtBRL(subtotal)}</span>
+          <button type="button" onClick={() => navigate("/checkout")}>Finalizar compra</button>
+        </div>
+      )}
     </div>
   );
 }
