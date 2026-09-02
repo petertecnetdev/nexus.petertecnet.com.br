@@ -79,9 +79,10 @@ export default function useItemCreate(
     setLoading(true);
 
     try {
+      const { image_url: imageUrl = "", ...itemData } = data;
       const formData = new FormData();
       const payload = {
-        ...data,
+        ...itemData,
         app_id: appId,
         entity_id: establishment.id,
         entity_name: "establishment",
@@ -94,6 +95,21 @@ export default function useItemCreate(
       });
 
       const { data: response } = await api.post("/item", formData);
+      const createdItem = response?.item;
+      const trimmedImageUrl = String(imageUrl || "").trim();
+      const hasUploadedImage = itemData.image instanceof File;
+
+      if (trimmedImageUrl && !hasUploadedImage && createdItem?.id) {
+        await api.post("/file", {
+          app_id: appId,
+          entity_id: createdItem.id,
+          entity_name: "item",
+          external_url: trimmedImageUrl,
+          visibility: "public",
+          is_primary: true,
+          position: 0,
+        });
+      }
 
       await Swal.fire({
         icon: "success",
