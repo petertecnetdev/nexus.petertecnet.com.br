@@ -137,11 +137,13 @@ function AppInner() {
     );
   }
 
+  const currentDestination = () => `${window.location.pathname}${window.location.search || ""}`;
+
   const protectedRoute = (element) =>
     user ? (
       user.email_verified_at ? element : <Navigate to="/email-verify" replace />
     ) : (
-      <Navigate to="/login" replace />
+      <Navigate to="/login" replace state={{ from: { pathname: currentDestination() } }} />
     );
 
   const emailVerifiedRoute = (element) =>
