@@ -6,10 +6,11 @@ export default function LocalQrCode({ value, title, size = 320 }) {
   const hostRef = useRef(null);
 
   useEffect(() => {
-    if (!hostRef.current || !value) return undefined;
+    const host = hostRef.current;
+    if (!host || !value) return undefined;
 
-    hostRef.current.innerHTML = "";
-    const qr = new QRCode(hostRef.current, {
+    host.innerHTML = "";
+    const qr = new QRCode(host, {
       text: value,
       width: size,
       height: size,
@@ -20,7 +21,7 @@ export default function LocalQrCode({ value, title, size = 320 }) {
 
     return () => {
       qr.clear();
-      if (hostRef.current) hostRef.current.innerHTML = "";
+      host.innerHTML = "";
     };
   }, [size, value]);
 
