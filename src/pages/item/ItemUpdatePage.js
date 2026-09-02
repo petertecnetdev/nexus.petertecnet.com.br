@@ -25,6 +25,8 @@ export default function ItemUpdatePage() {
   const [apiError, setApiError] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
   const [imageFile, setImageFile] = useState(null);
+  const [imageUrl, setImageUrl] = useState("");
+  const [imageUrlStatus, setImageUrlStatus] = useState("idle");
   const [removeImage, setRemoveImage] = useState(false);
 
   useEffect(() => {
@@ -64,7 +66,16 @@ export default function ItemUpdatePage() {
         const img = data.files?.find(
           (file) => file.entity_name === "item" && file.type === "image"
         );
-        setImagePreview(img?.public_url || data.image_url || data.image || null);
+        const currentImage = img?.public_url || data.image_url || data.image || null;
+        setImagePreview(currentImage);
+
+        if (img?.source === "external_url" || img?.storage === "external") {
+          setImageUrl(img.public_url || "");
+          setImageUrlStatus(img.public_url ? "loaded" : "idle");
+        } else {
+          setImageUrl("");
+          setImageUrlStatus("idle");
+        }
       } catch (error) {
         if (error?.code === "ERR_CANCELED") return;
         setApiError(
@@ -87,6 +98,8 @@ export default function ItemUpdatePage() {
     if (!file) return;
 
     setImageFile(file);
+    setImageUrl("");
+    setImageUrlStatus("idle");
     setRemoveImage(false);
 
     const reader = new FileReader();
@@ -94,14 +107,38 @@ export default function ItemUpdatePage() {
     reader.readAsDataURL(file);
   };
 
+  const handleImageUrlChange = (event) => {
+    const value = event.target.value;
+    setImageUrl(value);
+    setImageFile(null);
+    setRemoveImage(false);
+
+    const trimmed = value.trim();
+    if (!trimmed) {
+      setImageUrlStatus("idle");
+      setImagePreview(null);
+      return;
+    }
+
+    setImageUrlStatus("loading");
+    setImagePreview(trimmed);
+  };
+
+  const handleImageUrlLoad = () => setImageUrlStatus("loaded");
+  const handleImageUrlError = () => setImageUrlStatus("error");
+
   const handleRemoveImage = () => {
     setImageFile(null);
+    setImageUrl("");
+    setImageUrlStatus("idle");
     setImagePreview(null);
     setRemoveImage(true);
   };
 
   const onSubmit = async (values) => {
-    const response = await updateItem(values, imageFile, removeImage);
+    if (imageUrl.trim() && imageUrlStatus === "error") return;
+
+    const response = await updateItem(values, imageFile, removeImage, imageUrl);
     if (!response) return;
 
     const updatedItem = response?.item ?? response?.data ?? null;
@@ -140,10 +177,15 @@ export default function ItemUpdatePage() {
           watch={watch}
           item={item}
           imagePreview={imagePreview}
+          imageUrl={imageUrl}
+          imageUrlStatus={imageUrlStatus}
           apiErrors={apiErrors}
           isSubmitting={saving}
           onSubmit={onSubmit}
           onImageChange={handleImageChange}
+          onImageUrlChange={handleImageUrlChange}
+          onImageUrlLoad={handleImageUrlLoad}
+          onImageUrlError={handleImageUrlError}
           onRemoveImage={handleRemoveImage}
         />
       )}
