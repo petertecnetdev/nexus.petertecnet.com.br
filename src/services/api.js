@@ -1,8 +1,10 @@
 import axios from "axios";
-import { apiBaseUrl, appSlug } from "../config";
+import { apiV1BaseUrl, appSlug } from "../config";
+
+const legacyProductPrefix = `/${appSlug}`;
 
 const api = axios.create({
-  baseURL: apiBaseUrl,
+  baseURL: apiV1BaseUrl,
   timeout: 20000,
   headers: {
     Accept: "application/json",
@@ -26,6 +28,13 @@ const extractToken = (payload) =>
   payload?.token?.original?.access_token ??
   payload?.token ??
   null;
+
+const canonicalizePath = (value) => {
+  const url = String(value || "");
+  if (url === legacyProductPrefix) return "/";
+  if (url.startsWith(`${legacyProductPrefix}/`)) return url.slice(legacyProductPrefix.length);
+  return url;
+};
 
 const emitApiTelemetry = (type, config, extra = {}) => {
   if (typeof window === "undefined") return;
@@ -51,7 +60,7 @@ async function refreshAccessToken() {
   if (!refreshPromise) {
     refreshPromise = axios
       .post(
-        `${apiBaseUrl}/auth/refresh`,
+        `${apiV1BaseUrl}/auth/refresh`,
         {},
         {
           timeout: 15000,
@@ -77,6 +86,8 @@ async function refreshAccessToken() {
 }
 
 api.interceptors.request.use((config) => {
+  config.url = canonicalizePath(config.url);
+
   const token = readToken();
   config.headers = config.headers || {};
   config.headers["X-Peter-App"] = appSlug;
@@ -94,9 +105,7 @@ api.interceptors.request.use((config) => {
 
 api.interceptors.response.use(
   (response) => {
-    emitApiTelemetry("api_success", response?.config, {
-      status: response?.status,
-    });
+    emitApiTelemetry("api_success", response?.config, { status: response?.status });
     return response;
   },
   async (error) => {
