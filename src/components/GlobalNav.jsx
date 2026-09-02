@@ -2,7 +2,7 @@
 import React, { useContext, useEffect, useMemo, useRef, useState } from "react";
 import PropTypes from "prop-types";
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
-import { FaBuilding, FaSearch, FaTimes } from "react-icons/fa";
+import { FaBuilding, FaSearch, FaShoppingBag, FaTimes } from "react-icons/fa";
 import { FaBoxOpen } from "react-icons/fa6";
 
 import { AuthContext } from "../App";
@@ -15,6 +15,7 @@ import "./GlobalNav.css";
 const publicNavigation = [{ label: "Início", path: "/", end: true }];
 const accountNavigation = [
   { label: "Meus catálogos", path: "/establishment/my" },
+  { label: "Minhas compras", path: "/purchases", icon: <FaShoppingBag /> },
   { label: "Cadastrar empresa", path: "/establishment/create" },
   { label: "Minha conta", path: "/user/update" },
 ];
@@ -125,7 +126,7 @@ export default function GlobalNav({ loadingMenu, handleLogout }) {
           {!navIsLoading && !isAuthed && <div className="globalnav__authActions"><Link to="/login" className="globalnav__btn globalnav__btn--ghost">Entrar</Link><Link to="/register" className="globalnav__btn globalnav__btn--primary">Criar conta</Link></div>}
           {!navIsLoading && isAuthed && <div className="globalnav__user" ref={userMenuRef}>
             <button type="button" className="globalnav__userBtn" onClick={() => setUserMenuOpen((open) => !open)} aria-haspopup="menu" aria-expanded={userMenuOpen}><img src={avatarSrc} alt="" className="globalnav__avatar" onError={handleImgError} /><span className="globalnav__userName">{fullName}</span></button>
-            {userMenuOpen && <div className="globalnav__userMenu" role="menu" aria-label="Menu da conta">{accountNavigation.map((item, index) => <React.Fragment key={item.path}>{index === 2 && <div className="globalnav__divider" role="separator" />}<Link to={item.path} className="globalnav__userMenuItem" onClick={closeUserMenu} role="menuitem">{item.label}</Link></React.Fragment>)}<button type="button" className="globalnav__userMenuItem globalnav__logout" onClick={onLogout} disabled={processing} aria-busy={processing} role="menuitem">{processing ? "Saindo…" : "Sair da conta"}</button></div>}
+            {userMenuOpen && <div className="globalnav__userMenu" role="menu" aria-label="Menu da conta">{accountNavigation.map((item, index) => <React.Fragment key={item.path}>{index === 3 && <div className="globalnav__divider" role="separator" />}<Link to={item.path} className="globalnav__userMenuItem" onClick={closeUserMenu} role="menuitem">{item.icon}{item.label}</Link></React.Fragment>)}<button type="button" className="globalnav__userMenuItem globalnav__logout" onClick={onLogout} disabled={processing} aria-busy={processing} role="menuitem">{processing ? "Saindo…" : "Sair da conta"}</button></div>}
           </div>}
         </div>
       </div>
