@@ -1,27 +1,41 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import PropTypes from "prop-types";
 import QRCode from "qrcodejs";
 
 export default function LocalQrCode({ value, title, size = 320 }) {
   const hostRef = useRef(null);
+  const [generationError, setGenerationError] = useState(false);
 
   useEffect(() => {
     const host = hostRef.current;
     if (!host || !value) return undefined;
 
     host.innerHTML = "";
-    const qr = new QRCode(host, {
-      text: value,
-      width: size,
-      height: size,
-      colorDark: "#000000",
-      colorLight: "#ffffff",
-      correctLevel: QRCode.CorrectLevel.H,
-    });
+    setGenerationError(false);
+    let qr = null;
+
+    try {
+      qr = new QRCode(host, {
+        text: value,
+        width: size,
+        height: size,
+        colorDark: "#000000",
+        colorLight: "#ffffff",
+        correctLevel: QRCode?.CorrectLevel?.H ?? 2,
+      });
+    } catch (error) {
+      // QR is a convenience surface; a renderer problem must never unmount the
+      // public catalog. The canonical URL remains available for copy/share.
+      console.error("Nexus QR generation failed", error);
+      setGenerationError(true);
+    }
 
     return () => {
-      qr.clear();
-      host.innerHTML = "";
+      try {
+        qr?.clear?.();
+      } finally {
+        host.innerHTML = "";
+      }
     };
   }, [size, value]);
 
@@ -47,9 +61,13 @@ export default function LocalQrCode({ value, title, size = 320 }) {
   return (
     <div className="nexus-local-qr">
       <div ref={hostRef} aria-label={`QR Code do catálogo ${title || "Nexus"}`} />
-      <button type="button" onClick={download}>
-        Baixar QR Code
-      </button>
+      {generationError ? (
+        <small role="status">QR indisponível neste navegador. Use o link do catálogo.</small>
+      ) : (
+        <button type="button" onClick={download}>
+          Baixar QR Code
+        </button>
+      )}
     </div>
   );
 }
