@@ -10,6 +10,22 @@ import "./Commerce.css";
 
 const money = (value) => Number(value || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
+const sameOrderSnapshot = (current, next) =>
+  Boolean(current && next) &&
+  current.public_id === next.public_id &&
+  current.payment_status === next.payment_status &&
+  current.fulfillment_status === next.fulfillment_status &&
+  current.claim?.token === next.claim?.token;
+
+const samePaymentSnapshot = (current, next) =>
+  Boolean(current && next) &&
+  current.method === next.method &&
+  current.status === next.status &&
+  current.payment_status === next.payment_status &&
+  current.qr_code === next.qr_code &&
+  current.qr_code_base64 === next.qr_code_base64 &&
+  current.checkout_url === next.checkout_url;
+
 export default function PurchasePage() {
   const { publicId } = useParams();
   const navigate = useNavigate();
@@ -21,30 +37,65 @@ export default function PurchasePage() {
   const [retrying, setRetrying] = useState(false);
   const [error, setError] = useState("");
 
-  const refresh = useCallback(async () => {
+  const refresh = useCallback(async ({ background = false } = {}) => {
+    const options = { background };
+
     try {
-      const result = await getCommercePayment(publicId);
-      if (result?.order) setOrder(result.order);
-      if (result?.payment) setPayment((current) => ({ ...current, ...result.payment }));
+      const result = await getCommercePayment(publicId, options);
+      if (result?.order) {
+        setOrder((current) => (sameOrderSnapshot(current, result.order) ? current : result.order));
+      }
+      if (result?.payment) {
+        setPayment((current) => {
+          const next = { ...current, ...result.payment };
+          return samePaymentSnapshot(current, next) ? current : next;
+        });
+      }
       setError("");
     } catch (requestError) {
       try {
-        const fallback = await getCommerceOrder(publicId);
-        setOrder(fallback);
+        const fallback = await getCommerceOrder(publicId, options);
+        if (fallback) {
+          setOrder((current) => (sameOrderSnapshot(current, fallback) ? current : fallback));
+        }
       } catch {
-        setError(requestError?.response?.data?.message || "Não foi possível consultar sua compra.");
+        if (!background) {
+          setError(requestError?.response?.data?.message || "Não foi possível consultar sua compra.");
+        }
       }
     } finally {
-      setLoading(false);
+      if (!background) setLoading(false);
     }
   }, [publicId]);
 
   useEffect(() => { refresh(); }, [refresh]);
+
   useEffect(() => {
-    if (order?.payment_status === "paid" || order?.payment_status === "refunded") return undefined;
-    const timer = window.setInterval(refresh, 4000);
-    return () => window.clearInterval(timer);
-  }, [order?.payment_status, refresh]);
+    if (!order) return undefined;
+
+    const terminalStatuses = ["paid", "refunded", "failed", "cancelled", "canceled"];
+    if (terminalStatuses.includes(order.payment_status)) return undefined;
+
+    let active = true;
+    let timer = null;
+
+    const poll = async () => {
+      if (!active) return;
+
+      if (document.visibilityState === "visible") {
+        await refresh({ background: true });
+      }
+
+      if (active) timer = window.setTimeout(poll, 4000);
+    };
+
+    timer = window.setTimeout(poll, 4000);
+
+    return () => {
+      active = false;
+      if (timer) window.clearTimeout(timer);
+    };
+  }, [order, refresh]);
 
   const claimUrl = useMemo(() => {
     if (!order?.claim?.token || !order?.public_id) return "";
@@ -83,7 +134,7 @@ export default function PurchasePage() {
 
           <div className="purchase-status">
             {order?.payment_status === "paid" ? <FaCheckCircle size={28} /> : <FaClock size={28} />}
-            <div><strong>{order?.payment_status === "paid" ? "Compra paga" : order?.payment_status === "failed" ? "Pagamento não concluído" : "Pagamento pendente"}</strong><small>{order?.payment_status === "paid" ? "Seu direito de retirada/entrega já está liberado." : "A Nexus atualiza esta tela automaticamente após a confirmação."}</small></div>
+            <div><strong>{order?.payment_status === "paid" ? "Compra paga" : order?.payment_status === "failed" ? "Pagamento não concluído" : "Pagamento pendente"}</strong><small>{order?.payment_status === "paid" ? "Seu direito de retirada/entrega já está liberado." : "A confirmação acontece automaticamente, sem recarregar a página."}</small></div>
           </div>
 
           <div className="purchase-items">
