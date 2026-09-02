@@ -1,6 +1,6 @@
 // src/components/item/ItemUpdateForm.jsx
 import React from "react";
-import { Row, Col, Form, Button } from "react-bootstrap";
+import { Row, Col, Form, Button, Alert } from "react-bootstrap";
 import GlobalHeroEditorPreview from "../GlobalHeroEditorPreview";
 import "./ItemUpdateForm.css";
 
@@ -11,13 +11,19 @@ export default function ItemUpdateForm({
   isSubmitting,
   item,
   imagePreview,
+  imageUrl,
+  imageUrlStatus,
   onImageChange,
+  onImageUrlChange,
+  onImageUrlLoad,
+  onImageUrlError,
   onRemoveImage,
   onSubmit,
 }) {
   if (!item) return null;
 
   const type = watch("type");
+  const hasLinkedImage = Boolean(imageUrl?.trim());
 
   return (
     <>
@@ -37,7 +43,7 @@ export default function ItemUpdateForm({
           disabled={isSubmitting}
           onClick={() => document.getElementById("itemImageInput")?.click()}
         >
-          Alterar imagem
+          Enviar imagem
         </Button>
 
         {imagePreview && (
@@ -64,6 +70,61 @@ export default function ItemUpdateForm({
 
       <Form onSubmit={handleSubmit(onSubmit)} noValidate>
         <Row className="gy-3 mt-3">
+          <Col xs={12}>
+            <div className="form-group">
+              <label htmlFor="item-update-image-url">Ou use o endereço de uma imagem</label>
+              <input
+                id="item-update-image-url"
+                type="url"
+                inputMode="url"
+                placeholder="https://exemplo.com/imagem.jpg"
+                value={imageUrl || ""}
+                onChange={onImageUrlChange}
+                disabled={isSubmitting}
+                autoComplete="off"
+              />
+              <small className="d-block mt-2 text-body-secondary">
+                Cole um link público HTTPS/HTTP. A prévia aparece antes de você salvar.
+              </small>
+            </div>
+          </Col>
+
+          {hasLinkedImage && (
+            <Col xs={12}>
+              <div className="p-3 rounded border">
+                <div className="fw-semibold mb-2">Prévia da imagem pelo link</div>
+                <img
+                  src={imageUrl.trim()}
+                  alt="Prévia do link informado"
+                  onLoad={onImageUrlLoad}
+                  onError={onImageUrlError}
+                  style={{
+                    display: imageUrlStatus === "error" ? "none" : "block",
+                    width: "100%",
+                    maxWidth: 520,
+                    maxHeight: 320,
+                    objectFit: "contain",
+                    borderRadius: 12,
+                  }}
+                />
+
+                {imageUrlStatus === "loading" && (
+                  <div className="mt-2 text-body-secondary">Carregando prévia…</div>
+                )}
+
+                {imageUrlStatus === "loaded" && (
+                  <div className="mt-2 text-success">Imagem carregada com sucesso.</div>
+                )}
+
+                {imageUrlStatus === "error" && (
+                  <Alert variant="danger" className="mt-2 mb-0">
+                    Não foi possível carregar essa imagem. Verifique se o link é público e aponta diretamente para uma imagem.
+                  </Alert>
+                )}
+              </div>
+            </Col>
+          )}
+
           <Col xs={12} md={8}>
             <div className="form-group">
               <label htmlFor="item-update-name">Nome*</label>
@@ -156,7 +217,11 @@ export default function ItemUpdateForm({
           </Col>
 
           <Col xs={12} className="text-end">
-            <button type="submit" className="submit-btn" disabled={isSubmitting}>
+            <button
+              type="submit"
+              className="submit-btn"
+              disabled={isSubmitting || (hasLinkedImage && imageUrlStatus === "error")}
+            >
               {isSubmitting ? "Salvando…" : "Salvar alterações"}
             </button>
           </Col>
