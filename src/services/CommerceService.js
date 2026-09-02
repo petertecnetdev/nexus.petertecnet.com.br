@@ -59,6 +59,11 @@ const commerceService = {
     "Não foi possível atualizar a compra."
   ),
 
+  verifyFulfillment: (publicId, token) => call(
+    api.get(`${base}/orders/${encodeURIComponent(publicId)}/fulfillment`, { params: { token } }),
+    "Não foi possível verificar este QR Code."
+  ),
+
   redeem: (publicId, token) => call(
     api.post(`${base}/orders/${encodeURIComponent(publicId)}/redeem`, { token }),
     "Não foi possível validar este QR Code."
