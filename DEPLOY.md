@@ -12,6 +12,8 @@ npm audit --omit=dev --audit-level=high
 npm run build
 ```
 
+The dependency lock is committed and must stay synchronized with `package.json`. QR generation is bundled locally through the pinned `qrcodejs` dependency; the catalog no longer requires a third-party QR HTTP service at runtime.
+
 The web server must serve the `build/` directory and fall back application routes to `build/index.html`. A hardened Nginx example lives at `deploy/nginx-nexus.conf`.
 
 ## Environment
@@ -51,13 +53,31 @@ After deployment validate:
 6. create, update and delete an item
 7. `/catalog/:slug` without authentication
 8. `/item/:slug` without authentication
-9. catalog share/copy/QR flow
-10. logout and expired-session handling
-11. an unknown URL returns the Nexus 404 screen
+9. catalog share/copy/local QR flow
+10. logout and expired-session refresh handling
+11. an unknown URL renders the Nexus 404 screen
 12. Google login succeeds for the production origin
+13. a catalog not linked to Nexus is rejected by the API
 
 Legacy `/catalogo/:slug` and `/establishment/view/:slug` routes redirect to `/catalog/:slug`.
 
 ## Server verification
 
 Before switching traffic, verify response headers include HSTS, CSP, `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy` and frame protection. Also verify direct access to a SPA route returns the app rather than an Nginx 404.
+
+## API production
+
+The API production branch is expected to be deployed with Composer's locked dependencies and Laravel caches rebuilt. Keep `JWT_TTL=120` and `JWT_REFRESH_TTL=20160` unless there is a documented operational reason to override them.
+
+After API deployment run the Nexus-specific feature tests together with the regular suite before clearing the maintenance window.
+
+## Android release
+
+Never store signing passwords or a keystore in Git. Nexus release signing reads only these environment variables:
+
+- `NEXUS_RELEASE_STORE_FILE`
+- `NEXUS_RELEASE_STORE_PASSWORD`
+- `NEXUS_RELEASE_KEY_ALIAS`
+- `NEXUS_RELEASE_KEY_PASSWORD`
+
+The old repository credential must not be reused. Generate a dedicated Nexus signing key outside the repository, store it in the release environment/secret manager, run `npx cap sync android`, then `cd android && ./gradlew test assembleRelease`. Publish `/.well-known/assetlinks.json` with the SHA-256 fingerprint of that new certificate before relying on verified Android App Links.
