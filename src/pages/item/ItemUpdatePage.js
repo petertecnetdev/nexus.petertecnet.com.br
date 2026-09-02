@@ -102,7 +102,17 @@ export default function ItemUpdatePage() {
 
   const onSubmit = async (values) => {
     const response = await updateItem(values, imageFile, removeImage);
-    if (response) navigate(-1);
+    if (!response) return;
+
+    const updatedItem = response?.item ?? response?.data ?? null;
+    const slug = updatedItem?.slug || item?.slug;
+
+    if (slug) {
+      navigate(`/item/${encodeURIComponent(slug)}`, { replace: true });
+      return;
+    }
+
+    navigate("/establishment/my", { replace: true });
   };
 
   if (loading) {
