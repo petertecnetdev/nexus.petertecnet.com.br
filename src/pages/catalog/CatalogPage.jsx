@@ -66,7 +66,7 @@ export default function CatalogPage() {
   const hasItems = activeItems.length > 0;
   const hasActiveFilters = normalizeText(query) !== "" || category !== "all";
   const catalogUrl = `${linkApp}/catalog/${encodeURIComponent(slug || "")}`;
-  const socialShareUrl = `${apiBaseUrl}/nexus/share/catalog/${encodeURIComponent(slug || "")}?app_id=${encodeURIComponent(appId)}`;
+  const socialShareUrl = `${apiBaseUrl}/v1/apps/${encodeURIComponent(appId)}/directory/share/catalog/${encodeURIComponent(slug || "")}`;
   const title = establishment?.fantasy || establishment?.name || "Catálogo Nexus";
   const files = Array.isArray(establishment?.files) ? establishment.files : [];
   const logoCandidates = [establishment?.images?.logo, establishment?.logo, files.find((file) => file?.type === "logo")?.public_url, files.find((file) => file?.is_primary)?.public_url, files[0]?.public_url];
