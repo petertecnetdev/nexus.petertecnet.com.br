@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import PropTypes from "prop-types";
 import QRCode from "qrcode";
 
-export default function LocalQrCode({ value, title, size = 320 }) {
+export default function LocalQrCode({ value, title, size = 320, onDownload }) {
   const canvasRef = useRef(null);
   const [generationError, setGenerationError] = useState(false);
   const [ready, setReady] = useState(false);
@@ -66,6 +66,7 @@ export default function LocalQrCode({ value, title, size = 320 }) {
       document.body.appendChild(anchor);
       anchor.click();
       anchor.remove();
+      onDownload?.();
     } catch (error) {
       console.error("Nexus QR download failed", error);
       setGenerationError(true);
@@ -96,4 +97,5 @@ LocalQrCode.propTypes = {
   value: PropTypes.string.isRequired,
   title: PropTypes.string,
   size: PropTypes.number,
+  onDownload: PropTypes.func,
 };
