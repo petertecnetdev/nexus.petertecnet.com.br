@@ -52,7 +52,7 @@ export default function ItemCreatePage() {
           background={est.background}
           title={est.fantasy || est.name}
           subtitle="Adicionar item ao catálogo"
-          description="Cadastre o item com as informações que o cliente realmente precisa para entendê-lo e consultá-lo no catálogo."
+          description="Cadastre o item digitando ou falando. Antes de salvar, revise os campos reconhecidos para garantir nome, preço e demais informações."
           city={est.city}
           uf={est.uf}
           showBack
@@ -63,6 +63,7 @@ export default function ItemCreatePage() {
         <ItemCreateForm
           register={register}
           handleSubmit={handleSubmit}
+          setValue={setValue}
           watch={watch}
           isSubmitting={isSubmitting || loading}
           onSubmit={submitCreate}

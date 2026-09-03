@@ -4,6 +4,7 @@ import { useNavigate, useParams } from "react-router-dom";
 
 import GlobalNav from "../../components/GlobalNav";
 import EstablishmentUpdateForm from "../../components/establishment/EstablishmentUpdateForm";
+import OrderingAvailabilityControls from "../../components/establishment/OrderingAvailabilityControls";
 import useEstablishmentUpdate from "../../hooks/useEstablishmentUpdate";
 import "./EstablishmentUpdate.css";
 
@@ -38,6 +39,7 @@ export default function EstablishmentUpdatePage() {
       youtube_url: "",
       website_url: "",
       segments: [],
+      is_published: "1",
     },
   });
 
@@ -60,26 +62,29 @@ export default function EstablishmentUpdatePage() {
         <div className="establishment-page-heading">
           <span>Empresa e catálogo</span>
           <h1>Editar empresa</h1>
-          <p>Confira os dados atuais e altere somente o que precisar.</p>
+          <p>Confira os dados atuais, controle a publicação do catálogo e defina quando compras e pagamentos ficam disponíveis.</p>
         </div>
 
         {loading ? (
           <div className="establishment-editor-loading">Carregando dados da empresa…</div>
         ) : (
-          <EstablishmentUpdateForm
-            register={register}
-            handleSubmit={handleSubmit}
-            errors={errors}
-            isSubmitting={isSubmitting || saving}
-            segments={segments}
-            logoPreview={logoPreview}
-            backgroundPreview={backgroundPreview}
-            handleLogoChange={handleLogoChange}
-            handleBackgroundChange={handleBackgroundChange}
-            handleSegmentsChange={handleSegmentsChange}
-            onSubmit={submitUpdate}
-            watch={watch}
-          />
+          <>
+            <EstablishmentUpdateForm
+              register={register}
+              handleSubmit={handleSubmit}
+              errors={errors}
+              isSubmitting={isSubmitting || saving}
+              segments={segments}
+              logoPreview={logoPreview}
+              backgroundPreview={backgroundPreview}
+              handleLogoChange={handleLogoChange}
+              handleBackgroundChange={handleBackgroundChange}
+              handleSegmentsChange={handleSegmentsChange}
+              onSubmit={submitUpdate}
+              watch={watch}
+            />
+            <OrderingAvailabilityControls establishmentId={id} />
+          </>
         )}
       </main>
     </div>

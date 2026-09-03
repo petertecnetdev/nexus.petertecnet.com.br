@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import Swal from "sweetalert2";
 import api from "../services/api";
+import { apiV1BaseUrl } from "../config";
 
 const imageFrom = (establishment, type) => {
   const files = Array.isArray(establishment?.files) ? establishment.files : [];
@@ -47,7 +48,6 @@ export default function useEstablishmentUpdate(id, navigate, reset, setValue) {
     const fetchData = async () => {
       setLoading(true);
       try {
-        // A rota view carrega também os arquivos (logo/background), ao contrário da show antiga.
         const { data } = await api.get(`/establishment/view/${encodeURIComponent(id)}`);
         if (!active) return;
 
@@ -73,6 +73,7 @@ export default function useEstablishmentUpdate(id, navigate, reset, setValue) {
           youtube_url: est.youtube_url || "",
           website_url: est.website_url || "",
           segments: currentSegments,
+          is_published: Number(est.is_published ?? 1) === 0 ? "0" : "1",
         });
 
         setSegments(currentSegments);
@@ -154,9 +155,10 @@ export default function useEstablishmentUpdate(id, navigate, reset, setValue) {
     if (saving) return;
     setSaving(true);
 
+    const published = String(dataInput?.is_published ?? "1") === "1";
     const formData = new FormData();
     Object.entries(dataInput || {}).forEach(([key, value]) => {
-      if (key === "segments") return;
+      if (key === "segments" || key === "is_published") return;
       if (value !== undefined && value !== null) formData.append(key, value);
     });
     segments.forEach((segment) => formData.append("segments[]", segment));
@@ -165,8 +167,17 @@ export default function useEstablishmentUpdate(id, navigate, reset, setValue) {
 
     try {
       const { data } = await api.post(`/establishment/${id}`, formData);
-      await Swal.fire("Empresa atualizada", data?.message || "Alterações salvas com sucesso.", "success");
-      navigate(`/catalog/${data?.establishment?.slug || slug}`);
+      await api.patch(`${apiV1BaseUrl}/establishments/${encodeURIComponent(id)}`, {
+        is_published: published,
+      });
+      await Swal.fire(
+        "Empresa atualizada",
+        published
+          ? (data?.message || "Alterações salvas e catálogo publicado com sucesso.")
+          : "Alterações salvas. O catálogo foi desativado e não está acessível ao público.",
+        "success"
+      );
+      navigate(published ? `/catalog/${data?.establishment?.slug || slug}` : "/establishment/my");
     } catch (error) {
       await Swal.fire({ icon: "error", title: "Não foi possível salvar", text: apiErrorMessage(error, "Ocorreu um erro ao atualizar a empresa."), confirmButtonText: "Corrigir dados" });
     } finally {

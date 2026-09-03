@@ -1,14 +1,17 @@
 // src/components/item/ItemCreateForm.jsx
-import React, { useState } from "react";
-import { Row, Col, Form, Alert } from "react-bootstrap";
+import React, { useRef, useState } from "react";
+import { Row, Col, Form, Alert, Button } from "react-bootstrap";
+import { FaMicrophone, FaStop } from "react-icons/fa";
 import GlobalHeroEditorPreview from "../GlobalHeroEditorPreview";
 import GlobalImageUploader from "../GlobalImageUploader";
 import { appId } from "../../config";
+import { parseVoiceItemTranscript } from "../../utils/voiceItemParser";
 import "./ItemCreateForm.css";
 
 export default function ItemCreateForm({
   register,
   handleSubmit,
+  setValue,
   watch,
   isSubmitting,
   onSubmit,
@@ -18,6 +21,10 @@ export default function ItemCreateForm({
   const [imagePreview, setImagePreview] = useState(null);
   const [imageUrl, setImageUrl] = useState("");
   const [imageUrlStatus, setImageUrlStatus] = useState("idle");
+  const [listening, setListening] = useState(false);
+  const [voiceTranscript, setVoiceTranscript] = useState("");
+  const [voiceError, setVoiceError] = useState("");
+  const recognitionRef = useRef(null);
 
   const handleUploadChange = (file) => {
     setImageFile(file);
@@ -48,6 +55,60 @@ export default function ItemCreateForm({
     setImagePreview(trimmed);
   };
 
+  const applyVoiceData = (transcript) => {
+    const parsed = parseVoiceItemTranscript(transcript);
+    Object.entries(parsed).forEach(([field, value]) => {
+      setValue(field, value, { shouldDirty: true, shouldValidate: true });
+    });
+    return parsed;
+  };
+
+  const startVoiceRegistration = () => {
+    setVoiceError("");
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      setVoiceError("O reconhecimento de voz não está disponível neste navegador. No celular, tente usar Chrome ou o aplicativo Nexus atualizado.");
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.lang = "pt-BR";
+    recognition.interimResults = false;
+    recognition.continuous = false;
+    recognition.maxAlternatives = 1;
+    recognitionRef.current = recognition;
+
+    recognition.onstart = () => setListening(true);
+    recognition.onend = () => {
+      setListening(false);
+      recognitionRef.current = null;
+    };
+    recognition.onerror = (event) => {
+      setListening(false);
+      recognitionRef.current = null;
+      if (event?.error === "not-allowed") setVoiceError("Permita o acesso ao microfone para usar o cadastro por voz.");
+      else if (event?.error === "no-speech") setVoiceError("Não consegui ouvir uma fala completa. Tente novamente falando mais perto do microfone.");
+      else setVoiceError("Não foi possível reconhecer a fala. Tente novamente.");
+    };
+    recognition.onresult = (event) => {
+      const transcript = event.results?.[0]?.[0]?.transcript?.trim() || "";
+      if (!transcript) return;
+      setVoiceTranscript(transcript);
+      const parsed = applyVoiceData(transcript);
+      if (!parsed.name) setVoiceError("A fala foi reconhecida, mas não identifiquei o nome do item. Revise os campos antes de salvar.");
+    };
+
+    try {
+      recognition.start();
+    } catch {
+      setVoiceError("O microfone já está sendo usado. Tente novamente em alguns segundos.");
+    }
+  };
+
+  const stopVoiceRegistration = () => {
+    recognitionRef.current?.stop?.();
+  };
+
   const handleFormSubmit = (data) => {
     if (imageUrl.trim() && imageUrlStatus === "error") return;
 
@@ -69,6 +130,30 @@ export default function ItemCreateForm({
         logoPreview={imagePreview}
         data={{ name: watch("name") }}
       />
+
+      <section className="item-voice-assistant" aria-labelledby="item-voice-title">
+        <div>
+          <strong id="item-voice-title">Cadastro por voz</strong>
+          <p className="mb-2">Fale naturalmente, por exemplo: “produto Telha de fibra, preço 79,90, estoque 20, categoria Construção, marca Eternit, status ativo”. A Nexus preenche os campos e você revisa antes de salvar.</p>
+        </div>
+        <Button
+          type="button"
+          variant={listening ? "danger" : "outline-info"}
+          onClick={listening ? stopVoiceRegistration : startVoiceRegistration}
+          disabled={isSubmitting}
+        >
+          {listening ? <><FaStop /> Parar</> : <><FaMicrophone /> Preencher por voz</>}
+        </Button>
+      </section>
+
+      {listening && <Alert variant="info">Ouvindo… diga o nome do item e, se quiser, preço, estoque ou duração, categoria, marca, descrição e status.</Alert>}
+      {voiceTranscript && (
+        <Alert variant="success">
+          <strong>Fala reconhecida:</strong> {voiceTranscript}<br />
+          Revise principalmente nome, preço, estoque/duração e status antes de criar o item. O cadastro não é salvo automaticamente.
+        </Alert>
+      )}
+      {voiceError && <Alert variant="warning">{voiceError}</Alert>}
 
       <GlobalImageUploader
         onChange={handleUploadChange}
@@ -205,6 +290,7 @@ export default function ItemCreateForm({
                 <option value={1}>Ativo</option>
                 <option value={0}>Inativo</option>
               </select>
+              <small className="d-block mt-2 text-body-secondary">Item inativo não aparece no catálogo e não pode ser comprado.</small>
             </div>
           </Col>
 
