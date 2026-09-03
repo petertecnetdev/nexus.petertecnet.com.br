@@ -4,6 +4,8 @@ import {
   FaCheckCircle,
   FaExclamationTriangle,
   FaInfoCircle,
+  FaLock,
+  FaShieldAlt,
   FaTimesCircle,
 } from "react-icons/fa";
 
@@ -35,28 +37,77 @@ export default function NexusFeedback({
   className = "",
 }) {
   const normalizedType = ICONS[type] ? type : "info";
-  const Icon = ICONS[normalizedType];
+  const isRestrictedEstablishment =
+    normalizedType === "error" && title === "Empresa indisponível";
+  const Icon = isRestrictedEstablishment ? FaLock : ICONS[normalizedType];
+  const feedbackClassName = [
+    "nx-feedback",
+    `nx-feedback--${normalizedType}`,
+    compact ? "nx-feedback--compact" : "",
+    isRestrictedEstablishment ? "nx-feedback--privacy" : "",
+    className,
+  ]
+    .filter(Boolean)
+    .join(" ");
 
   return (
     <div
-      className={`nx-feedback nx-feedback--${normalizedType}${compact ? " nx-feedback--compact" : ""} ${className}`.trim()}
-      role={normalizedType === "error" ? "alert" : "status"}
-      aria-live={normalizedType === "error" ? "assertive" : "polite"}
+      className={feedbackClassName}
+      role={
+        isRestrictedEstablishment
+          ? "status"
+          : normalizedType === "error"
+            ? "alert"
+            : "status"
+      }
+      aria-live={
+        isRestrictedEstablishment
+          ? "polite"
+          : normalizedType === "error"
+            ? "assertive"
+            : "polite"
+      }
     >
       <div className="nx-feedback__icon" aria-hidden="true">
         <Icon />
       </div>
 
       <div className="nx-feedback__content">
+        {isRestrictedEstablishment && (
+          <span className="nx-feedback__eyebrow">
+            <FaShieldAlt /> Visibilidade restrita
+          </span>
+        )}
+
         <strong className="nx-feedback__title">
-          {title || DEFAULT_TITLES[normalizedType]}
+          {isRestrictedEstablishment
+            ? "Este estabelecimento não está disponível publicamente"
+            : title || DEFAULT_TITLES[normalizedType]}
         </strong>
-        {children && <div className="nx-feedback__message">{children}</div>}
+
+        {isRestrictedEstablishment ? (
+          <>
+            <div className="nx-feedback__message">
+              O responsável pode ter desativado temporariamente a exibição
+              pública deste perfil. Enquanto essa configuração estiver ativa,
+              informações, catálogo e itens do estabelecimento ficam protegidos.
+            </div>
+            <div className="nx-feedback__privacy-note">
+              <FaLock aria-hidden="true" />
+              <span>
+                A Nexus respeita a configuração de privacidade definida pelo
+                responsável pelo estabelecimento.
+              </span>
+            </div>
+          </>
+        ) : (
+          children && <div className="nx-feedback__message">{children}</div>
+        )}
       </div>
 
       {actionLabel && onAction && (
         <button type="button" className="nx-feedback__action" onClick={onAction}>
-          {actionLabel}
+          {isRestrictedEstablishment ? "Explorar a Nexus" : actionLabel}
         </button>
       )}
     </div>
