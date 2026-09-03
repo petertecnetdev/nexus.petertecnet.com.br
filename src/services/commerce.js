@@ -17,6 +17,17 @@ const requestConfig = (options = {}) => {
   return config;
 };
 
+const fulfillmentCredentialPayload = (credential) => {
+  if (credential && typeof credential === "object") {
+    return {
+      ...(credential.token ? { token: String(credential.token).trim() } : {}),
+      ...(credential.code ? { code: String(credential.code).trim() } : {}),
+    };
+  }
+
+  return { token: String(credential || "").trim() };
+};
+
 export async function getCommerceCatalog(slug) {
   const { data } = await api.get(`${base}/catalog/${encodeURIComponent(slug)}`);
   return data?.data || null;
@@ -55,6 +66,14 @@ export async function getCommercePayment(publicId, options = {}) {
   return data?.data || null;
 }
 
+export async function getCommerceFulfillmentCredential(publicId, options = {}) {
+  const { data } = await api.get(
+    `${base}/orders/${encodeURIComponent(publicId)}/fulfillment/credential`,
+    requestConfig(options)
+  );
+  return data?.data || null;
+}
+
 export async function getEstablishmentCommerceOrders(establishmentId, params = {}) {
   const { data } = await api.get(`${base}/establishments/${establishmentId}/orders`, { params });
   return data?.data || null;
@@ -65,15 +84,34 @@ export async function updateCommerceOrderStatus(publicId, status) {
   return data?.data || null;
 }
 
-export async function verifyCommerceFulfillment(publicId, token) {
-  const { data } = await api.post(
-    `${base}/orders/${encodeURIComponent(publicId)}/fulfillment/verify`,
-    { token }
+export async function updateCommerceFulfillmentStatus(publicId, status) {
+  const { data } = await api.patch(
+    `${base}/orders/${encodeURIComponent(publicId)}/fulfillment/status`,
+    { status }
   );
   return data?.data || null;
 }
 
-export async function redeemCommerceOrder(publicId, token) {
-  const { data } = await api.post(`${base}/orders/${encodeURIComponent(publicId)}/redeem`, { token });
+export async function getCommerceFulfillmentEvents(publicId, params = {}) {
+  const { data } = await api.get(
+    `${base}/orders/${encodeURIComponent(publicId)}/fulfillment/events`,
+    { params }
+  );
+  return data?.data || [];
+}
+
+export async function verifyCommerceFulfillment(publicId, credential) {
+  const { data } = await api.post(
+    `${base}/orders/${encodeURIComponent(publicId)}/fulfillment/verify`,
+    fulfillmentCredentialPayload(credential)
+  );
+  return data?.data || null;
+}
+
+export async function redeemCommerceOrder(publicId, credential) {
+  const { data } = await api.post(
+    `${base}/orders/${encodeURIComponent(publicId)}/redeem`,
+    fulfillmentCredentialPayload(credential)
+  );
   return data;
 }
