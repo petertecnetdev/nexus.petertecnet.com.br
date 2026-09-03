@@ -1,5 +1,6 @@
 import { startTelemetry } from "./telemetry";
 import { apiBaseUrl, appId, appSlug } from "./config";
+import { installGlobalImageFallbacks } from "./utils/imageFallback";
 import React from "react";
 import ReactDOM from "react-dom/client";
 import axios from "axios";
@@ -10,6 +11,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "@fortawesome/fontawesome-free/css/all.min.css";
 import "./styles/nexus-brand-refresh.css";
 
+installGlobalImageFallbacks();
 startTelemetry({ apiBaseUrl, appSlug, appId });
 
 axios.defaults.headers.common["X-Peter-App"] = appSlug;
