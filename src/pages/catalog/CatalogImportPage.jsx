@@ -11,7 +11,7 @@ import catalogIntelligence from "../../services/catalogIntelligence";
 function detectDelimiter(line) {
   const candidates = [";", ",", "\t"];
   return candidates
-    .map((delimiter) => [delimiter, (line.match(new RegExp(delimiter === "\t" ? "\\t" : `\\${delimiter}`, "g")) || []).length])
+    .map((delimiter) => [delimiter, line.split(delimiter).length - 1])
     .sort((a, b) => b[1] - a[1])[0]?.[0] || ";";
 }
 
