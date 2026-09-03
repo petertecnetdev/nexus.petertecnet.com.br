@@ -10,6 +10,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "@fortawesome/fontawesome-free/css/all.min.css";
 import "./styles/nexus-brand-refresh.css";
 import "./pages/establishment/EstablishmentConversion.css";
+import "./components/establishment/EstablishmentProfileEditor.css";
 
 startTelemetry({ apiBaseUrl, appSlug, appId });
 
