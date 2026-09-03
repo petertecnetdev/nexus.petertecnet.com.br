@@ -259,14 +259,21 @@ export const getOpeningStatus = (establishment, now = new Date()) => {
     const entry = normalizeHoursEntry(dayEntry(hours, index));
     if (!entry.known || entry.closed) continue;
 
-    if (offset === 0 && entry.open && parseTime(entry.open) > nowMinutes) {
-      return {
-        known: true,
-        isOpen: false,
-        label: "Fechado agora",
-        detail: `Abre hoje às ${entry.open}`,
-        tone: "closed",
-      };
+    if (offset === 0) {
+      const nextTodayOpening = parseTime(entry.open);
+      if (entry.open24 || (nextTodayOpening !== null && nextTodayOpening > nowMinutes)) {
+        return {
+          known: true,
+          isOpen: false,
+          label: "Fechado agora",
+          detail: entry.open24 ? "Abre hoje por 24 horas" : `Abre hoje às ${entry.open}`,
+          tone: "closed",
+        };
+      }
+
+      // We already passed today's closing time. Continue with tomorrow instead
+      // of incorrectly telling the user that the business will reopen earlier today.
+      continue;
     }
 
     const when = offset === 1 ? "amanhã" : dayConfig[index].label;
