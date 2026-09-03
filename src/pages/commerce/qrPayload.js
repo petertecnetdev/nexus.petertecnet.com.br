@@ -5,7 +5,8 @@ export function parseCommerceClaimQr(rawValue) {
   try {
     const url = new URL(raw, "https://nexus.petertecnet.com.br");
     const match = url.pathname.match(/\/redeem\/([^/?#]+)/i);
-    const token = url.searchParams.get("token");
+    const hashParams = new URLSearchParams(url.hash.replace(/^#/, ""));
+    const token = hashParams.get("token") || url.searchParams.get("token");
 
     if (!match?.[1] || !token) return null;
 

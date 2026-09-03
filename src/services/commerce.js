@@ -66,9 +66,10 @@ export async function updateCommerceOrderStatus(publicId, status) {
 }
 
 export async function verifyCommerceFulfillment(publicId, token) {
-  const { data } = await api.get(`${base}/orders/${encodeURIComponent(publicId)}/fulfillment`, {
-    params: { token },
-  });
+  const { data } = await api.post(
+    `${base}/orders/${encodeURIComponent(publicId)}/fulfillment/verify`,
+    { token }
+  );
   return data?.data || null;
 }
 

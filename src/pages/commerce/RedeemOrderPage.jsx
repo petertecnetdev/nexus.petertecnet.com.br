@@ -6,6 +6,7 @@ import { FaCheckCircle, FaQrcode } from "react-icons/fa";
 import { AuthContext } from "../../App";
 import GlobalNav from "../../components/GlobalNav";
 import { redeemCommerceOrder, verifyCommerceFulfillment } from "../../services/commerce";
+import { parseCommerceClaimQr } from "./qrPayload";
 import "./Commerce.css";
 
 const money = (value) => Number(value || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
@@ -15,8 +16,9 @@ export default function RedeemOrderPage() {
   const location = useLocation();
   const navigate = useNavigate();
   const { user } = useContext(AuthContext);
-  const queryToken = new URLSearchParams(location.search).get("token") || "";
-  const [token, setToken] = useState(queryToken);
+  const locationClaim = parseCommerceClaimQr(`${location.pathname}${location.search}${location.hash}`);
+  const locationToken = locationClaim?.publicId === publicId ? locationClaim.token : "";
+  const [token, setToken] = useState(locationToken);
   const [checking, setChecking] = useState(false);
   const [processing, setProcessing] = useState(false);
   const [preview, setPreview] = useState(null);
@@ -58,12 +60,12 @@ export default function RedeemOrderPage() {
   };
 
   useEffect(() => {
-    if (user && queryToken && !preview && !result && !checking && !processing) {
-      verify(queryToken);
+    if (user && locationToken && !preview && !result && !checking && !processing) {
+      verify(locationToken);
     }
     // A abertura do QR apenas confere a compra. A baixa exige confirmação explícita.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user, queryToken]);
+  }, [user, locationToken]);
 
   const fulfilled = result || (preview && ["fulfilled", "delivered"].includes(preview.fulfillment_status));
   const actionLabel = preview?.fulfillment === "delivery" ? "Confirmar entrega" : "Confirmar retirada";
@@ -84,7 +86,7 @@ export default function RedeemOrderPage() {
           {error && <Alert variant="danger">{error}</Alert>}
 
           {!user ? (
-            <Button onClick={() => navigate("/login", { state: { from: { pathname: `${location.pathname}${location.search}` } } })}>Entrar para conferir</Button>
+            <Button onClick={() => navigate("/login", { state: { from: { pathname: `${location.pathname}${location.search}${location.hash}` } } })}>Entrar para conferir</Button>
           ) : !preview && !result ? (
             <div className="redeem-token-form">
               <Form onSubmit={(event) => { event.preventDefault(); verify(); }}>
