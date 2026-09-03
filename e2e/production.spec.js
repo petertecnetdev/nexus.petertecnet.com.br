@@ -30,41 +30,44 @@ const establishmentFixture = {
   ],
 };
 
+const catalogPayload = {
+  target_application_id: 2,
+  establishment: establishmentFixture,
+  items: [
+    {
+      id: 99,
+      entity_id: 10,
+      app_id: 2,
+      name: "Produto E2E",
+      slug: "produto-e2e",
+      description: "Produto de validação",
+      category: "Teste",
+      price: 19.9,
+      status: 1,
+      type: "product",
+      files: [],
+    },
+  ],
+};
+
 async function mockPublicApi(page) {
   await page.route(`${apiBase}/**`, async (route) => {
     const url = route.request().url();
 
-    if (url.includes("/v1/apps/2/directory/catalog/catalogo-e2e")) {
+    if (url.includes("/v1/apps/nexus/catalog/catalogo-e2e")) {
       return route.fulfill({
         status: 200,
         contentType: "application/json",
-        body: JSON.stringify({
-          target_application_id: 2,
-          establishment: establishmentFixture,
-          items: [
-            {
-              id: 99,
-              entity_id: 10,
-              app_id: 2,
-              name: "Produto E2E",
-              slug: "produto-e2e",
-              description: "Produto de validação",
-              category: "Teste",
-              price: 19.9,
-              status: 1,
-              type: "product",
-              files: [],
-            },
-          ],
-        }),
+        body: JSON.stringify({ success: true, data: catalogPayload }),
       });
     }
 
-    if (url.includes("/v1/apps/2/directory")) {
+    if (url.includes("/v1/apps/nexus/directory")) {
       return route.fulfill({
         status: 200,
         contentType: "application/json",
         body: JSON.stringify({
+          success: true,
           scope: { target_application_id: 2 },
           locations: [],
           establishments: [
@@ -91,6 +94,8 @@ async function mockPublicApi(page) {
   });
 }
 
+const companyCard = (page) => page.getByRole("button", { name: /Empresa E2E/i }).first();
+
 test.beforeEach(async ({ page }) => {
   await mockPublicApi(page);
 });
@@ -99,12 +104,12 @@ test("public home is available without authentication", async ({ page }) => {
   await page.goto("/");
   await expect(page).toHaveURL(/\/$/);
   await expect(page.locator("body")).toContainText("Nexus");
-  await expect(page.getByRole("button", { name: "Conhecer Empresa E2E" })).toBeVisible();
+  await expect(companyCard(page)).toBeVisible();
 });
 
 test("company discovery opens the public presentation instead of skipping to the catalog", async ({ page }) => {
   await page.goto("/");
-  await page.getByRole("button", { name: "Conhecer Empresa E2E" }).click();
+  await companyCard(page).click();
   await expect(page).toHaveURL(/\/establishment\/view\/catalogo-e2e$/);
   await expect(page.getByRole("heading", { name: "Empresa E2E", exact: true })).toBeVisible();
 });
