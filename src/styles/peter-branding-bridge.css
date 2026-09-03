@@ -1,0 +1,31 @@
+:root {
+  --nx-primary: var(--peter-brand-primary, #00c2ff) !important;
+  --nx-primary-2: var(--peter-brand-secondary, #1688ff) !important;
+  --nx-primary-3: var(--peter-brand-accent, #67e8ff) !important;
+  --nx-accent: var(--peter-brand-accent, #56e6ff) !important;
+  --nx-focus: 0 0 0 4px rgba(var(--peter-brand-primary-rgb, 0, 194, 255), .18) !important;
+  --nx-gradient: var(--peter-brand-gradient, linear-gradient(135deg, #1688ff 0%, #00c2ff 52%, #67e8ff 100%)) !important;
+}
+
+.btn-primary,
+.btn-success,
+.globalnav__btn--primary,
+.hp-primary-action {
+  background: var(--nx-gradient) !important;
+  border-color: var(--nx-primary) !important;
+}
+
+.globalnav__link--active,
+.hp-secondary-action:hover {
+  border-color: rgba(var(--peter-brand-primary-rgb, 0, 194, 255), .42) !important;
+}
+
+.globalnav__link--active::after,
+.hp-eyebrow,
+.hp-benefits i,
+.hp-benefits svg,
+.nx-eyebrow,
+.hp-item-card__company,
+.catalog-toolbar__count {
+  color: var(--nx-accent) !important;
+}
