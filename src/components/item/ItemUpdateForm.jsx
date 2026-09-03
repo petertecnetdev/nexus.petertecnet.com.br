@@ -2,6 +2,7 @@
 import React from "react";
 import { Row, Col, Form, Button, Alert } from "react-bootstrap";
 import GlobalHeroEditorPreview from "../GlobalHeroEditorPreview";
+import CatalogSpecificationFields from "./CatalogSpecificationFields";
 import "./ItemUpdateForm.css";
 
 export default function ItemUpdateForm({
@@ -36,37 +37,17 @@ export default function ItemUpdateForm({
       />
 
       <div className="d-flex justify-content-center gap-3 my-3 flex-wrap">
-        <Button
-          variant="secondary"
-          className="action-button"
-          type="button"
-          disabled={isSubmitting}
-          onClick={() => document.getElementById("itemImageInput")?.click()}
-        >
+        <Button variant="secondary" className="action-button" type="button" disabled={isSubmitting} onClick={() => document.getElementById("itemImageInput")?.click()}>
           Enviar imagem
         </Button>
-
         {imagePreview && (
-          <Button
-            variant="secondary"
-            className="action-button"
-            type="button"
-            disabled={isSubmitting}
-            onClick={onRemoveImage}
-          >
+          <Button variant="secondary" className="action-button" type="button" disabled={isSubmitting} onClick={onRemoveImage}>
             Remover imagem
           </Button>
         )}
       </div>
 
-      <Form.Control
-        id="itemImageInput"
-        type="file"
-        accept="image/*"
-        onChange={onImageChange}
-        disabled={isSubmitting}
-        className="visually-hidden"
-      />
+      <Form.Control id="itemImageInput" type="file" accept="image/*" onChange={onImageChange} disabled={isSubmitting} className="visually-hidden" />
 
       <Form onSubmit={handleSubmit(onSubmit)} noValidate>
         <Row className="gy-3 mt-3">
@@ -83,9 +64,7 @@ export default function ItemUpdateForm({
                 disabled={isSubmitting}
                 autoComplete="off"
               />
-              <small className="d-block mt-2 text-body-secondary">
-                Cole um link público HTTPS/HTTP. A prévia aparece antes de você salvar.
-              </small>
+              <small className="d-block mt-2 text-body-secondary">Cole um link público HTTPS/HTTP. A prévia aparece antes de você salvar.</small>
             </div>
           </Col>
 
@@ -107,20 +86,9 @@ export default function ItemUpdateForm({
                     borderRadius: 12,
                   }}
                 />
-
-                {imageUrlStatus === "loading" && (
-                  <div className="mt-2 text-body-secondary">Carregando prévia…</div>
-                )}
-
-                {imageUrlStatus === "loaded" && (
-                  <div className="mt-2 text-success">Imagem carregada com sucesso.</div>
-                )}
-
-                {imageUrlStatus === "error" && (
-                  <Alert variant="danger" className="mt-2 mb-0">
-                    Não foi possível carregar essa imagem. Verifique se o link é público e aponta diretamente para uma imagem.
-                  </Alert>
-                )}
+                {imageUrlStatus === "loading" && <div className="mt-2 text-body-secondary">Carregando prévia…</div>}
+                {imageUrlStatus === "loaded" && <div className="mt-2 text-success">Imagem carregada com sucesso.</div>}
+                {imageUrlStatus === "error" && <Alert variant="danger" className="mt-2 mb-0">Não foi possível carregar essa imagem. Verifique o link.</Alert>}
               </div>
             </Col>
           )}
@@ -128,12 +96,7 @@ export default function ItemUpdateForm({
           <Col xs={12} md={8}>
             <div className="form-group">
               <label htmlFor="item-update-name">Nome*</label>
-              <input
-                id="item-update-name"
-                type="text"
-                {...register("name", { required: true })}
-                required
-              />
+              <input id="item-update-name" type="text" {...register("name", { required: true })} required />
             </div>
           </Col>
 
@@ -141,9 +104,9 @@ export default function ItemUpdateForm({
             <div className="form-group">
               <label htmlFor="item-update-type">Tipo</label>
               <select id="item-update-type" {...register("type")}>
-                <option value="">Item genérico</option>
                 <option value="product">Produto</option>
                 <option value="service">Serviço</option>
+                <option value="">Item genérico</option>
               </select>
             </div>
           </Col>
@@ -151,12 +114,7 @@ export default function ItemUpdateForm({
           <Col xs={12} md={4}>
             <div className="form-group">
               <label htmlFor="item-update-price">Preço</label>
-              <input
-                id="item-update-price"
-                type="text"
-                inputMode="decimal"
-                {...register("price")}
-              />
+              <input id="item-update-price" type="text" inputMode="decimal" {...register("price")} />
             </div>
           </Col>
 
@@ -188,14 +146,21 @@ export default function ItemUpdateForm({
             </div>
           </Col>
 
-          <Col xs={12} md={6}>
+          <Col xs={12} md={4}>
+            <div className="form-group">
+              <label htmlFor="item-update-sku">SKU / referência</label>
+              <input id="item-update-sku" type="text" {...register("sku")} />
+            </div>
+          </Col>
+
+          <Col xs={12} md={4}>
             <div className="form-group">
               <label htmlFor="item-update-category">Categoria</label>
               <input id="item-update-category" type="text" {...register("category")} />
             </div>
           </Col>
 
-          <Col xs={12} md={6}>
+          <Col xs={12} md={4}>
             <div className="form-group">
               <label htmlFor="item-update-subcategory">Subcategoria</label>
               <input id="item-update-subcategory" type="text" {...register("subcategory")} />
@@ -204,10 +169,12 @@ export default function ItemUpdateForm({
 
           <Col xs={12} md={6}>
             <div className="form-group">
-              <label htmlFor="item-update-brand">Marca ou referência</label>
+              <label htmlFor="item-update-brand">Marca</label>
               <input id="item-update-brand" type="text" {...register("brand")} />
             </div>
           </Col>
+
+          {type === "product" && <CatalogSpecificationFields register={register} watch={watch} />}
 
           <Col xs={12}>
             <div className="form-group">
@@ -217,11 +184,7 @@ export default function ItemUpdateForm({
           </Col>
 
           <Col xs={12} className="text-end">
-            <button
-              type="submit"
-              className="submit-btn"
-              disabled={isSubmitting || (hasLinkedImage && imageUrlStatus === "error")}
-            >
+            <button type="submit" className="submit-btn" disabled={isSubmitting || (hasLinkedImage && imageUrlStatus === "error")}>
               {isSubmitting ? "Salvando…" : "Salvar alterações"}
             </button>
           </Col>
