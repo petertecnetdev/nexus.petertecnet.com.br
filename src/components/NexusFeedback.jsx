@@ -32,7 +32,11 @@ const RESTRICTED_RESOURCE_MESSAGES = [
   "catálogo não encontrado",
   "estabelecimento não encontrado",
   "não encontramos esta empresa",
+  "não está disponível publicamente",
+  "ainda não está disponível publicamente",
 ];
+
+const RESTRICTED_TITLES = ["Empresa indisponível", "Catálogo indisponível"];
 
 const normalizeFeedbackText = (value) =>
   typeof value === "string" ? value.trim().toLocaleLowerCase("pt-BR") : "";
@@ -51,24 +55,26 @@ export default function NexusFeedback({
   const isUnavailableResourceMessage = RESTRICTED_RESOURCE_MESSAGES.some(
     (message) => messageText.includes(message)
   );
-  const isRestrictedEstablishment =
+  const isRestrictedResource =
     normalizedType === "error" &&
-    title === "Empresa indisponível" &&
+    RESTRICTED_TITLES.includes(title) &&
     isUnavailableResourceMessage;
-  const Icon = isRestrictedEstablishment ? FaLock : ICONS[normalizedType];
+  const isCatalog = title === "Catálogo indisponível";
+  const resourceLabel = isCatalog ? "catálogo" : "estabelecimento";
+  const Icon = isRestrictedResource ? FaLock : ICONS[normalizedType];
   const feedbackClassName = [
     "nx-feedback",
     `nx-feedback--${normalizedType}`,
     compact ? "nx-feedback--compact" : "",
-    isRestrictedEstablishment ? "nx-feedback--privacy" : "",
+    isRestrictedResource ? "nx-feedback--privacy" : "",
     className,
   ]
     .filter(Boolean)
     .join(" ");
   const feedbackRole =
-    isRestrictedEstablishment || normalizedType !== "error" ? "status" : "alert";
+    isRestrictedResource || normalizedType !== "error" ? "status" : "alert";
   const feedbackLive =
-    isRestrictedEstablishment || normalizedType !== "error"
+    isRestrictedResource || normalizedType !== "error"
       ? "polite"
       : "assertive";
 
@@ -83,30 +89,30 @@ export default function NexusFeedback({
       </div>
 
       <div className="nx-feedback__content">
-        {isRestrictedEstablishment && (
+        {isRestrictedResource && (
           <span className="nx-feedback__eyebrow">
             <FaShieldAlt /> Visibilidade restrita
           </span>
         )}
 
         <strong className="nx-feedback__title">
-          {isRestrictedEstablishment
-            ? "Este estabelecimento não está disponível publicamente"
+          {isRestrictedResource
+            ? `Este ${resourceLabel} não está disponível publicamente`
             : title || DEFAULT_TITLES[normalizedType]}
         </strong>
 
-        {isRestrictedEstablishment ? (
+        {isRestrictedResource ? (
           <>
             <div className="nx-feedback__message">
-              O responsável pode ter desativado temporariamente a exibição
-              pública deste perfil. Enquanto essa configuração estiver ativa,
-              informações, catálogo e itens do estabelecimento ficam protegidos.
+              O responsável desativou a exibição pública no momento. Enquanto
+              essa configuração estiver ativa, informações e itens permanecem
+              protegidos para visitantes.
             </div>
             <div className="nx-feedback__privacy-note">
               <FaLock aria-hidden="true" />
               <span>
-                A Nexus respeita a configuração de privacidade definida pelo
-                responsável pelo estabelecimento.
+                O endereço e o QR Code continuam válidos. Quando a publicação
+                for reativada, o mesmo link volta a abrir o conteúdo normalmente.
               </span>
             </div>
           </>
@@ -117,7 +123,7 @@ export default function NexusFeedback({
 
       {actionLabel && onAction && (
         <button type="button" className="nx-feedback__action" onClick={onAction}>
-          {isRestrictedEstablishment ? "Explorar a Nexus" : actionLabel}
+          {isRestrictedResource ? "Explorar a Nexus" : actionLabel}
         </button>
       )}
     </div>
