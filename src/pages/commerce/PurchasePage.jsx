@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Alert, Button, Container, Spinner } from "react-bootstrap";
 import { useNavigate, useParams } from "react-router-dom";
 import { FaCheckCircle, FaClock, FaCopy, FaCreditCard, FaQrcode } from "react-icons/fa";
@@ -36,9 +36,13 @@ export default function PurchasePage() {
   const [loading, setLoading] = useState(true);
   const [retrying, setRetrying] = useState(false);
   const [error, setError] = useState("");
+  const refreshInFlightRef = useRef(false);
 
   const refresh = useCallback(async ({ background = false } = {}) => {
-    const options = { background };
+    if (background && refreshInFlightRef.current) return;
+
+    refreshInFlightRef.current = true;
+    const options = { background, silent: true };
 
     try {
       const result = await getCommercePayment(publicId, options);
@@ -64,17 +68,20 @@ export default function PurchasePage() {
         }
       }
     } finally {
+      refreshInFlightRef.current = false;
       if (!background) setLoading(false);
     }
   }, [publicId]);
 
   useEffect(() => { refresh(); }, [refresh]);
 
+  const paymentStatus = order?.payment_status;
+
   useEffect(() => {
     if (!order) return undefined;
 
     const terminalStatuses = ["paid", "refunded", "failed", "cancelled", "canceled"];
-    if (terminalStatuses.includes(order.payment_status)) return undefined;
+    if (terminalStatuses.includes(paymentStatus)) return undefined;
 
     let active = true;
     let timer = null;
@@ -95,7 +102,7 @@ export default function PurchasePage() {
       active = false;
       if (timer) window.clearTimeout(timer);
     };
-  }, [order, refresh]);
+  }, [order, paymentStatus, refresh]);
 
   const claimUrl = useMemo(() => {
     if (!order?.claim?.token || !order?.public_id) return "";
