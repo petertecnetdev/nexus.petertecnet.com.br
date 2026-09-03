@@ -1,7 +1,6 @@
 // src/hooks/useEstablishmentItemsByIdentifier.js
 import { useCallback, useEffect, useState } from "react";
-import api from "../services/api";
-import { apiV1BaseUrl } from "../config";
+import { getFromApiV1 } from "../services/apiV1";
 
 const getApiMessage = (error, fallback) =>
   error?.response?.data?.error ||
@@ -72,6 +71,21 @@ const resolveItemImage = (item) =>
   (Array.isArray(item?.images?.gallery) ? item.images.gallery[0] : null) ||
   firstFileUrl(item?.files) ||
   null;
+
+const normalizeBusinessProfile = (value) => {
+  if (!value) return {};
+  if (typeof value === "object" && !Array.isArray(value)) return value;
+  if (typeof value !== "string") return {};
+
+  try {
+    const parsed = JSON.parse(value);
+    return parsed && typeof parsed === "object" && !Array.isArray(parsed)
+      ? parsed
+      : {};
+  } catch {
+    return {};
+  }
+};
 
 const normalizeEstablishment = (establishment) => {
   if (!establishment) return null;
@@ -149,6 +163,7 @@ const normalizeEstablishment = (establishment) => {
 
   return {
     ...establishment,
+    business_profile: normalizeBusinessProfile(establishment.business_profile),
     files,
     images: {
       ...images,
@@ -186,8 +201,8 @@ export default function useEstablishmentItemsByIdentifier(identifier) {
     setApiError(null);
 
     try {
-      const { data } = await api.get(
-        `${apiV1BaseUrl}/catalog/${encodeURIComponent(identifier)}`
+      const { data } = await getFromApiV1(
+        `/catalog/${encodeURIComponent(identifier)}`
       );
       const payload = data?.data || data || {};
       const resolvedEstablishment = normalizeEstablishment(
