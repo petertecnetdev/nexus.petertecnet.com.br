@@ -1,0 +1,258 @@
+:root {
+  --nx-bg: #040b14;
+  --nx-bg-2: #071421;
+  --nx-bg-3: #06101c;
+  --nx-surface: #081827;
+  --nx-surface-2: #0d2237;
+  --nx-surface-3: #12304d;
+  --nx-surface-soft: #0f263d;
+  --nx-text: #f5fbff;
+  --nx-text-strong: #ffffff;
+  --nx-muted: #b8cddd;
+  --nx-soft: #82a2b9;
+  --nx-primary: #00c2ff;
+  --nx-primary-2: #1688ff;
+  --nx-primary-3: #67e8ff;
+  --nx-accent: #56e6ff;
+  --nx-deep: #03101b;
+  --nx-border: #244965;
+  --nx-border-strong: #39739a;
+  --nx-focus: 0 0 0 4px rgba(0, 194, 255, .18);
+  --nx-gradient: linear-gradient(135deg, #1688ff 0%, #00c2ff 52%, #67e8ff 100%);
+  --nx-page:
+    radial-gradient(circle at 8% -4%, rgba(0, 194, 255, .13), transparent 31%),
+    radial-gradient(circle at 92% 4%, rgba(22, 136, 255, .10), transparent 26%),
+    radial-gradient(circle at 52% 100%, rgba(86, 230, 255, .045), transparent 30%),
+    linear-gradient(180deg, #040b14 0%, #071421 48%, #06101c 100%);
+  --nx-shadow-sm: 0 12px 34px rgba(0, 0, 0, .24);
+  --nx-shadow-md: 0 22px 58px rgba(0, 0, 0, .31);
+  --nx-shadow-lg: 0 34px 86px rgba(0, 0, 0, .42);
+}
+
+html,
+body,
+#root {
+  background: var(--nx-page);
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: .34;
+  background-image:
+    linear-gradient(rgba(255,255,255,.018) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.018) 1px, transparent 1px);
+  background-size: 52px 52px;
+  mask-image: linear-gradient(to bottom, #000, transparent 82%);
+}
+
+.btn-primary,
+.btn-success,
+.globalnav__btn--primary,
+.hp-primary-action {
+  background: var(--nx-gradient) !important;
+  box-shadow: 0 13px 34px rgba(0, 178, 255, .21) !important;
+}
+
+.btn-primary:hover,
+.btn-success:hover,
+.globalnav__btn--primary:hover,
+.hp-primary-action:hover {
+  filter: brightness(1.08) saturate(1.08);
+  box-shadow: 0 18px 42px rgba(0, 178, 255, .29) !important;
+}
+
+.globalnav {
+  background:
+    linear-gradient(180deg, rgba(4, 13, 24, .97), rgba(5, 17, 29, .94));
+  border-bottom-color: rgba(86, 230, 255, .16);
+  box-shadow: 0 12px 34px rgba(0, 0, 0, .24);
+}
+
+.globalnav__brand {
+  border-color: rgba(86, 230, 255, .25);
+  background:
+    radial-gradient(circle at 35% 28%, rgba(103, 232, 255, .14), transparent 48%),
+    rgba(255, 255, 255, .035);
+  box-shadow: inset 0 1px rgba(255,255,255,.05), 0 0 24px rgba(0,194,255,.06);
+}
+
+.globalnav__brand:hover {
+  background: rgba(0, 194, 255, .10);
+  border-color: rgba(86, 230, 255, .52);
+  box-shadow: 0 0 28px rgba(0, 194, 255, .12);
+}
+
+.globalnav__link--active {
+  background: rgba(0, 194, 255, .11);
+}
+
+.globalnav__link--active::after,
+.globalnav__searchBox > svg,
+.globalnav__searchGroup > small,
+.globalnav__searchGroup > button > svg {
+  color: var(--nx-accent);
+  background-color: var(--nx-accent);
+}
+
+.globalnav__searchBox {
+  background: rgba(8, 28, 46, .86);
+  border-color: rgba(57, 115, 154, .72);
+}
+
+.globalnav__searchBox:focus-within {
+  border-color: var(--nx-primary);
+  box-shadow: var(--nx-focus), 0 12px 34px rgba(0, 0, 0, .22);
+}
+
+.hp-wrapper {
+  position: relative;
+}
+
+.hp-hero {
+  position: relative;
+  isolation: isolate;
+}
+
+.hp-hero::before {
+  content: "";
+  position: absolute;
+  inset: 8% 38% auto -8%;
+  z-index: -1;
+  height: 360px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(0, 194, 255, .14), transparent 68%);
+  filter: blur(16px);
+}
+
+.hp-eyebrow,
+.hp-benefits i,
+.hp-benefits svg {
+  color: var(--nx-accent);
+}
+
+.hp-hero h1 {
+  text-shadow: 0 8px 42px rgba(0, 0, 0, .38);
+}
+
+.hp-logo-card {
+  border-color: rgba(86, 230, 255, .29);
+  background:
+    radial-gradient(circle at 35% 24%, rgba(0, 194, 255, .15), transparent 42%),
+    linear-gradient(155deg, rgba(15, 44, 70, .96), rgba(5, 18, 31, .98));
+  box-shadow:
+    0 34px 86px rgba(0, 0, 0, .44),
+    0 0 0 1px rgba(0, 194, 255, .06),
+    0 0 70px rgba(0, 194, 255, .10),
+    inset 0 1px rgba(255,255,255,.055);
+}
+
+.hp-logo-card img {
+  filter: drop-shadow(0 0 30px rgba(0, 194, 255, .26));
+}
+
+.hp-orbit {
+  border-color: rgba(86, 230, 255, .18);
+}
+
+.hp-orbit::after {
+  background: var(--nx-accent);
+  box-shadow: 0 0 24px rgba(86, 230, 255, .82);
+}
+
+.hp-secondary-action,
+.globalnav__btn--ghost,
+.globalnav__userBtn {
+  background: rgba(13, 34, 55, .86);
+  border-color: rgba(57, 115, 154, .72);
+}
+
+.hp-secondary-action:hover,
+.globalnav__btn--ghost:hover,
+.globalnav__userBtn:hover {
+  background: rgba(18, 48, 77, .96);
+  border-color: rgba(86, 230, 255, .62);
+}
+
+.hp-company-card,
+.hp-item-card,
+.hp-flow-card,
+.nx-panel,
+.card {
+  border-color: rgba(72, 128, 168, .32);
+  background:
+    linear-gradient(150deg, rgba(14, 37, 59, .94), rgba(6, 21, 35, .96));
+  box-shadow: 0 18px 46px rgba(0, 0, 0, .22);
+}
+
+.hp-company-card:hover,
+.hp-item-card:hover,
+.card:hover {
+  border-color: rgba(86, 230, 255, .48);
+  box-shadow: 0 24px 58px rgba(0, 0, 0, .29), 0 0 34px rgba(0, 194, 255, .055);
+}
+
+.catalog-page {
+  background: transparent;
+}
+
+.catalog-hero {
+  position: relative;
+  overflow: hidden;
+  border-bottom: 1px solid rgba(86, 230, 255, .16);
+}
+
+.catalog-hero::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 80% 10%, rgba(0, 194, 255, .16), transparent 32%),
+    linear-gradient(180deg, transparent 45%, rgba(4, 11, 20, .36));
+}
+
+.catalog-hero__content {
+  position: relative;
+  z-index: 1;
+}
+
+.catalog-hero__logo {
+  border: 1px solid rgba(86, 230, 255, .36);
+  box-shadow: 0 18px 48px rgba(0,0,0,.32), 0 0 36px rgba(0,194,255,.10);
+}
+
+.form-control:focus,
+.form-select:focus,
+input:focus,
+textarea:focus,
+select:focus {
+  border-color: var(--nx-primary) !important;
+  box-shadow: var(--nx-focus) !important;
+}
+
+.nx-eyebrow,
+.hp-item-card__company,
+.catalog-toolbar__count {
+  color: var(--nx-accent);
+}
+
+@media (max-width: 768px) {
+  body::before {
+    background-size: 42px 42px;
+  }
+
+  .hp-hero::before {
+    inset: 4% 4% auto;
+    height: 300px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hp-logo-card {
+    animation: none;
+  }
+}
