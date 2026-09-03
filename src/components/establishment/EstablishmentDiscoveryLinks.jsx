@@ -145,7 +145,7 @@ export default function EstablishmentDiscoveryLinks({ establishment }) {
     const load = async () => {
       try {
         setLoading(true);
-        const { data } = await getFromApiV1("/directory", {
+        const { data } = await getFromApiV1("/discovery", {
           params: {
             city: establishment.city || undefined,
             uf: establishment.uf || undefined,
