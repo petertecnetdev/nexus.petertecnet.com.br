@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+import { getFromApiV1 } from "../services/apiV1";
 
 const getFileUrlByType = (files, type) =>
   Array.isArray(files) ? files.find((file) => file.type === type)?.public_url ?? null : null;
@@ -31,7 +31,7 @@ const distributeItems = (items) => {
   return result;
 };
 
-export default function useHome(apiBaseUrl, appId) {
+export default function useHome(_apiBaseUrl, appId) {
   const [establishments, setEstablishments] = useState([]);
   const [serviceItems, setServiceItems] = useState([]);
   const [productItems, setProductItems] = useState([]);
@@ -47,10 +47,9 @@ export default function useHome(apiBaseUrl, appId) {
       setError(null);
 
       try {
-        const { data } = await axios.get(
-          `${apiBaseUrl}/v1/apps/${encodeURIComponent(appId)}/directory`,
-          { signal: controller.signal }
-        );
+        const { data } = await getFromApiV1("/discovery", {
+          signal: controller.signal,
+        });
 
         if (!active) return;
 
@@ -106,7 +105,7 @@ export default function useHome(apiBaseUrl, appId) {
       active = false;
       controller.abort();
     };
-  }, [apiBaseUrl, appId]);
+  }, [appId]);
 
   return {
     establishments,

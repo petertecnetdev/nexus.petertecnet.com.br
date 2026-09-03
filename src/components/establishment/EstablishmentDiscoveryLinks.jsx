@@ -8,9 +8,12 @@ import {
   FaStore,
 } from "react-icons/fa";
 
-import { apiV1BaseUrl } from "../../config";
-import api from "../../services/api";
+import { getFromApiV1 } from "../../services/apiV1";
+import { trackExperienceEvent } from "../../services/experienceTelemetry";
+import { parseList } from "../../utils/establishmentExperience";
 import EntityImage from "../EntityImage";
+
+const normalize = (value) => String(value || "").trim().toLowerCase();
 
 const formatPrice = (value) => {
   if (
@@ -87,6 +90,45 @@ const activateOnKeyboard = (event, callback) => {
   }
 };
 
+const scoreEstablishment = (candidate, current) => {
+  let score = 0;
+  const sameCity =
+    normalize(candidate?.city) && normalize(candidate?.city) === normalize(current?.city);
+  const sameUf =
+    normalize(candidate?.uf) && normalize(candidate?.uf) === normalize(current?.uf);
+  const sameCategory =
+    normalize(candidate?.category) &&
+    normalize(candidate?.category) === normalize(current?.category);
+  const currentSegments = new Set(parseList(current?.segments).map(normalize));
+  const sharedSegments = parseList(candidate?.segments).filter((segment) =>
+    currentSegments.has(normalize(segment))
+  ).length;
+
+  if (sameCity && sameUf) score += 50;
+  else if (sameUf) score += 18;
+  if (sameCategory) score += 36;
+  score += sharedSegments * 14;
+  if (candidate?.is_featured) score += 8;
+  score += Math.min(Number(candidate?.total_views || 0), 5000) / 1000;
+  return score;
+};
+
+const scoreItem = (item, current) => {
+  let score = 0;
+  const source = item?.establishment || {};
+  if (
+    normalize(source?.city) &&
+    normalize(source?.city) === normalize(current?.city) &&
+    normalize(source?.uf) === normalize(current?.uf)
+  ) {
+    score += 40;
+  }
+  if (normalize(source?.category) === normalize(current?.category)) score += 28;
+  if (item?.is_featured) score += 12;
+  score += Math.min(Number(item?.total_views || 0), 5000) / 1000;
+  return score;
+};
+
 export default function EstablishmentDiscoveryLinks({ establishment }) {
   const navigate = useNavigate();
   const [directory, setDirectory] = useState({ establishments: [], items: [] });
@@ -103,11 +145,11 @@ export default function EstablishmentDiscoveryLinks({ establishment }) {
     const load = async () => {
       try {
         setLoading(true);
-        const { data } = await api.get(`${apiV1BaseUrl}/directory`, {
+        const { data } = await getFromApiV1("/discovery", {
           params: {
             city: establishment.city || undefined,
             uf: establishment.uf || undefined,
-            limit: 48,
+            limit: 72,
           },
           signal: controller.signal,
         });
@@ -141,8 +183,14 @@ export default function EstablishmentDiscoveryLinks({ establishment }) {
           (candidate) =>
             candidate?.slug && String(candidate?.id || "") !== currentId
         )
-        .slice(0, 6),
-    [currentId, directory.establishments]
+        .map((candidate) => ({
+          candidate,
+          score: scoreEstablishment(candidate, establishment),
+        }))
+        .sort((a, b) => b.score - a.score)
+        .slice(0, 6)
+        .map(({ candidate }) => candidate),
+    [currentId, directory.establishments, establishment]
   );
 
   const items = useMemo(
@@ -154,27 +202,37 @@ export default function EstablishmentDiscoveryLinks({ establishment }) {
             item?.establishment_id || item?.establishment?.id || null;
           return !itemEstablishmentId || String(itemEstablishmentId) !== currentId;
         })
-        .slice(0, 8),
-    [currentId, directory.items]
+        .map((item) => ({ item, score: scoreItem(item, establishment) }))
+        .sort((a, b) => b.score - a.score)
+        .slice(0, 8)
+        .map(({ item }) => item),
+    [currentId, directory.items, establishment]
   );
 
   const hasSuggestions = establishments.length > 0 || items.length > 0;
+
+  const goHome = () => {
+    trackExperienceEvent("navigation", "Explorar Nexus", "discovery_home", {
+      establishment_id: establishment?.id,
+    });
+    navigate("/");
+  };
 
   return (
     <section className="estv-discovery-section" aria-labelledby="estv-discovery-title">
       <div className="estv-discovery-heading">
         <div>
-          <span>Continue explorando</span>
-          <h2 id="estv-discovery-title">Descubra mais na Nexus</h2>
+          <span>Recomendações contextuais</span>
+          <h2 id="estv-discovery-title">Continue descobrindo na Nexus</h2>
           <p>
-            Navegue para outras empresas e itens sem precisar voltar ou fazer uma
-            nova busca.
+            Priorizamos empresas da mesma região, categoria e segmentos semelhantes,
+            além de itens relevantes de outros catálogos.
           </p>
         </div>
         <button
           type="button"
           className="estv-discovery-all"
-          onClick={() => navigate("/")}
+          onClick={goHome}
         >
           <FaCompass /> Explorar a Nexus <FaArrowRight />
         </button>
@@ -198,7 +256,7 @@ export default function EstablishmentDiscoveryLinks({ establishment }) {
               na Nexus.
             </span>
           </div>
-          <button type="button" onClick={() => navigate("/")}>
+          <button type="button" onClick={goHome}>
             Ver descoberta <FaArrowRight />
           </button>
         </div>
@@ -209,8 +267,8 @@ export default function EstablishmentDiscoveryLinks({ establishment }) {
           <div className="estv-discovery-group-title">
             <FaStore />
             <div>
-              <strong>Outros estabelecimentos</strong>
-              <span>Perfis e catálogos que você também pode conhecer</span>
+              <strong>Estabelecimentos relacionados</strong>
+              <span>Mais próximos do contexto desta empresa</span>
             </div>
           </div>
           <div className="estv-company-links">
@@ -219,8 +277,18 @@ export default function EstablishmentDiscoveryLinks({ establishment }) {
               const location = [candidate?.city, candidate?.uf]
                 .filter(Boolean)
                 .join(" - ");
-              const open = () =>
+              const open = () => {
+                trackExperienceEvent(
+                  "navigation",
+                  "Estabelecimento recomendado",
+                  "related_establishment",
+                  {
+                    establishment_id: establishment?.id,
+                    target_establishment_id: candidate?.id,
+                  }
+                );
                 navigate(`/establishment/view/${candidate.slug}`);
+              };
 
               return (
                 <article
@@ -257,8 +325,8 @@ export default function EstablishmentDiscoveryLinks({ establishment }) {
           <div className="estv-discovery-group-title">
             <FaCompass />
             <div>
-              <strong>Outros itens para descobrir</strong>
-              <span>Produtos e serviços de outros catálogos</span>
+              <strong>Itens relacionados</strong>
+              <span>Produtos e serviços relevantes de outros catálogos</span>
             </div>
           </div>
           <div className="estv-item-links">
@@ -268,7 +336,18 @@ export default function EstablishmentDiscoveryLinks({ establishment }) {
                 item?.establishment?.fantasy ||
                 item?.establishment?.name ||
                 "Catálogo Nexus";
-              const open = () => navigate(`/item/view/${item.slug}`);
+              const open = () => {
+                trackExperienceEvent(
+                  "navigation",
+                  "Item recomendado",
+                  "related_item",
+                  {
+                    establishment_id: establishment?.id,
+                    target_item_id: item?.id,
+                  }
+                );
+                navigate(`/item/view/${item.slug}`);
+              };
 
               return (
                 <article
@@ -306,5 +385,7 @@ EstablishmentDiscoveryLinks.propTypes = {
     id: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
     city: PropTypes.string,
     uf: PropTypes.string,
+    category: PropTypes.string,
+    segments: PropTypes.oneOfType([PropTypes.array, PropTypes.string]),
   }).isRequired,
 };
