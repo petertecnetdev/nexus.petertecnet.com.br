@@ -6,7 +6,7 @@ import api from "../services/api";
 import catalogIntelligence from "../services/catalogIntelligence";
 
 const catalogFieldNames = new Set([
-  "gtin", "sale_unit", "package_quantity", "package_unit",
+  "gtin", "sale_unit", "package_quantity", "package_unit", "alias",
   "spec_length", "spec_width", "spec_height", "spec_diameter", "spec_thickness",
   "spec_color", "spec_finish", "spec_material", "spec_application",
 ]);
@@ -27,6 +27,7 @@ const compact = (object) => Object.fromEntries(
 function buildCatalogPayload(values) {
   return compact({
     canonical_name: values.name,
+    alias: values.alias,
     gtin: values.gtin,
     sku: values.sku,
     brand: values.brand,
