@@ -21,9 +21,23 @@ async function mockPublicApi(page) {
             description: "Catálogo usado para validar a produção.",
             city: "São Paulo",
             uf: "SP",
+            phone: "(11) 99999-9999",
+            email: "empresa-e2e@example.com",
+            website: "empresa-e2e.example.com",
             catalog_active: true,
             native_to_application: true,
-            files: [],
+            files: [
+              {
+                id: 1,
+                type: "background",
+                public_url: "uploads/empresa-e2e/capa.jpg",
+              },
+              {
+                id: 2,
+                type: "logo",
+                public_url: "uploads/empresa-e2e/logo.jpg",
+              },
+            ],
           },
           items: [
             {
@@ -83,6 +97,22 @@ test("protected company area redirects anonymous users to login", async ({ page 
   await page.goto("/establishment/my");
   await expect(page).toHaveURL(/\/login$/);
   await expect(page.getByRole("heading", { name: /Bem-vindo à Nexus/i })).toBeVisible();
+});
+
+test("public company presentation loads without authentication and shows the cover experience", async ({ page }) => {
+  await page.goto("/establishment/view/catalogo-e2e");
+  await expect(page).toHaveURL(/\/establishment\/view\/catalogo-e2e$/);
+  await expect(page.getByRole("heading", { name: "Empresa E2E", exact: true })).toBeVisible();
+  await expect(page.locator(".estv-presentation-hero.has-cover")).toBeVisible();
+  await expect(page.locator("body")).toContainText("Sobre Empresa E2E");
+  await expect(page.locator("body")).toContainText("Acesse esta empresa rapidamente");
+  await expect(page.getByRole("button", { name: /Ver catálogo/i })).toBeVisible();
+});
+
+test("public company presentation direct navigation survives SPA server fallback", async ({ page }) => {
+  const response = await page.goto("/establishment/view/catalogo-e2e");
+  expect(response.status()).toBe(200);
+  await expect(page.getByRole("heading", { name: "Empresa E2E", exact: true })).toBeVisible();
 });
 
 test("public catalog loads without a token and exposes its item", async ({ page }) => {
