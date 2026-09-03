@@ -23,3 +23,37 @@ jobs:
       VPS_PORT: ${{ secrets.VPS_PORT }}
       VPS_USER: ${{ secrets.VPS_USER }}
       VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+
+  smoke-catalog:
+    name: Production catalog smoke test
+    needs: deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify Nexus directory and first public catalog
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          DIRECTORY_URL="https://api.petertecnet.com.br/api/v1/apps/nexus/directory?limit=10"
+          DIRECTORY_JSON="$(curl --fail --silent --show-error --location --retry 5 --retry-all-errors "$DIRECTORY_URL")"
+
+          echo "$DIRECTORY_JSON" | jq -e '.success == true' >/dev/null
+          echo "$DIRECTORY_JSON" | jq -e '.establishments | type == "array" and length > 0' >/dev/null
+
+          SLUG="$(echo "$DIRECTORY_JSON" | jq -r '.establishments[0].slug // empty')"
+          if [[ -z "$SLUG" ]]; then
+            echo "Directory returned an establishment without a slug." >&2
+            exit 1
+          fi
+
+          CATALOG_URL="https://api.petertecnet.com.br/api/v1/apps/nexus/catalog/${SLUG}"
+          CATALOG_JSON="$(curl --fail --silent --show-error --location --retry 5 --retry-all-errors "$CATALOG_URL")"
+
+          echo "$CATALOG_JSON" | jq -e '.success == true' >/dev/null
+          echo "$CATALOG_JSON" | jq -e '.data.establishment.slug == $slug' --arg slug "$SLUG" >/dev/null
+          echo "$CATALOG_JSON" | jq -e '.data.items | type == "array"' >/dev/null
+
+          PAGE="$(curl --fail --silent --show-error --location --retry 5 --retry-all-errors "https://nexus.petertecnet.com.br/catalog/${SLUG}")"
+          test -n "$PAGE"
+
+          echo "Production smoke test passed for catalog: $SLUG"
