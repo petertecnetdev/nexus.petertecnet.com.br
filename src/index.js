@@ -11,6 +11,7 @@ import PeterAccountGateway from "./components/PeterAccountGateway";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "@fortawesome/fontawesome-free/css/all.min.css";
 import "./styles/nexus-brand-refresh.css";
+import "./styles/peter-branding-bridge.css";
 
 installGlobalImageFallbacks();
 installPasswordFieldEnhancer();
