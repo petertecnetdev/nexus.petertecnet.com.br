@@ -13,8 +13,18 @@ import {
 
 import GlobalNav from "../../components/GlobalNav";
 import LocalQrCode from "../../components/LocalQrCode";
-import { getCommerceOrder, getCommercePayment, retryCommercePayment } from "../../services/commerce";
-import { getPurchaseQrPurpose, isFulfillmentComplete } from "./purchaseQrState";
+import {
+  getCommerceFulfillmentCredential,
+  getCommerceOrder,
+  getCommercePayment,
+  retryCommercePayment,
+} from "../../services/commerce";
+import {
+  getPurchaseQrPurpose,
+  getPurchaseStage,
+  isFulfillmentComplete,
+  isFulfillmentReady,
+} from "./purchaseQrState";
 import "./Commerce.css";
 import "./PurchaseQr.css";
 
@@ -40,6 +50,7 @@ export default function PurchasePage() {
   const { publicId } = useParams();
   const navigate = useNavigate();
   const [order, setOrder] = useState(null);
+  const [claim, setClaim] = useState(null);
   const [payment, setPayment] = useState(() => {
     try { return JSON.parse(sessionStorage.getItem(`nexus_payment_${publicId}`) || "null"); } catch { return null; }
   });
@@ -85,43 +96,77 @@ export default function PurchasePage() {
 
   useEffect(() => { refresh(); }, [refresh]);
 
-  const paymentStatus = order?.payment_status;
+  useEffect(() => {
+    if (!order || !isFulfillmentReady(order.fulfillment_status)) {
+      setClaim(null);
+      return undefined;
+    }
+
+    let active = true;
+    setClaim(order.claim || null);
+
+    getCommerceFulfillmentCredential(publicId, { background: true, silent: true })
+      .then((payload) => {
+        if (active && payload?.claim) setClaim(payload.claim);
+      })
+      .catch(() => {
+        // Compatibilidade durante rollout: pedidos antigos ainda trazem o token no próprio pedido.
+      });
+
+    return () => { active = false; };
+  }, [order, publicId]);
+
+  const paymentStatus = String(order?.payment_status || "").toLowerCase();
+  const fulfillmentComplete = isFulfillmentComplete(order?.fulfillment_status);
 
   useEffect(() => {
     if (!order) return undefined;
 
-    const terminalStatuses = ["paid", "refunded", "failed", "cancelled", "canceled"];
-    if (terminalStatuses.includes(paymentStatus)) return undefined;
+    const terminalPayments = ["refunded", "failed", "cancelled", "canceled"];
+    const shouldKeepPolling = paymentStatus === "paid"
+      ? !fulfillmentComplete && order?.fulfillment_status !== "blocked"
+      : !terminalPayments.includes(paymentStatus);
+
+    if (!shouldKeepPolling) return undefined;
 
     let active = true;
     let timer = null;
 
     const poll = async () => {
       if (!active) return;
-
-      if (document.visibilityState === "visible") {
-        await refresh({ background: true });
-      }
-
+      if (document.visibilityState === "visible") await refresh({ background: true });
       if (active) timer = window.setTimeout(poll, 4000);
     };
 
     timer = window.setTimeout(poll, 4000);
-
     return () => {
       active = false;
       if (timer) window.clearTimeout(timer);
     };
-  }, [order, paymentStatus, refresh]);
+  }, [order, paymentStatus, fulfillmentComplete, refresh]);
+
+  const isPaid = paymentStatus === "paid";
+  const isDelivery = order?.fulfillment === "delivery";
+  const stage = getPurchaseStage({ paymentStatus, fulfillmentStatus: order?.fulfillment_status });
+
+  useEffect(() => {
+    if (!order || stage !== 2) return;
+    const notificationKey = `nexus_ready_notified_${order.public_id}`;
+    if (sessionStorage.getItem(notificationKey)) return;
+
+    sessionStorage.setItem(notificationKey, "1");
+    if (typeof Notification !== "undefined" && Notification.permission === "granted") {
+      new Notification(isDelivery ? "Pedido pronto para entrega" : "Pedido pronto para retirada", {
+        body: `${order.establishment?.fantasy || order.establishment?.name || "O estabelecimento"} liberou o pedido #${order.order_number}.`,
+      });
+    }
+  }, [isDelivery, order, stage]);
 
   const claimUrl = useMemo(() => {
-    if (!order?.claim?.token || !order?.public_id) return "";
-    return `${window.location.origin}/redeem/${encodeURIComponent(order.public_id)}#token=${encodeURIComponent(order.claim.token)}`;
-  }, [order]);
+    if (!claim?.token || !order?.public_id) return "";
+    return `${window.location.origin}/redeem/${encodeURIComponent(order.public_id)}#token=${encodeURIComponent(claim.token)}`;
+  }, [claim, order]);
 
-  const isPaid = order?.payment_status === "paid";
-  const isDelivery = order?.fulfillment === "delivery";
-  const fulfillmentComplete = isFulfillmentComplete(order?.fulfillment_status);
   const qrPurpose = getPurchaseQrPurpose({
     paymentStatus: order?.payment_status,
     paymentMethod: payment?.method,
@@ -150,6 +195,21 @@ export default function PurchasePage() {
     } finally { setRetrying(false); }
   };
 
+  const heading = !isPaid
+    ? "Aguardando pagamento"
+    : stage === 1
+      ? "Pagamento aprovado"
+      : stage === 2
+        ? (isDelivery ? "Pedido pronto para entrega" : "Pedido pronto para retirada")
+        : (isDelivery ? "Entrega concluída" : "Retirada concluída");
+
+  const steps = [
+    { label: "Pagamento", detail: isPaid ? "Confirmado" : "Pendente" },
+    { label: "Preparando", detail: stage >= 2 ? "Concluído" : "Em andamento" },
+    { label: "Pronto", detail: stage >= 3 ? "Concluído" : stage === 2 ? "Liberado" : "Aguardando" },
+    { label: isDelivery ? "Recebido" : "Retirado", detail: stage === 3 ? "Concluído" : "Aguardando" },
+  ];
+
   if (loading && !order) return <><GlobalNav /><Container className="commerce-shell text-center"><Spinner animation="border" /></Container></>;
 
   return (
@@ -159,30 +219,59 @@ export default function PurchasePage() {
         <div className="commerce-card purchase-card">
           <div className="commerce-heading">
             <span>Compra #{order?.order_number || ""}</span>
-            <h1>{isPaid ? (isDelivery ? "Entrega liberada" : "Retirada liberada") : "Aguardando pagamento"}</h1>
+            <h1>{heading}</h1>
             <p>{order?.establishment?.fantasy || order?.establishment?.name}</p>
           </div>
           {error && <Alert variant="danger">{error}</Alert>}
 
-          <div className={`purchase-flow ${isPaid ? "purchase-flow--paid" : "purchase-flow--pending"}`} aria-label="Etapas da compra">
-            <div className={`purchase-flow__step ${isPaid ? "completed" : "active"}`}>
-              <span className="purchase-flow__index">{isPaid ? <FaCheckCircle /> : "1"}</span>
-              <div><small>Etapa 1</small><strong>{isPaid ? "Pagamento confirmado" : "Pagamento"}</strong></div>
-            </div>
-            <div className="purchase-flow__connector" aria-hidden="true" />
-            <div className={`purchase-flow__step ${isPaid ? "active" : "locked"}`}>
-              <span className="purchase-flow__index">2</span>
-              <div><small>Etapa 2</small><strong>{isDelivery ? "Receber pedido" : "Retirar pedido"}</strong></div>
+          <div className={`purchase-flow purchase-flow--four purchase-flow--stage-${stage}`} aria-label="Etapas da compra">
+            {steps.map((step, index) => {
+              const completed = index < stage || stage === 3;
+              const active = index === stage && stage < 3;
+              return (
+                <React.Fragment key={step.label}>
+                  <div className={`purchase-flow__step ${completed ? "completed" : active ? "active" : "locked"}`}>
+                    <span className="purchase-flow__index">{completed ? <FaCheckCircle /> : index + 1}</span>
+                    <div><small>{step.detail}</small><strong>{step.label}</strong></div>
+                  </div>
+                  {index < steps.length - 1 && <div className="purchase-flow__connector" aria-hidden="true" />}
+                </React.Fragment>
+              );
+            })}
+          </div>
+
+          <div className={`purchase-status ${isPaid ? "purchase-status--paid payment-success-reveal" : ""}`}>
+            {isPaid ? <FaCheckCircle size={28} /> : <FaClock size={28} />}
+            <div>
+              <strong>{!isPaid
+                ? (order?.payment_status === "failed" ? "Pagamento não concluído" : "Pagamento pendente")
+                : stage === 1
+                  ? "Pagamento confirmado. O estabelecimento está preparando seu pedido."
+                  : stage === 2
+                    ? "Seu pedido está pronto. Use o comprovante de retirada/entrega abaixo."
+                    : "Pedido concluído com sucesso."}</strong>
+              <small>{!isPaid
+                ? "A confirmação acontece automaticamente, sem recarregar a página."
+                : stage === 1
+                  ? "O QR de pagamento já foi encerrado. O comprovante de retirada só será liberado quando o pedido estiver pronto."
+                  : stage === 2
+                    ? "O QR abaixo não realiza pagamentos e é válido para uma única confirmação."
+                    : "O comprovante de uso único foi encerrado após a confirmação."}</small>
             </div>
           </div>
 
-          <div className={`purchase-status ${isPaid ? "purchase-status--paid" : ""}`}>
-            {isPaid ? <FaCheckCircle size={28} /> : <FaClock size={28} />}
-            <div>
-              <strong>{isPaid ? "Pagamento concluído. Agora use o comprovante abaixo." : order?.payment_status === "failed" ? "Pagamento não concluído" : "Pagamento pendente"}</strong>
-              <small>{isPaid ? (isDelivery ? "O QR de pagamento não é mais necessário. Apresente o comprovante somente ao receber o pedido." : "O QR de pagamento não é mais necessário. Apresente o comprovante somente no momento da retirada.") : "A confirmação acontece automaticamente, sem recarregar a página."}</small>
+          {isPaid && stage === 1 && (
+            <div className="fulfillment-preparing-card">
+              <FaBoxOpen size={30} />
+              <div><strong>Pedido em preparação</strong><span>Você pode manter esta página aberta. A Nexus atualiza automaticamente quando o estabelecimento marcar o pedido como pronto.</span></div>
             </div>
-          </div>
+          )}
+
+          {stage === 2 && (
+            <Alert variant="success" className="ready-now-alert">
+              <FaCheckCircle /> <strong>{isDelivery ? "Pedido liberado para entrega." : "Pedido liberado para retirada."}</strong>
+            </Alert>
+          )}
 
           <div className="purchase-items">
             {(order?.items || []).map((row) => <div className="purchase-item" key={row.item_id}><span>{row.quantity}× {row.name}</span><strong>{money(row.subtotal)}</strong></div>)}
@@ -196,25 +285,40 @@ export default function PurchasePage() {
               <p className="qr-purpose-description">Abra o aplicativo do seu banco e use este QR somente para concluir o pagamento desta compra.</p>
               {payment.qr_code_base64 && <div className="payment-qr-frame"><img src={`data:image/png;base64,${payment.qr_code_base64}`} alt="QR Code Pix para pagamento" /></div>}
               {payment.qr_code && <><div className="pix-code">{payment.qr_code}</div><Button className="mt-3" onClick={() => copy(payment.qr_code)}><FaCopy /> Copiar código Pix</Button></>}
-              <div className="payment-qr-note"><FaClock /><span>Após a confirmação, este QR de pagamento desaparece e a etapa de retirada/entrega é liberada.</span></div>
+              <div className="payment-qr-note"><FaClock /><span>Depois do pagamento este QR desaparece. O comprovante de retirada é uma etapa diferente.</span></div>
             </div>
           )}
 
           {qrPurpose === "fulfillment" && (
             <div className={`claim-box claim-ticket ${isDelivery ? "claim-ticket--delivery" : "claim-ticket--pickup"}`} data-qr-purpose="fulfillment">
-              <div className="claim-ticket__confirmed"><FaCheckCircle /><span>PAGAMENTO CONFIRMADO</span></div>
+              <div className="claim-ticket__confirmed"><FaCheckCircle /><span>PAGAMENTO CONFIRMADO · PEDIDO PRONTO</span></div>
               <div className="qr-purpose-badge qr-purpose-badge--fulfillment"><FaBoxOpen /> {isDelivery ? "COMPROVANTE DE ENTREGA" : "COMPROVANTE DE RETIRADA"}</div>
-              <h2>{isDelivery ? "Pedido pronto para entrega" : "Retirada liberada"}</h2>
-              <p className="qr-purpose-description">{isDelivery ? "Mostre este QR ao vendedor somente no momento em que receber seus itens." : "Mostre este QR ao atendente somente quando estiver no estabelecimento para retirar seus itens."}</p>
+              <h2>{order?.establishment?.fantasy || order?.establishment?.name || (isDelivery ? "Pedido pronto para entrega" : "Retirada liberada")}</h2>
+              <p className="claim-ticket__establishment">{isDelivery ? "Receba deste estabelecimento" : "Retire neste estabelecimento"}</p>
+              {order?.establishment?.address && <p className="claim-ticket__address">{order.establishment.address}{order.establishment.city ? ` · ${order.establishment.city}${order.establishment.uf ? `/${order.establishment.uf}` : ""}` : ""}</p>}
+              <p className="qr-purpose-description">{isDelivery ? "Mostre este comprovante ao vendedor somente quando receber seus itens." : "Mostre este comprovante ao atendente somente no momento da retirada."}</p>
 
               <div className="claim-ticket__qr">
                 <LocalQrCode value={claimUrl} title={`${isDelivery ? "Entrega" : "Retirada"} da compra ${order.order_number}`} />
               </div>
 
+              {claim?.code && (
+                <div className="claim-manual-code">
+                  <small>Se a câmera falhar, informe este código</small>
+                  <strong>{claim.code}</strong>
+                  <Button size="sm" variant="outline-light" onClick={() => copy(claim.code)}><FaCopy /> Copiar código</Button>
+                </div>
+              )}
+
               <div className="claim-ticket__details">
                 <div><small>Pedido</small><strong>#{order.order_number}</strong></div>
                 <div><small>Finalidade</small><strong>{isDelivery ? "Confirmar entrega" : "Confirmar retirada"}</strong></div>
                 <div><small>Validade</small><strong>Uso único</strong></div>
+              </div>
+
+              <div className="claim-ticket__items">
+                <small>Itens deste comprovante</small>
+                {(order?.items || []).map((row) => <div key={`claim-${row.item_id}`}><span>{row.quantity}× {row.name}</span><strong>{money(row.subtotal)}</strong></div>)}
               </div>
 
               <div className="claim-ticket__warning">
@@ -227,7 +331,7 @@ export default function PurchasePage() {
           {fulfillmentComplete && (
             <div className="fulfillment-complete-card">
               <FaCheckCircle size={30} />
-              <div><strong>{order?.fulfillment_status === "delivered" ? "Entrega já confirmada" : "Retirada já confirmada"}</strong><span>O comprovante de uso único foi encerrado e não precisa mais ser apresentado.</span></div>
+              <div><strong>{order?.fulfillment_status === "delivered" ? "Entrega já confirmada" : "Retirada já confirmada"}</strong><span>O comprovante de uso único foi encerrado e não pode ser reutilizado.</span></div>
             </div>
           )}
 
