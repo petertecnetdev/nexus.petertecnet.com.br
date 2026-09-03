@@ -2,32 +2,52 @@
 import { useMemo, useCallback } from "react";
 import { storageUrl } from "../config";
 
+const PASSTHROUGH_SCHEME = /^(?:https?:|data:|blob:)/i;
+
+export const resolveImageUrl = (path, base = storageUrl) => {
+  if (!path || typeof path !== "string") return null;
+
+  const trimmed = path.trim();
+  if (!trimmed) return null;
+  if (PASSTHROUGH_SCHEME.test(trimmed)) return trimmed;
+
+  const normalizedBase = String(base || "").trim().replace(/\/+$/, "");
+  if (!normalizedBase) return trimmed;
+
+  try {
+    const baseUrl = new URL(normalizedBase);
+
+    if (trimmed.startsWith("//")) {
+      return `${baseUrl.protocol}${trimmed}`;
+    }
+
+    // Laravel frequently returns both `storage/foo.jpg` and `/storage/foo.jpg`.
+    // The storage base already ends in `/storage`; joining them naively creates
+    // `/storage/storage/...`, which makes valid establishment covers disappear.
+    if (/^\/?storage\//i.test(trimmed)) {
+      return `${baseUrl.origin}/${trimmed.replace(/^\/+/, "")}`;
+    }
+
+    // Root-relative media paths belong to the API/storage origin, not inside
+    // the configured `/storage` folder.
+    if (trimmed.startsWith("/")) {
+      return `${baseUrl.origin}${trimmed}`;
+    }
+
+    return `${normalizedBase}/${trimmed.replace(/^\/+/, "")}`;
+  } catch {
+    const separator = normalizedBase.endsWith("/") ? "" : "/";
+    return `${normalizedBase}${separator}${trimmed.replace(/^\/+/, "")}`;
+  }
+};
+
 export default function useImageUtils(options = {}) {
   const {
     fallbackText = "",
     fallbackShape = "square",
   } = options;
 
-  const isAbsolute = (url) => /^https?:\/\//i.test(url);
-
-  const normalize = (base, path) => {
-    if (!base) return path;
-    if (base.endsWith("/") && path.startsWith("/")) return base + path.slice(1);
-    if (!base.endsWith("/") && !path.startsWith("/")) return `${base}/${path}`;
-    return base + path;
-  };
-
-  const imageUrl = useCallback((path) => {
-    if (!path || typeof path !== "string") return null;
-    if (isAbsolute(path)) return path;
-
-    if (path.startsWith("storage/")) {
-      const base = storageUrl.replace(/\/storage\/?$/, "");
-      return normalize(base, path);
-    }
-
-    return normalize(storageUrl, path);
-  }, []);
+  const imageUrl = useCallback((path) => resolveImageUrl(path), []);
 
   const getInitials = useCallback((text) => {
     if (!text) return "?";
