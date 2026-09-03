@@ -1,7 +1,7 @@
 import api from "./api";
-import { appSlug } from "../config";
+import { apiV1BaseUrl } from "../config";
 
-const base = `/v1/apps/${encodeURIComponent(appSlug)}/commerce`;
+const base = apiV1BaseUrl;
 
 const requestConfig = (options = {}) => {
   const config = {};
@@ -28,47 +28,102 @@ const fulfillmentCredentialPayload = (credential) => {
   return { token: String(credential || "").trim() };
 };
 
+const fulfillmentStatus = (order) => {
+  if (!order) return "pending";
+  if (order.fulfillment_status) return String(order.fulfillment_status).toLowerCase();
+
+  const status = String(order.status || "pending").toLowerCase();
+  if (status === "completed") return order.fulfillment === "delivery" ? "delivered" : "fulfilled";
+  return status;
+};
+
+const normalizeOrder = (order) => {
+  if (!order || typeof order !== "object") return order;
+  const id = order.id ?? order.public_id;
+
+  return {
+    ...order,
+    id,
+    // The current generic API uses numeric order ids. Keep this presentation
+    // alias while the existing Nexus routes/components are migrated gradually.
+    public_id: order.public_id || (id != null ? String(id) : ""),
+    fulfillment_status: fulfillmentStatus(order),
+  };
+};
+
+const normalizeOrderPage = (payload) => {
+  if (!payload || typeof payload !== "object") return payload;
+  return {
+    ...payload,
+    data: Array.isArray(payload.data) ? payload.data.map(normalizeOrder) : [],
+  };
+};
+
 export async function getCommerceCatalog(slug) {
-  const { data } = await api.get(`${base}/catalog/${encodeURIComponent(slug)}`);
-  return data?.data || null;
+  const { data } = await api.get(`${base}/establishments/${encodeURIComponent(slug)}/ordering`);
+  const payload = data?.data || null;
+  if (!payload) return null;
+
+  return {
+    ...payload,
+    // Compatibility presentation only: the API field is canonically `ordering`.
+    commerce: payload.ordering || payload.commerce || null,
+  };
 }
 
 export async function createCommerceOrder(payload) {
-  const { data } = await api.post(`${base}/orders`, payload);
-  return data?.data || null;
+  const canonicalPayload = {
+    ...payload,
+    payment_method: payload?.payment_method === "card" ? "card_on_delivery" : payload?.payment_method,
+  };
+  const { data } = await api.post(`${base}/orders`, canonicalPayload);
+  const result = data?.data || null;
+  if (!result) return null;
+  return { ...result, order: normalizeOrder(result.order) };
 }
 
-export async function retryCommercePayment(publicId, paymentMethod) {
-  const { data } = await api.post(`${base}/orders/${encodeURIComponent(publicId)}/payment`, {
-    payment_method: paymentMethod,
-  });
-  return data?.data || null;
+export async function retryCommercePayment(orderId, paymentMethod) {
+  // The current generic API does not expose a duplicate order-specific payment
+  // namespace. Keep retries on the canonical buyer-order contract.
+  const method = paymentMethod === "card" ? "card_on_delivery" : paymentMethod;
+  const { data } = await api.post(
+    `${base}/me/orders/${encodeURIComponent(orderId)}/payment/retry`,
+    { payment_method: method }
+  );
+  const result = data?.data || null;
+  if (!result) return null;
+  return { ...result, order: normalizeOrder(result.order) };
 }
 
 export async function getMyCommerceOrders(params = {}) {
-  const { data } = await api.get(`${base}/orders/mine`, { params });
-  return data?.data || null;
+  const { data } = await api.get(`${base}/me/orders`, { params });
+  return normalizeOrderPage(data?.data || null);
 }
 
-export async function getCommerceOrder(publicId, options = {}) {
+export async function getCommerceOrder(orderId, options = {}) {
   const { data } = await api.get(
-    `${base}/orders/${encodeURIComponent(publicId)}`,
+    `${base}/me/orders/${encodeURIComponent(orderId)}`,
     requestConfig(options)
   );
-  return data?.data || null;
+  return normalizeOrder(data?.data || null);
 }
 
-export async function getCommercePayment(publicId, options = {}) {
-  const { data } = await api.get(
-    `${base}/orders/${encodeURIComponent(publicId)}/payment`,
-    requestConfig(options)
-  );
-  return data?.data || null;
+export async function getCommercePayment(orderId, options = {}) {
+  const config = requestConfig(options);
+  const [orderResponse, paymentResponse] = await Promise.all([
+    api.get(`${base}/me/orders/${encodeURIComponent(orderId)}`, config),
+    api.get(`${base}/me/orders/${encodeURIComponent(orderId)}/payment`, config),
+  ]);
+
+  return {
+    order: normalizeOrder(orderResponse?.data?.data || null),
+    payment: paymentResponse?.data?.data || null,
+  };
 }
 
-export async function getCommerceFulfillmentCredential(publicId, options = {}) {
+export async function getCommerceFulfillmentCredential(orderId, options = {}) {
   const { data } = await api.get(
-    `${base}/orders/${encodeURIComponent(publicId)}/fulfillment/credential`,
+    `${base}/me/orders/${encodeURIComponent(orderId)}/fulfillment/credential`,
     requestConfig(options)
   );
   return data?.data || null;
@@ -76,42 +131,42 @@ export async function getCommerceFulfillmentCredential(publicId, options = {}) {
 
 export async function getEstablishmentCommerceOrders(establishmentId, params = {}) {
   const { data } = await api.get(`${base}/establishments/${establishmentId}/orders`, { params });
-  return data?.data || null;
+  return normalizeOrderPage(data?.data || null);
 }
 
-export async function updateCommerceOrderStatus(publicId, status) {
-  const { data } = await api.patch(`${base}/orders/${encodeURIComponent(publicId)}/status`, { status });
-  return data?.data || null;
+export async function updateCommerceOrderStatus(orderId, status) {
+  const { data } = await api.patch(`${base}/orders/${encodeURIComponent(orderId)}/status`, { status });
+  return normalizeOrder(data?.data || null);
 }
 
-export async function updateCommerceFulfillmentStatus(publicId, status) {
+export async function updateCommerceFulfillmentStatus(orderId, status) {
   const { data } = await api.patch(
-    `${base}/orders/${encodeURIComponent(publicId)}/fulfillment/status`,
+    `${base}/orders/${encodeURIComponent(orderId)}/fulfillment/status`,
     { status }
   );
-  return data?.data || null;
+  return normalizeOrder(data?.data || null);
 }
 
-export async function getCommerceFulfillmentEvents(publicId, params = {}) {
+export async function getCommerceFulfillmentEvents(orderId, params = {}) {
   const { data } = await api.get(
-    `${base}/orders/${encodeURIComponent(publicId)}/fulfillment/events`,
+    `${base}/orders/${encodeURIComponent(orderId)}/fulfillment/events`,
     { params }
   );
   return data?.data || [];
 }
 
-export async function verifyCommerceFulfillment(publicId, credential) {
+export async function verifyCommerceFulfillment(orderId, credential) {
   const { data } = await api.post(
-    `${base}/orders/${encodeURIComponent(publicId)}/fulfillment/verify`,
+    `${base}/orders/${encodeURIComponent(orderId)}/fulfillment/verify`,
     fulfillmentCredentialPayload(credential)
   );
-  return data?.data || null;
+  return normalizeOrder(data?.data || null);
 }
 
-export async function redeemCommerceOrder(publicId, credential) {
+export async function redeemCommerceOrder(orderId, credential) {
   const { data } = await api.post(
-    `${base}/orders/${encodeURIComponent(publicId)}/redeem`,
+    `${base}/orders/${encodeURIComponent(orderId)}/redeem`,
     fulfillmentCredentialPayload(credential)
   );
-  return data;
+  return { ...data, data: normalizeOrder(data?.data || null) };
 }
