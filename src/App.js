@@ -35,6 +35,7 @@ import EstablishmentCreatePage from "./pages/establishment/EstablishmentCreatePa
 import EstablishmentUpdatePage from "./pages/establishment/EstablishmentUpdatePage";
 import EstablishmentMyPage from "./pages/establishment/EstablishmentMyPage";
 import EstablishmentItemPage from "./pages/establishment/EstablishmentItemPage";
+import EstablishmentViewPage from "./pages/establishment/EstablishmentViewPage";
 import CatalogPage from "./pages/catalog/CatalogPage";
 import CheckoutPage from "./pages/commerce/CheckoutPage";
 import PurchasePage from "./pages/commerce/PurchasePage";
@@ -154,7 +155,8 @@ function AppInner() {
 
           <Route path="/catalog/:slug" element={<CatalogPage />} />
           <Route path="/catalogo/:slug" element={<CatalogRedirect />} />
-          <Route path="/establishment/view/:slug" element={<CatalogRedirect />} />
+          <Route path="/establishment/view/:slug" element={<EstablishmentViewPage />} />
+          <Route path="/empresa/:slug" element={<EstablishmentViewPage />} />
           <Route path="/establishments" element={<Navigate to="/" replace />} />
           <Route path="/item/view/:slug" element={<ItemViewPage />} />
           <Route path="/item/:slug" element={<ItemViewPage />} />
@@ -163,7 +165,7 @@ function AppInner() {
           <Route path="/purchase/:publicId" element={protectedRoute(<PurchasePage />)} />
           <Route path="/purchases" element={protectedRoute(<MyPurchasesPage />)} />
           <Route path="/orders/manage" element={protectedRoute(<SellerOrdersPage />)} />
-          <Route path="/orders/scan" element={protectedRoute(<OrderScannerPage />)} />
+          <Route path="/orders/scan" element={protectedRoute(<OrderScannerPage />} />
           <Route path="/redeem/:publicId" element={<RedeemOrderPage />} />
 
           <Route path="/user/update" element={protectedRoute(<UserUpdatePage />)} />
