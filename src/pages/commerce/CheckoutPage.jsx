@@ -72,13 +72,12 @@ export default function CheckoutPage() {
 
       sessionStorage.setItem(`nexus_payment_${order.public_id}`, JSON.stringify(payment || null));
       clearCart();
-      setCart(null);
 
       if (form.payment_method === "card" && payment?.checkout_url) {
         window.location.assign(payment.checkout_url);
         return;
       }
-      navigate(`/purchase/${order.public_id}`);
+      navigate(`/purchase/${order.public_id}`, { replace: true });
     } catch (requestError) {
       setError(requestError?.response?.data?.message || requestError?.message || "Não foi possível finalizar a compra.");
     } finally {
