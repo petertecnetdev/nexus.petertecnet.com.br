@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 
 export default function EstablishmentActionsBar({ establishment, onDelete, deleting }) {
   const presentationUrl = `/establishment/view/${establishment.slug}`;
+  const qrUrl = `${presentationUrl}#qrcode`;
 
   return (
     <div className="company-card__actions" aria-label={`Ações de ${establishment.fantasy || establishment.name}`}>
@@ -12,7 +13,7 @@ export default function EstablishmentActionsBar({ establishment, onDelete, delet
         <i className="fas fa-boxes-stacked" aria-hidden="true" />
         <span>Itens</span>
       </Link>
-      <Link to={presentationUrl} className="company-action">
+      <Link to={presentationUrl} className="company-action" aria-label={`Ver apresentação de ${establishment.fantasy || establishment.name}`}>
         <i className="fas fa-arrow-up-right-from-square" aria-hidden="true" />
         <span>Ver</span>
       </Link>
@@ -20,7 +21,7 @@ export default function EstablishmentActionsBar({ establishment, onDelete, delet
         <i className="fas fa-pen" aria-hidden="true" />
         <span>Editar</span>
       </Link>
-      <Link to={presentationUrl} className="company-action">
+      <Link to={qrUrl} className="company-action" aria-label={`Abrir QR Code de ${establishment.fantasy || establishment.name}`}>
         <i className="fas fa-qrcode" aria-hidden="true" />
         <span>QR</span>
       </Link>
