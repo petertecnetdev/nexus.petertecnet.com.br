@@ -37,6 +37,8 @@ import EstablishmentMyPage from "./pages/establishment/EstablishmentMyPage";
 import EstablishmentItemPage from "./pages/establishment/EstablishmentItemPage";
 import EstablishmentViewPage from "./pages/establishment/EstablishmentViewPage";
 import CatalogPage from "./pages/catalog/CatalogPage";
+import CatalogHealthPage from "./pages/catalog/CatalogHealthPage";
+import CatalogImportPage from "./pages/catalog/CatalogImportPage";
 import CheckoutPage from "./pages/commerce/CheckoutPage";
 import PurchasePage from "./pages/commerce/PurchasePage";
 import MyPurchasesPage from "./pages/commerce/MyPurchasesPage";
@@ -97,9 +99,7 @@ function AppInner() {
       }
 
       try {
-        const { data } = await api.get("/account/context", {
-          params: { app_id: appId },
-        });
+        const { data } = await api.get("/account/context", { params: { app_id: appId } });
         if (cancelled) return;
         applySession(data);
       } catch {
@@ -175,6 +175,8 @@ function AppInner() {
           <Route path="/establishment/item/:slug" element={protectedRoute(<EstablishmentItemPage />)} />
           <Route path="/item/create/:slug" element={protectedRoute(<ItemCreatePage />)} />
           <Route path="/item/update/:id" element={protectedRoute(<ItemUpdatePage />)} />
+          <Route path="/catalog/health/:slug" element={protectedRoute(<CatalogHealthPage />)} />
+          <Route path="/catalog/import/:slug" element={protectedRoute(<CatalogImportPage />)} />
 
           <Route path="/dashboard" element={<Navigate to="/establishment/my" replace />} />
           <Route path="*" element={<NotFoundPage />} />
