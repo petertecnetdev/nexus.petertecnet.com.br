@@ -9,7 +9,8 @@ import GlobalFooter from "../components/GlobalFooter";
 import EntityImage from "../components/EntityImage";
 import ExploreCatalogs from "../components/home/ExploreCatalogs";
 import api from "../services/api";
-import { apiV1BaseUrl, appId } from "../config";
+import { getFromApiV1 } from "../services/apiV1";
+import { appId } from "../config";
 import useImageUtils from "../hooks/useImageUtils";
 
 import "./HomePage.css";
@@ -31,7 +32,7 @@ export default function HomePage() {
   const [discovery, setDiscovery] = useState({ establishments: [], items: [], city: null, uf: null }); const [discoveryLoading, setDiscoveryLoading] = useState(true); const [discoveryError, setDiscoveryError] = useState(false); const companiesRail = useRef(null); const itemsRail = useRef(null);
   const primaryPath = user ? "/establishment/my" : "/register"; const primaryLabel = user ? "Gerenciar meus catálogos" : "Criar meu catálogo";
   useEffect(() => { const controller = new AbortController(); const loadDiscovery = async () => { try { setDiscoveryLoading(true); setDiscoveryError(false); let city = localStorage.getItem("selectedCity") || null; let uf = localStorage.getItem("selectedUF") || null; if (!city || !uf) { try { const { data: locationData } = await api.get(`/home/${appId}`, { signal: controller.signal }); const locationPayload = locationData?.payload || {}; city = city || locationData?.city || locationPayload?.app?.city || null; uf = uf || locationData?.uf || locationPayload?.app?.uf || null; } catch (locationError) { if (locationError?.code === "ERR_CANCELED") throw locationError; } }
-      const { data: ecosystemData } = await api.get(`${apiV1BaseUrl}/directory`, { params: { city: city || undefined, uf: uf || undefined, limit: 100 }, signal: controller.signal });
+      const { data: ecosystemData } = await getFromApiV1("/discovery", { params: { city: city || undefined, uf: uf || undefined, limit: 100 }, signal: controller.signal });
       setDiscovery({ establishments: Array.isArray(ecosystemData?.establishments) ? ecosystemData.establishments : [], items: Array.isArray(ecosystemData?.items) ? ecosystemData.items : [], city: city || ecosystemData?.scope?.current_city || null, uf: uf || ecosystemData?.scope?.current_uf || null });
     } catch (error) { if (error?.code !== "ERR_CANCELED") setDiscoveryError(true); } finally { if (!controller.signal.aborted) setDiscoveryLoading(false); } }; loadDiscovery(); return () => controller.abort(); }, []);
   const locationLabel = useMemo(() => { const parts = [discovery.city, discovery.uf].filter(Boolean); return parts.length ? parts.join(" - ") : "em todos os catálogos disponíveis"; }, [discovery.city, discovery.uf]);
