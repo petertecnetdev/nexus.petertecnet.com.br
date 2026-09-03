@@ -2,6 +2,34 @@ const { test, expect } = require("@playwright/test");
 
 const apiBase = "https://api.petertecnet.com.br/api";
 
+const establishmentFixture = {
+  id: 10,
+  app_id: 2,
+  name: "Empresa E2E",
+  fantasy: "Empresa E2E",
+  slug: "catalogo-e2e",
+  description: "Catálogo usado para validar a produção.",
+  city: "São Paulo",
+  uf: "SP",
+  phone: "(11) 99999-9999",
+  email: "empresa-e2e@example.com",
+  website: "empresa-e2e.example.com",
+  catalog_active: true,
+  native_to_application: true,
+  files: [
+    {
+      id: 1,
+      type: "background",
+      public_url: "uploads/empresa-e2e/capa.jpg",
+    },
+    {
+      id: 2,
+      type: "logo",
+      public_url: "uploads/empresa-e2e/logo.jpg",
+    },
+  ],
+};
+
 async function mockPublicApi(page) {
   await page.route(`${apiBase}/**`, async (route) => {
     const url = route.request().url();
@@ -12,33 +40,7 @@ async function mockPublicApi(page) {
         contentType: "application/json",
         body: JSON.stringify({
           target_application_id: 2,
-          establishment: {
-            id: 10,
-            app_id: 2,
-            name: "Empresa E2E",
-            fantasy: "Empresa E2E",
-            slug: "catalogo-e2e",
-            description: "Catálogo usado para validar a produção.",
-            city: "São Paulo",
-            uf: "SP",
-            phone: "(11) 99999-9999",
-            email: "empresa-e2e@example.com",
-            website: "empresa-e2e.example.com",
-            catalog_active: true,
-            native_to_application: true,
-            files: [
-              {
-                id: 1,
-                type: "background",
-                public_url: "uploads/empresa-e2e/capa.jpg",
-              },
-              {
-                id: 2,
-                type: "logo",
-                public_url: "uploads/empresa-e2e/logo.jpg",
-              },
-            ],
-          },
+          establishment: establishmentFixture,
           items: [
             {
               id: 99,
@@ -65,7 +67,13 @@ async function mockPublicApi(page) {
         body: JSON.stringify({
           scope: { target_application_id: 2 },
           locations: [],
-          establishments: [],
+          establishments: [
+            {
+              ...establishmentFixture,
+              total_views: 120,
+              source_app: { id: 2, name: "Nexus", slug: "nexus" },
+            },
+          ],
           items: [],
         }),
       });
@@ -75,7 +83,7 @@ async function mockPublicApi(page) {
       return route.fulfill({
         status: 200,
         contentType: "application/json",
-        body: JSON.stringify({ establishments: [], items: [] }),
+        body: JSON.stringify({ city: "São Paulo", uf: "SP" }),
       });
     }
 
@@ -91,6 +99,14 @@ test("public home is available without authentication", async ({ page }) => {
   await page.goto("/");
   await expect(page).toHaveURL(/\/$/);
   await expect(page.locator("body")).toContainText("Nexus");
+  await expect(page.getByRole("button", { name: "Conhecer Empresa E2E" })).toBeVisible();
+});
+
+test("company discovery opens the public presentation instead of skipping to the catalog", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("button", { name: "Conhecer Empresa E2E" }).click();
+  await expect(page).toHaveURL(/\/establishment\/view\/catalogo-e2e$/);
+  await expect(page.getByRole("heading", { name: "Empresa E2E", exact: true })).toBeVisible();
 });
 
 test("protected company area redirects anonymous users to login", async ({ page }) => {
