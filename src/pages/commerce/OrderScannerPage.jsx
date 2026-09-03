@@ -39,7 +39,7 @@ export default function OrderScannerPage() {
     }
 
     stopCamera();
-    navigate(`/redeem/${encodeURIComponent(parsed.publicId)}?token=${encodeURIComponent(parsed.token)}`);
+    navigate(`/redeem/${encodeURIComponent(parsed.publicId)}#token=${encodeURIComponent(parsed.token)}`);
     return true;
   };
 
@@ -163,7 +163,7 @@ export default function OrderScannerPage() {
                   rows={3}
                   value={rawCode}
                   onChange={(event) => setRawCode(event.target.value)}
-                  placeholder="https://nexus.petertecnet.com.br/redeem/...?..."
+                  placeholder="https://nexus.petertecnet.com.br/redeem/...#token=..."
                 />
               </Form.Group>
               <Button className="mt-3" type="submit" disabled={!rawCode.trim()}><FaQrcode /> Conferir compra</Button>
