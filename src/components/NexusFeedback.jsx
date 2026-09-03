@@ -28,10 +28,6 @@ const DEFAULT_TITLES = {
 };
 
 const RESTRICTED_RESOURCE_MESSAGES = [
-  "recurso não encontrado",
-  "catálogo não encontrado",
-  "estabelecimento não encontrado",
-  "não encontramos esta empresa",
   "não está disponível publicamente",
   "ainda não está disponível publicamente",
 ];
