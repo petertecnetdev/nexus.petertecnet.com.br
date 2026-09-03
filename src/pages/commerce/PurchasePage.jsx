@@ -1,11 +1,20 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Alert, Button, Container, Spinner } from "react-bootstrap";
 import { useNavigate, useParams } from "react-router-dom";
-import { FaCheckCircle, FaClock, FaCopy, FaCreditCard, FaQrcode } from "react-icons/fa";
+import {
+  FaBoxOpen,
+  FaCheckCircle,
+  FaClock,
+  FaCopy,
+  FaCreditCard,
+  FaQrcode,
+  FaShieldAlt,
+} from "react-icons/fa";
 
 import GlobalNav from "../../components/GlobalNav";
 import LocalQrCode from "../../components/LocalQrCode";
 import { getCommerceOrder, getCommercePayment, retryCommercePayment } from "../../services/commerce";
+import { getPurchaseQrPurpose, isFulfillmentComplete } from "./purchaseQrState";
 import "./Commerce.css";
 
 const money = (value) => Number(value || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
@@ -109,6 +118,17 @@ export default function PurchasePage() {
     return `${window.location.origin}/redeem/${encodeURIComponent(order.public_id)}#token=${encodeURIComponent(order.claim.token)}`;
   }, [order]);
 
+  const isPaid = order?.payment_status === "paid";
+  const isDelivery = order?.fulfillment === "delivery";
+  const fulfillmentComplete = isFulfillmentComplete(order?.fulfillment_status);
+  const qrPurpose = getPurchaseQrPurpose({
+    paymentStatus: order?.payment_status,
+    paymentMethod: payment?.method,
+    hasPaymentQr: Boolean(payment?.qr_code || payment?.qr_code_base64),
+    hasClaimQr: Boolean(claimUrl),
+    fulfillmentStatus: order?.fulfillment_status,
+  });
+
   const copy = async (text) => {
     if (!text) return;
     try { await navigator.clipboard.writeText(text); } catch { window.prompt("Copie o código:", text); }
@@ -136,43 +156,82 @@ export default function PurchasePage() {
       <GlobalNav />
       <Container className="commerce-shell">
         <div className="commerce-card purchase-card">
-          <div className="commerce-heading"><span>Compra #{order?.order_number || ""}</span><h1>{order?.payment_status === "paid" ? "Pagamento confirmado" : "Aguardando pagamento"}</h1><p>{order?.establishment?.fantasy || order?.establishment?.name}</p></div>
+          <div className="commerce-heading">
+            <span>Compra #{order?.order_number || ""}</span>
+            <h1>{isPaid ? (isDelivery ? "Entrega liberada" : "Retirada liberada") : "Aguardando pagamento"}</h1>
+            <p>{order?.establishment?.fantasy || order?.establishment?.name}</p>
+          </div>
           {error && <Alert variant="danger">{error}</Alert>}
 
-          <div className="purchase-status">
-            {order?.payment_status === "paid" ? <FaCheckCircle size={28} /> : <FaClock size={28} />}
-            <div><strong>{order?.payment_status === "paid" ? "Compra paga" : order?.payment_status === "failed" ? "Pagamento não concluído" : "Pagamento pendente"}</strong><small>{order?.payment_status === "paid" ? "Seu direito de retirada/entrega já está liberado." : "A confirmação acontece automaticamente, sem recarregar a página."}</small></div>
+          <div className={`purchase-flow ${isPaid ? "purchase-flow--paid" : "purchase-flow--pending"}`} aria-label="Etapas da compra">
+            <div className={`purchase-flow__step ${isPaid ? "completed" : "active"}`}>
+              <span className="purchase-flow__index">{isPaid ? <FaCheckCircle /> : "1"}</span>
+              <div><small>Etapa 1</small><strong>{isPaid ? "Pagamento confirmado" : "Pagamento"}</strong></div>
+            </div>
+            <div className="purchase-flow__connector" aria-hidden="true" />
+            <div className={`purchase-flow__step ${isPaid ? "active" : "locked"}`}>
+              <span className="purchase-flow__index">2</span>
+              <div><small>Etapa 2</small><strong>{isDelivery ? "Receber pedido" : "Retirar pedido"}</strong></div>
+            </div>
+          </div>
+
+          <div className={`purchase-status ${isPaid ? "purchase-status--paid" : ""}`}>
+            {isPaid ? <FaCheckCircle size={28} /> : <FaClock size={28} />}
+            <div>
+              <strong>{isPaid ? "Pagamento concluído. Agora use o comprovante abaixo." : order?.payment_status === "failed" ? "Pagamento não concluído" : "Pagamento pendente"}</strong>
+              <small>{isPaid ? (isDelivery ? "O QR de pagamento não é mais necessário. Apresente o comprovante somente ao receber o pedido." : "O QR de pagamento não é mais necessário. Apresente o comprovante somente no momento da retirada.") : "A confirmação acontece automaticamente, sem recarregar a página."}</small>
+            </div>
           </div>
 
           <div className="purchase-items">
             {(order?.items || []).map((row) => <div className="purchase-item" key={row.item_id}><span>{row.quantity}× {row.name}</span><strong>{money(row.subtotal)}</strong></div>)}
           </div>
-          <div className="order-summary"><span>Total <strong>{money(order?.total_price)}</strong></span><span>Recebimento <strong>{order?.fulfillment === "delivery" ? "Entrega" : "Retirada"}</strong></span></div>
+          <div className="order-summary"><span>Total <strong>{money(order?.total_price)}</strong></span><span>Recebimento <strong>{isDelivery ? "Entrega" : "Retirada"}</strong></span></div>
 
-          {order?.payment_status !== "paid" && payment?.method === "pix" && (payment?.qr_code || payment?.qr_code_base64) && (
-            <div className="pix-box">
-              <FaQrcode size={28} />
-              <h2>Pague com Pix</h2>
-              {payment.qr_code_base64 && <img src={`data:image/png;base64,${payment.qr_code_base64}`} alt="QR Code Pix" />}
-              {payment.qr_code && <><div className="pix-code">{payment.qr_code}</div><Button className="mt-3" onClick={() => copy(payment.qr_code)}><FaCopy /> Copiar Pix</Button></>}
+          {qrPurpose === "payment" && (
+            <div className="pix-box payment-qr-card" data-qr-purpose="payment">
+              <div className="qr-purpose-badge qr-purpose-badge--payment"><FaQrcode /> QR CODE DE PAGAMENTO</div>
+              <h2>Escaneie para pagar com Pix</h2>
+              <p className="qr-purpose-description">Abra o aplicativo do seu banco e use este QR somente para concluir o pagamento desta compra.</p>
+              {payment.qr_code_base64 && <div className="payment-qr-frame"><img src={`data:image/png;base64,${payment.qr_code_base64}`} alt="QR Code Pix para pagamento" /></div>}
+              {payment.qr_code && <><div className="pix-code">{payment.qr_code}</div><Button className="mt-3" onClick={() => copy(payment.qr_code)}><FaCopy /> Copiar código Pix</Button></>}
+              <div className="payment-qr-note"><FaClock /><span>Após a confirmação, este QR de pagamento desaparece e a etapa de retirada/entrega é liberada.</span></div>
             </div>
           )}
 
-          {order?.payment_status === "paid" && claimUrl && (
-            <div className="claim-box">
-              <FaCheckCircle size={32} />
-              <h2>{order.fulfillment === "delivery" ? "QR Code da entrega" : "QR Code para retirada"}</h2>
-              <p>{order.fulfillment === "delivery" ? "Apresente este QR ao vendedor no momento da entrega." : "Apresente este QR no estabelecimento para retirar seus itens."}</p>
-              <LocalQrCode value={claimUrl} title={`Compra ${order.order_number}`} />
-              <small>Uso único. Após a validação, este QR deixa de conceder a retirada/entrega.</small>
+          {qrPurpose === "fulfillment" && (
+            <div className={`claim-box claim-ticket ${isDelivery ? "claim-ticket--delivery" : "claim-ticket--pickup"}`} data-qr-purpose="fulfillment">
+              <div className="claim-ticket__confirmed"><FaCheckCircle /><span>PAGAMENTO CONFIRMADO</span></div>
+              <div className="qr-purpose-badge qr-purpose-badge--fulfillment"><FaBoxOpen /> {isDelivery ? "COMPROVANTE DE ENTREGA" : "COMPROVANTE DE RETIRADA"}</div>
+              <h2>{isDelivery ? "Pedido pronto para entrega" : "Retirada liberada"}</h2>
+              <p className="qr-purpose-description">{isDelivery ? "Mostre este QR ao vendedor somente no momento em que receber seus itens." : "Mostre este QR ao atendente somente quando estiver no estabelecimento para retirar seus itens."}</p>
+
+              <div className="claim-ticket__qr">
+                <LocalQrCode value={claimUrl} title={`${isDelivery ? "Entrega" : "Retirada"} da compra ${order.order_number}`} />
+              </div>
+
+              <div className="claim-ticket__details">
+                <div><small>Pedido</small><strong>#{order.order_number}</strong></div>
+                <div><small>Finalidade</small><strong>{isDelivery ? "Confirmar entrega" : "Confirmar retirada"}</strong></div>
+                <div><small>Validade</small><strong>Uso único</strong></div>
+              </div>
+
+              <div className="claim-ticket__warning">
+                <FaShieldAlt />
+                <div><strong>NÃO É UM QR CODE DE PAGAMENTO</strong><span>Não escaneie no aplicativo do banco. Este código serve apenas para validar {isDelivery ? "a entrega" : "a retirada"} do pedido.</span></div>
+              </div>
             </div>
           )}
 
-          {order?.fulfillment_status === "fulfilled" && <Alert variant="success" className="mt-3">Retirada já confirmada.</Alert>}
-          {order?.fulfillment_status === "delivered" && <Alert variant="success" className="mt-3">Entrega já confirmada.</Alert>}
+          {fulfillmentComplete && (
+            <div className="fulfillment-complete-card">
+              <FaCheckCircle size={30} />
+              <div><strong>{order?.fulfillment_status === "delivered" ? "Entrega já confirmada" : "Retirada já confirmada"}</strong><span>O comprovante de uso único foi encerrado e não precisa mais ser apresentado.</span></div>
+            </div>
+          )}
 
           <div className="commerce-actions">
-            {order?.payment_status !== "paid" && payment?.method === "card" && payment?.checkout_url && <Button onClick={() => window.location.assign(payment.checkout_url)}><FaCreditCard /> Continuar pagamento</Button>}
+            {!isPaid && payment?.method === "card" && payment?.checkout_url && <Button onClick={() => window.location.assign(payment.checkout_url)}><FaCreditCard /> Continuar pagamento</Button>}
             {order?.payment_status === "failed" && <><Button disabled={retrying} onClick={() => retry("pix")}><FaQrcode /> Tentar Pix</Button><Button variant="outline-light" disabled={retrying} onClick={() => retry("card")}><FaCreditCard /> Tentar cartão</Button></>}
             <Button variant="outline-light" onClick={() => navigate("/purchases")}>Minhas compras</Button>
             {order?.establishment?.slug && <Button variant="outline-info" onClick={() => navigate(`/catalog/${order.establishment.slug}`)}>Voltar ao catálogo</Button>}
