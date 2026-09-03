@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { Row, Col, Form, Alert } from "react-bootstrap";
 import GlobalHeroEditorPreview from "../GlobalHeroEditorPreview";
 import GlobalImageUploader from "../GlobalImageUploader";
+import CatalogSpecificationFields from "./CatalogSpecificationFields";
 import { appId } from "../../config";
 import "./ItemCreateForm.css";
 
@@ -27,14 +28,11 @@ export default function ItemCreateForm({
     }
   };
 
-  const handleUploadPreview = (preview) => {
-    setImagePreview(preview);
-  };
+  const handleUploadPreview = (preview) => setImagePreview(preview);
 
   const handleImageUrlChange = (event) => {
     const value = event.target.value;
     const trimmed = value.trim();
-
     setImageUrl(value);
     setImageFile(null);
 
@@ -50,12 +48,7 @@ export default function ItemCreateForm({
 
   const handleFormSubmit = (data) => {
     if (imageUrl.trim() && imageUrlStatus === "error") return;
-
-    onSubmit({
-      ...data,
-      image: imageFile || undefined,
-      image_url: imageUrl.trim() || undefined,
-    });
+    onSubmit({ ...data, image: imageFile || undefined, image_url: imageUrl.trim() || undefined });
   };
 
   const hasLinkedImage = Boolean(imageUrl.trim());
@@ -120,15 +113,8 @@ export default function ItemCreateForm({
                     borderRadius: 12,
                   }}
                 />
-
-                {imageUrlStatus === "loading" && (
-                  <div className="mt-2 text-body-secondary">Carregando prévia…</div>
-                )}
-
-                {imageUrlStatus === "loaded" && (
-                  <div className="mt-2 text-success">Imagem carregada com sucesso.</div>
-                )}
-
+                {imageUrlStatus === "loading" && <div className="mt-2 text-body-secondary">Carregando prévia…</div>}
+                {imageUrlStatus === "loaded" && <div className="mt-2 text-success">Imagem carregada com sucesso.</div>}
                 {imageUrlStatus === "error" && (
                   <Alert variant="danger" className="mt-2 mb-0">
                     Não foi possível carregar essa imagem. Verifique se o link é público e aponta diretamente para uma imagem.
@@ -141,37 +127,25 @@ export default function ItemCreateForm({
           <Col xs={12} md={8}>
             <div className="form-group">
               <label htmlFor="item-name">Nome*</label>
-              <input
-                id="item-name"
-                type="text"
-                autoComplete="off"
-                {...register("name", { required: true })}
-                required
-              />
+              <input id="item-name" type="text" autoComplete="off" {...register("name", { required: true })} required />
             </div>
           </Col>
 
           <Col xs={12} md={4}>
             <div className="form-group">
               <label htmlFor="item-type">Tipo</label>
-              <select id="item-type" {...register("type")}>
-                <option value="">Item genérico</option>
+              <select id="item-type" {...register("type")} defaultValue="product">
                 <option value="product">Produto</option>
                 <option value="service">Serviço</option>
+                <option value="">Item genérico</option>
               </select>
             </div>
           </Col>
 
           <Col xs={12} md={4}>
             <div className="form-group">
-              <label htmlFor="item-price">Preço</label>
-              <input
-                id="item-price"
-                type="text"
-                inputMode="decimal"
-                placeholder="Ex.: 49,90"
-                {...register("price")}
-              />
+              <label htmlFor="item-price">Preço*</label>
+              <input id="item-price" type="text" inputMode="decimal" placeholder="Ex.: 23,90" {...register("price", { required: true })} required />
             </div>
           </Col>
 
@@ -179,12 +153,7 @@ export default function ItemCreateForm({
             <Col xs={12} md={4}>
               <div className="form-group">
                 <label htmlFor="item-duration">Duração em minutos</label>
-                <input
-                  id="item-duration"
-                  type="number"
-                  min="1"
-                  {...register("duration")}
-                />
+                <input id="item-duration" type="number" min="1" {...register("duration")} />
               </div>
             </Col>
           )}
@@ -208,14 +177,21 @@ export default function ItemCreateForm({
             </div>
           </Col>
 
-          <Col xs={12} md={6}>
+          <Col xs={12} md={4}>
+            <div className="form-group">
+              <label htmlFor="item-sku">SKU / referência</label>
+              <input id="item-sku" type="text" autoComplete="off" {...register("sku")} />
+            </div>
+          </Col>
+
+          <Col xs={12} md={4}>
             <div className="form-group">
               <label htmlFor="item-category">Categoria</label>
               <input id="item-category" type="text" {...register("category")} />
             </div>
           </Col>
 
-          <Col xs={12} md={6}>
+          <Col xs={12} md={4}>
             <div className="form-group">
               <label htmlFor="item-subcategory">Subcategoria</label>
               <input id="item-subcategory" type="text" {...register("subcategory")} />
@@ -224,10 +200,12 @@ export default function ItemCreateForm({
 
           <Col xs={12} md={6}>
             <div className="form-group">
-              <label htmlFor="item-brand">Marca ou referência</label>
+              <label htmlFor="item-brand">Marca</label>
               <input id="item-brand" type="text" {...register("brand")} />
             </div>
           </Col>
+
+          {type === "product" && <CatalogSpecificationFields register={register} watch={watch} />}
 
           <Col xs={12}>
             <div className="form-group">
@@ -235,18 +213,14 @@ export default function ItemCreateForm({
               <textarea
                 id="item-description"
                 rows={5}
-                placeholder="Descreva o item com as informações relevantes para o cliente."
+                placeholder="Descreva benefícios e uso. Medidas, peso e volume devem ficar também nos campos estruturados acima."
                 {...register("description")}
               />
             </div>
           </Col>
 
           <Col xs={12} className="text-end">
-            <button
-              type="submit"
-              className="submit-btn"
-              disabled={isSubmitting || (hasLinkedImage && imageUrlStatus === "error")}
-            >
+            <button type="submit" className="submit-btn" disabled={isSubmitting || (hasLinkedImage && imageUrlStatus === "error")}>
               {isSubmitting ? "Salvando…" : "Criar item"}
             </button>
           </Col>
