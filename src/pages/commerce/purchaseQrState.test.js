@@ -1,4 +1,10 @@
-import { getPurchaseQrPurpose, isFulfillmentComplete } from "./purchaseQrState";
+import {
+  getPurchaseQrPurpose,
+  getPurchaseStage,
+  isFulfillmentComplete,
+  isFulfillmentPreparing,
+  isFulfillmentReady,
+} from "./purchaseQrState";
 
 describe("purchase QR purpose", () => {
   test("shows the Pix payment QR while payment is pending", () => {
@@ -11,13 +17,23 @@ describe("purchase QR purpose", () => {
     })).toBe("payment");
   });
 
-  test("switches to the fulfillment QR after payment even if stale Pix data still exists", () => {
+  test("does not expose the pickup QR while a paid order is preparing", () => {
     expect(getPurchaseQrPurpose({
       paymentStatus: "paid",
       paymentMethod: "pix",
       hasPaymentQr: true,
       hasClaimQr: true,
-      fulfillmentStatus: "pending",
+      fulfillmentStatus: "preparing",
+    })).toBe("none");
+  });
+
+  test.each(["ready", "available"])("shows fulfillment QR only when status is %s", (fulfillmentStatus) => {
+    expect(getPurchaseQrPurpose({
+      paymentStatus: "paid",
+      paymentMethod: "pix",
+      hasPaymentQr: true,
+      hasClaimQr: true,
+      fulfillmentStatus,
     })).toBe("fulfillment");
   });
 
@@ -44,9 +60,13 @@ describe("purchase QR purpose", () => {
     },
   );
 
-  test("recognizes terminal fulfillment states", () => {
-    expect(isFulfillmentComplete("fulfilled")).toBe(true);
+  test("recognizes lifecycle stages", () => {
+    expect(getPurchaseStage({ paymentStatus: "pending", fulfillmentStatus: "pending" })).toBe(0);
+    expect(getPurchaseStage({ paymentStatus: "paid", fulfillmentStatus: "preparing" })).toBe(1);
+    expect(getPurchaseStage({ paymentStatus: "paid", fulfillmentStatus: "ready" })).toBe(2);
+    expect(getPurchaseStage({ paymentStatus: "paid", fulfillmentStatus: "fulfilled" })).toBe(3);
+    expect(isFulfillmentPreparing("preparing")).toBe(true);
+    expect(isFulfillmentReady("available")).toBe(true);
     expect(isFulfillmentComplete("delivered")).toBe(true);
-    expect(isFulfillmentComplete("pending")).toBe(false);
   });
 });

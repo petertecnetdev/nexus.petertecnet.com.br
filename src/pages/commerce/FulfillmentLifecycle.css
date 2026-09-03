@@ -1,0 +1,224 @@
+.purchase-flow--four{
+  grid-template-columns:minmax(0,1fr) auto minmax(0,1fr) auto minmax(0,1fr) auto minmax(0,1fr);
+  gap:.55rem;
+}
+
+.purchase-flow--four .purchase-flow__connector{
+  width:28px;
+}
+
+.payment-success-reveal{
+  animation:payment-success-reveal .55s ease-out both;
+}
+
+@keyframes payment-success-reveal{
+  from{opacity:.25;transform:translateY(8px) scale(.99)}
+  to{opacity:1;transform:translateY(0) scale(1)}
+}
+
+.fulfillment-preparing-card,
+.fulfillment-ready-card{
+  display:flex;
+  align-items:flex-start;
+  gap:.85rem;
+  margin:1rem 0;
+  padding:1rem 1.05rem;
+  border:1px solid rgba(97,221,255,.18);
+  border-radius:16px;
+  background:linear-gradient(135deg,rgba(97,221,255,.08),rgba(255,255,255,.025));
+}
+
+.fulfillment-preparing-card svg,
+.fulfillment-ready-card svg{
+  flex:0 0 auto;
+  color:#61ddff;
+}
+
+.fulfillment-preparing-card strong,
+.fulfillment-preparing-card span,
+.fulfillment-ready-card strong,
+.fulfillment-ready-card span{
+  display:block;
+}
+
+.fulfillment-preparing-card span,
+.fulfillment-ready-card span{
+  margin-top:.18rem;
+  color:#a9c3d5;
+  line-height:1.45;
+}
+
+.ready-now-alert{
+  display:flex;
+  align-items:center;
+  gap:.55rem;
+  margin-top:1rem;
+}
+
+.claim-ticket__establishment{
+  margin:.25rem 0 0;
+  color:#8df5d4;
+  font-size:.72rem;
+  font-weight:900;
+  letter-spacing:.09em;
+  text-transform:uppercase;
+}
+
+.claim-ticket__address{
+  max-width:520px;
+  margin:.35rem auto .8rem;
+  color:#b5d8cd;
+  font-size:.86rem;
+}
+
+.claim-manual-code{
+  display:grid;
+  justify-items:center;
+  gap:.55rem;
+  max-width:420px;
+  margin:1rem auto;
+  padding:1rem;
+  border:1px solid rgba(144,245,214,.18);
+  border-radius:16px;
+  background:rgba(255,255,255,.045);
+}
+
+.claim-manual-code small{
+  color:#9fcbbd;
+}
+
+.claim-manual-code strong{
+  font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono",monospace;
+  font-size:clamp(1.45rem,5vw,2rem);
+  letter-spacing:.08em;
+  color:#fff;
+}
+
+.claim-ticket__items{
+  margin:1rem 0;
+  padding:1rem;
+  border:1px solid rgba(144,245,214,.12);
+  border-radius:16px;
+  background:rgba(255,255,255,.03);
+  text-align:left;
+}
+
+.claim-ticket__items>small{
+  display:block;
+  margin-bottom:.45rem;
+  color:#89b6a8;
+  font-size:.68rem;
+  font-weight:800;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+}
+
+.claim-ticket__items>div{
+  display:flex;
+  justify-content:space-between;
+  gap:1rem;
+  padding:.5rem 0;
+  border-bottom:1px solid rgba(255,255,255,.06);
+}
+
+.claim-ticket__items>div:last-child{
+  border-bottom:0;
+}
+
+.fulfillment-status-badge{
+  display:inline-flex;
+  align-items:center;
+  gap:.4rem;
+  padding:.28rem .58rem;
+  border:1px solid rgba(126,231,255,.18);
+  border-radius:999px;
+  background:rgba(126,231,255,.06);
+  color:#bfefff;
+  font-size:.72rem;
+  font-weight:800;
+}
+
+.fulfillment-status-badge.ready,
+.fulfillment-status-badge.available{
+  border-color:rgba(114,236,199,.36);
+  background:rgba(114,236,199,.1);
+  color:#b9f6e4;
+}
+
+.fulfillment-status-badge.fulfilled,
+.fulfillment-status-badge.delivered{
+  border-color:rgba(255,255,255,.16);
+  background:rgba(255,255,255,.06);
+  color:#d5e1e9;
+}
+
+.seller-fulfillment-actions{
+  display:flex;
+  flex-wrap:wrap;
+  gap:.55rem;
+  align-items:center;
+  margin-top:.85rem;
+}
+
+.fulfillment-history{
+  margin-top:1rem;
+  padding:1rem;
+  border:1px solid rgba(126,231,255,.12);
+  border-radius:16px;
+  background:rgba(255,255,255,.025);
+}
+
+.fulfillment-history h3{
+  margin:0 0 .75rem;
+  font-size:1rem;
+}
+
+.fulfillment-history__item{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  gap:.5rem 1rem;
+  padding:.65rem 0;
+  border-bottom:1px solid rgba(255,255,255,.06);
+}
+
+.fulfillment-history__item:last-child{
+  border-bottom:0;
+}
+
+.fulfillment-history__item small{
+  color:#8ea5b8;
+}
+
+.redeem-credential-switch{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:.6rem;
+  margin-bottom:1rem;
+}
+
+.redeem-credential-switch button{
+  border:1px solid rgba(126,231,255,.18);
+  border-radius:12px;
+  padding:.7rem;
+  background:#07131f;
+  color:#a9c3d5;
+  font-weight:800;
+}
+
+.redeem-credential-switch button.active{
+  border-color:#61ddff;
+  background:rgba(97,221,255,.1);
+  color:#fff;
+}
+
+@media(max-width:860px){
+  .purchase-flow--four{
+    grid-template-columns:1fr;
+  }
+
+  .purchase-flow--four .purchase-flow__connector{
+    width:2px;
+    height:16px;
+    margin-left:18px;
+  }
+}
