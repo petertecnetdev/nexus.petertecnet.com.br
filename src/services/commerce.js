@@ -65,6 +65,13 @@ export async function updateCommerceOrderStatus(publicId, status) {
   return data?.data || null;
 }
 
+export async function verifyCommerceFulfillment(publicId, token) {
+  const { data } = await api.get(`${base}/orders/${encodeURIComponent(publicId)}/fulfillment`, {
+    params: { token },
+  });
+  return data?.data || null;
+}
+
 export async function redeemCommerceOrder(publicId, token) {
   const { data } = await api.post(`${base}/orders/${encodeURIComponent(publicId)}/redeem`, { token });
   return data;
