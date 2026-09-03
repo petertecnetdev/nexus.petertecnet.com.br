@@ -165,7 +165,7 @@ function AppInner() {
           <Route path="/purchase/:publicId" element={protectedRoute(<PurchasePage />)} />
           <Route path="/purchases" element={protectedRoute(<MyPurchasesPage />)} />
           <Route path="/orders/manage" element={protectedRoute(<SellerOrdersPage />)} />
-          <Route path="/orders/scan" element={protectedRoute(<OrderScannerPage />} />
+          <Route path="/orders/scan" element={protectedRoute(<OrderScannerPage />)} />
           <Route path="/redeem/:publicId" element={<RedeemOrderPage />} />
 
           <Route path="/user/update" element={protectedRoute(<UserUpdatePage />)} />
