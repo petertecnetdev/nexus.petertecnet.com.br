@@ -4,6 +4,7 @@ import PropTypes from "prop-types";
 import EntityImage from "../EntityImage";
 import EstablishmentActionsBar from "./EstablishmentActionsBar";
 import "./EstablishmentDashboard.css";
+import "./EstablishmentVisibility.css";
 
 export default function EstablishmentDashboard({ establishment, navigate, onDelete, deleting, onActivate, activating }) {
   const name = establishment.fantasy || establishment.name || "Empresa";
