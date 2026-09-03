@@ -25,11 +25,11 @@ jobs:
       VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
 
   smoke-catalog:
-    name: Production catalog smoke test
+    name: Production public experience smoke test
     needs: deploy
     runs-on: ubuntu-latest
     steps:
-      - name: Verify Nexus directory and first public catalog
+      - name: Verify Nexus directory, company presentation and catalog
         shell: bash
         run: |
           set -euo pipefail
@@ -53,7 +53,10 @@ jobs:
           echo "$CATALOG_JSON" | jq -e '.data.establishment.slug == $slug' --arg slug "$SLUG" >/dev/null
           echo "$CATALOG_JSON" | jq -e '.data.items | type == "array"' >/dev/null
 
-          PAGE="$(curl --fail --silent --show-error --location --retry 5 --retry-all-errors "https://nexus.petertecnet.com.br/catalog/${SLUG}")"
-          test -n "$PAGE"
+          COMPANY_PAGE="$(curl --fail --silent --show-error --location --retry 5 --retry-all-errors "https://nexus.petertecnet.com.br/establishment/view/${SLUG}")"
+          test -n "$COMPANY_PAGE"
 
-          echo "Production smoke test passed for catalog: $SLUG"
+          CATALOG_PAGE="$(curl --fail --silent --show-error --location --retry 5 --retry-all-errors "https://nexus.petertecnet.com.br/catalog/${SLUG}")"
+          test -n "$CATALOG_PAGE"
+
+          echo "Production smoke test passed for company presentation and catalog: $SLUG"
