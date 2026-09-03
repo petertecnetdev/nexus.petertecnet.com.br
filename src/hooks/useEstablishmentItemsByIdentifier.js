@@ -203,8 +203,13 @@ const fallbackAvailability = (status) => {
   };
 };
 
+const previewRequestedFromLocation = () => {
+  if (typeof window === "undefined") return false;
+  return new URLSearchParams(window.location.search).get("preview") === "1";
+};
+
 export default function useEstablishmentItemsByIdentifier(identifier, options = {}) {
-  const preview = options?.preview === true;
+  const preview = options?.preview === true || previewRequestedFromLocation();
   const [establishment, setEstablishment] = useState(null);
   const [items, setItems] = useState([]);
   const [availability, setAvailability] = useState(null);
@@ -277,6 +282,37 @@ export default function useEstablishmentItemsByIdentifier(identifier, options = 
   useEffect(() => {
     fetchItems();
   }, [fetchItems]);
+
+  useEffect(() => {
+    if (!availability) return undefined;
+
+    let robots = document.head.querySelector('meta[name="robots"]');
+    const created = !robots;
+    const previousContent = robots?.getAttribute("content") || null;
+
+    if (!robots) {
+      robots = document.createElement("meta");
+      robots.setAttribute("name", "robots");
+      document.head.appendChild(robots);
+    }
+
+    robots.setAttribute(
+      "content",
+      availability.indexable === true && availability.preview !== true
+        ? "index, follow"
+        : "noindex, nofollow, noarchive"
+    );
+
+    return () => {
+      if (created) {
+        robots?.remove();
+      } else if (previousContent) {
+        robots?.setAttribute("content", previousContent);
+      } else {
+        robots?.removeAttribute("content");
+      }
+    };
+  }, [availability]);
 
   return {
     establishment,
