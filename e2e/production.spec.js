@@ -127,7 +127,7 @@ test("public company presentation loads without authentication and shows the cov
   await expect(page.locator(".estv-presentation-hero.has-cover")).toBeVisible();
   await expect(page.locator("body")).toContainText("Sobre Empresa E2E");
   await expect(page.locator("body")).toContainText("Acesse esta empresa rapidamente");
-  await expect(page.getByRole("button", { name: /Ver catálogo/i })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Ver catálogo", exact: true })).toBeVisible();
 });
 
 test("public company presentation direct navigation survives SPA server fallback", async ({ page }) => {
