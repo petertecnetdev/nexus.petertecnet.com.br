@@ -61,6 +61,7 @@ export default function ItemUpdatePage() {
           subcategory: data.subcategory ?? "",
           brand: data.brand ?? "",
           is_featured: Number(data.is_featured ?? 0),
+          display_order: Number(data.display_order ?? 0),
         });
 
         const img = data.files?.find(
