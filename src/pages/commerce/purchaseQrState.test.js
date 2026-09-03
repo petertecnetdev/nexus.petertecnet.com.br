@@ -31,6 +31,19 @@ describe("purchase QR purpose", () => {
     })).toBe("none");
   });
 
+  test.each(["failed", "refunded", "cancelled", "canceled"])(
+    "does not show a stale Pix QR when payment is %s",
+    (paymentStatus) => {
+      expect(getPurchaseQrPurpose({
+        paymentStatus,
+        paymentMethod: "pix",
+        hasPaymentQr: true,
+        hasClaimQr: false,
+        fulfillmentStatus: "pending",
+      })).toBe("none");
+    },
+  );
+
   test("recognizes terminal fulfillment states", () => {
     expect(isFulfillmentComplete("fulfilled")).toBe(true);
     expect(isFulfillmentComplete("delivered")).toBe(true);
