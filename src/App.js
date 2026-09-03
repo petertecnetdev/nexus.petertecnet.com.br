@@ -40,6 +40,7 @@ import CheckoutPage from "./pages/commerce/CheckoutPage";
 import PurchasePage from "./pages/commerce/PurchasePage";
 import MyPurchasesPage from "./pages/commerce/MyPurchasesPage";
 import SellerOrdersPage from "./pages/commerce/SellerOrdersPage";
+import OrderScannerPage from "./pages/commerce/OrderScannerPage";
 import RedeemOrderPage from "./pages/commerce/RedeemOrderPage";
 
 import "./index.css";
@@ -162,6 +163,7 @@ function AppInner() {
           <Route path="/purchase/:publicId" element={protectedRoute(<PurchasePage />)} />
           <Route path="/purchases" element={protectedRoute(<MyPurchasesPage />)} />
           <Route path="/orders/manage" element={protectedRoute(<SellerOrdersPage />)} />
+          <Route path="/orders/scan" element={protectedRoute(<OrderScannerPage />)} />
           <Route path="/redeem/:publicId" element={<RedeemOrderPage />} />
 
           <Route path="/user/update" element={protectedRoute(<UserUpdatePage />)} />
