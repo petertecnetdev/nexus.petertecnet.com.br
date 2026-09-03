@@ -16,6 +16,7 @@ const publicNavigation = [{ label: "Início", path: "/", end: true }];
 const accountNavigation = [
   { label: "Minhas compras", path: "/purchases" },
   { label: "Pedidos recebidos", path: "/orders/manage" },
+  { label: "Ler QR de retirada", path: "/orders/scan" },
   { label: "Meus catálogos", path: "/establishment/my" },
   { label: "Cadastrar empresa", path: "/establishment/create" },
   { label: "Minha conta", path: "/user/update" },
@@ -98,7 +99,7 @@ export default function GlobalNav({ loadingMenu, handleLogout }) {
     <div className="globalnav__right">
       {cartItems > 0 && <button type="button" className="globalnav__btn globalnav__btn--ghost" onClick={() => isAuthed ? navigate("/checkout") : navigate("/login", { state: { from: { pathname: "/checkout" } } })}><FaShoppingCart /> {cartItems}</button>}
       {!navIsLoading && !isAuthed && <div className="globalnav__authActions"><Link to="/login" className="globalnav__btn globalnav__btn--ghost">Entrar</Link><Link to="/register" className="globalnav__btn globalnav__btn--primary">Criar conta</Link></div>}
-      {!navIsLoading && isAuthed && <div className="globalnav__user" ref={userMenuRef}><button type="button" className="globalnav__userBtn" onClick={() => setUserMenuOpen((open) => !open)} aria-haspopup="menu" aria-expanded={userMenuOpen}><img src={avatarSrc} alt="" className="globalnav__avatar" onError={handleImgError} /><span className="globalnav__userName">{fullName}</span></button>{userMenuOpen && <div className="globalnav__userMenu" role="menu" aria-label="Menu da conta">{accountNavigation.map((item, index) => <React.Fragment key={item.path}>{index === 2 && <div className="globalnav__divider" role="separator" />}<Link to={item.path} className="globalnav__userMenuItem" onClick={closeUserMenu} role="menuitem">{item.label}</Link></React.Fragment>)}<button type="button" className="globalnav__userMenuItem globalnav__logout" onClick={onLogout} disabled={processing} aria-busy={processing} role="menuitem">{processing ? "Saindo…" : "Sair da conta"}</button></div>}</div>}
+      {!navIsLoading && isAuthed && <div className="globalnav__user" ref={userMenuRef}><button type="button" className="globalnav__userBtn" onClick={() => setUserMenuOpen((open) => !open)} aria-haspopup="menu" aria-expanded={userMenuOpen}><img src={avatarSrc} alt="" className="globalnav__avatar" onError={handleImgError} /><span className="globalnav__userName">{fullName}</span></button>{userMenuOpen && <div className="globalnav__userMenu" role="menu" aria-label="Menu da conta">{accountNavigation.map((item, index) => <React.Fragment key={item.path}>{index === 3 && <div className="globalnav__divider" role="separator" />}<Link to={item.path} className="globalnav__userMenuItem" onClick={closeUserMenu} role="menuitem">{item.label}</Link></React.Fragment>)}<button type="button" className="globalnav__userMenuItem globalnav__logout" onClick={onLogout} disabled={processing} aria-busy={processing} role="menuitem">{processing ? "Saindo…" : "Sair da conta"}</button></div>}</div>}
     </div>
   </div></header>;
 }
