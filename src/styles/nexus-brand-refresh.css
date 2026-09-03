@@ -90,12 +90,14 @@ body::before {
   background: rgba(0, 194, 255, .11);
 }
 
-.globalnav__link--active::after,
+.globalnav__link--active::after {
+  background: var(--nx-accent);
+}
+
 .globalnav__searchBox > svg,
 .globalnav__searchGroup > small,
 .globalnav__searchGroup > button > svg {
   color: var(--nx-accent);
-  background-color: var(--nx-accent);
 }
 
 .globalnav__searchBox {
