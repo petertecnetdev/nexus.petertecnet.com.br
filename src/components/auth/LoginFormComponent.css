@@ -38,6 +38,46 @@
   color: #fff;
 }
 
+.password-input-wrap {
+  position: relative;
+  width: 100%;
+}
+
+.password-input-wrap .neon-input {
+  padding-right: 5.7rem;
+}
+
+.password-visibility-toggle {
+  position: absolute;
+  top: 50%;
+  right: 9px;
+  z-index: 3;
+  min-width: 68px;
+  min-height: 36px;
+  padding: 0 10px;
+  transform: translateY(-50%);
+  border: 1px solid rgba(0, 123, 255, 0.28);
+  border-radius: 10px;
+  background: rgba(15, 17, 22, 0.92);
+  color: rgba(242, 244, 248, 0.88);
+  font-size: 0.76rem;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background 0.2s ease, color 0.2s ease;
+}
+
+.password-visibility-toggle:hover {
+  border-color: var(--primary);
+  background: rgba(0, 123, 255, 0.16);
+  color: #fff;
+}
+
+.password-visibility-toggle:focus-visible {
+  outline: 2px solid rgba(51, 155, 255, 0.85);
+  outline-offset: 2px;
+}
+
 /* BUTTONS */
 .neon-button {
   background: var(--primary);
@@ -123,6 +163,18 @@
   .neon-input {
     font-size: 0.95rem;
     padding: 0.8rem;
+  }
+
+  .password-input-wrap .neon-input {
+    padding-right: 5.35rem;
+  }
+
+  .password-visibility-toggle {
+    right: 7px;
+    min-width: 64px;
+    min-height: 34px;
+    padding-inline: 8px;
+    font-size: 0.72rem;
   }
 
   .neon-button,
