@@ -23,6 +23,8 @@ export default function ItemCreatePage() {
     defaultValues: {
       status: 1,
       availability: "available",
+      type: "product",
+      sale_unit: "un",
     },
   });
 
@@ -52,7 +54,7 @@ export default function ItemCreatePage() {
           background={est.background}
           title={est.fantasy || est.name}
           subtitle="Adicionar item ao catálogo"
-          description="Cadastre o item com as informações que o cliente realmente precisa para entendê-lo e consultá-lo no catálogo."
+          description="Cadastre digitando ou falando. A Nexus também organiza medidas, volume, EAN e demais especificações para reduzir erros e retrabalho."
           city={est.city}
           uf={est.uf}
           showBack
@@ -63,6 +65,7 @@ export default function ItemCreatePage() {
         <ItemCreateForm
           register={register}
           handleSubmit={handleSubmit}
+          setValue={setValue}
           watch={watch}
           isSubmitting={isSubmitting || loading}
           onSubmit={submitCreate}
