@@ -33,6 +33,17 @@ const findFileUrl = (files, types) => {
 
 const uniqueUrls = (values) => [...new Set(values.filter(Boolean))];
 
+const parseJsonObject = (value) => {
+  if (value && typeof value === "object" && !Array.isArray(value)) return value;
+  if (!value || typeof value !== "string") return {};
+  try {
+    const parsed = JSON.parse(value);
+    return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? parsed : {};
+  } catch {
+    return {};
+  }
+};
+
 const resolveItemImage = (item) =>
   item?.image_url ||
   item?.image ||
@@ -76,6 +87,7 @@ const normalizeEstablishment = (establishment) => {
 
   return {
     ...establishment,
+    profile_settings: parseJsonObject(establishment.profile_settings),
     images: {
       ...images,
       logo,
@@ -91,6 +103,8 @@ const normalizeItem = (item, establishment) => ({
   entity_name: normalizeEntityName(item?.entity_name),
   establishment: item.establishment || establishment || null,
   image: resolveItemImage(item),
+  is_featured: Boolean(Number(item?.is_featured ?? 0)),
+  display_order: Number(item?.display_order ?? 0),
 });
 
 export default function useEstablishmentItemsByIdentifier(identifier) {
