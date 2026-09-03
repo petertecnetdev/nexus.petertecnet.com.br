@@ -7,6 +7,16 @@ import EstablishmentUpdateForm from "../../components/establishment/Establishmen
 import useEstablishmentUpdate from "../../hooks/useEstablishmentUpdate";
 import "./EstablishmentUpdate.css";
 
+const EMPTY_HOURS = {
+  monday: { enabled: true, open: "09:00", close: "18:00" },
+  tuesday: { enabled: true, open: "09:00", close: "18:00" },
+  wednesday: { enabled: true, open: "09:00", close: "18:00" },
+  thursday: { enabled: true, open: "09:00", close: "18:00" },
+  friday: { enabled: true, open: "09:00", close: "18:00" },
+  saturday: { enabled: false, open: "09:00", close: "13:00" },
+  sunday: { enabled: false, open: "09:00", close: "13:00" },
+};
+
 export default function EstablishmentUpdatePage() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -38,6 +48,13 @@ export default function EstablishmentUpdatePage() {
       youtube_url: "",
       website_url: "",
       segments: [],
+      profile_settings: {
+        cover_position_y: 50,
+        primary_cta: "catalog",
+        capabilities: ["catalog", "contact"],
+        payment_methods: [],
+        business_hours: EMPTY_HOURS,
+      },
     },
   });
 
@@ -60,7 +77,7 @@ export default function EstablishmentUpdatePage() {
         <div className="establishment-page-heading">
           <span>Empresa e catálogo</span>
           <h1>Editar empresa</h1>
-          <p>Confira os dados atuais e altere somente o que precisar.</p>
+          <p>Atualize os dados e controle como sua empresa aparece publicamente na Nexus.</p>
         </div>
 
         {loading ? (
