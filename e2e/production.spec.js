@@ -179,8 +179,8 @@ test("public company presentation loads without authentication and shows the cov
 test("public company presentation exposes cross-catalog discovery links", async ({ page }) => {
   await page.goto("/establishment/view/catalogo-e2e");
   await expect(page.getByRole("heading", { name: "Descubra mais na Nexus" })).toBeVisible();
-  await expect(page.getByText("Outra Empresa E2E", { exact: true })).toBeVisible();
-  await expect(page.getByText("Outro Produto E2E", { exact: true })).toBeVisible();
+  await expect(page.locator(".estv-company-link").filter({ hasText: "Outra Empresa E2E" })).toBeVisible();
+  await expect(page.locator(".estv-item-link").filter({ hasText: "Outro Produto E2E" })).toBeVisible();
   await expect(page.getByRole("button", { name: /Explorar a Nexus/i })).toBeVisible();
 });
 
