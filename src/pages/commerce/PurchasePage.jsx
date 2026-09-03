@@ -16,6 +16,7 @@ import LocalQrCode from "../../components/LocalQrCode";
 import { getCommerceOrder, getCommercePayment, retryCommercePayment } from "../../services/commerce";
 import { getPurchaseQrPurpose, isFulfillmentComplete } from "./purchaseQrState";
 import "./Commerce.css";
+import "./PurchaseQr.css";
 
 const money = (value) => Number(value || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
