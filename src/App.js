@@ -35,6 +35,7 @@ import EstablishmentCreatePage from "./pages/establishment/EstablishmentCreatePa
 import EstablishmentUpdatePage from "./pages/establishment/EstablishmentUpdatePage";
 import EstablishmentMyPage from "./pages/establishment/EstablishmentMyPage";
 import EstablishmentItemPage from "./pages/establishment/EstablishmentItemPage";
+import EstablishmentViewPage from "./pages/establishment/EstablishmentViewPage";
 import CatalogPage from "./pages/catalog/CatalogPage";
 import CheckoutPage from "./pages/commerce/CheckoutPage";
 import PurchasePage from "./pages/commerce/PurchasePage";
@@ -154,7 +155,8 @@ function AppInner() {
 
           <Route path="/catalog/:slug" element={<CatalogPage />} />
           <Route path="/catalogo/:slug" element={<CatalogRedirect />} />
-          <Route path="/establishment/view/:slug" element={<CatalogRedirect />} />
+          <Route path="/establishment/view/:slug" element={<EstablishmentViewPage />} />
+          <Route path="/empresa/:slug" element={<EstablishmentViewPage />} />
           <Route path="/establishments" element={<Navigate to="/" replace />} />
           <Route path="/item/view/:slug" element={<ItemViewPage />} />
           <Route path="/item/:slug" element={<ItemViewPage />} />

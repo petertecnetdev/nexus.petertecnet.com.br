@@ -57,12 +57,12 @@ export default function LocalQrCode({ value, title, size = 320 }) {
 
       const anchor = document.createElement("a");
       anchor.href = dataUrl;
-      anchor.download = `${String(title || "catalogo-nexus")
+      anchor.download = `${String(title || "nexus")
         .normalize("NFD")
         .replace(/[\u0300-\u036f]/g, "")
         .replace(/[^a-zA-Z0-9_-]+/g, "-")
         .replace(/^-+|-+$/g, "")
-        .toLowerCase() || "catalogo-nexus"}-qr.png`;
+        .toLowerCase() || "nexus"}-qr.png`;
       document.body.appendChild(anchor);
       anchor.click();
       anchor.remove();
@@ -78,11 +78,11 @@ export default function LocalQrCode({ value, title, size = 320 }) {
         ref={canvasRef}
         width={size}
         height={size}
-        aria-label={`QR Code do catálogo ${title || "Nexus"}`}
+        aria-label={`QR Code de ${title || "Nexus"}`}
         role="img"
       />
       {generationError ? (
-        <small role="status">Não foi possível gerar o QR Code. Use o link do catálogo.</small>
+        <small role="status">Não foi possível gerar o QR Code. Use o link compartilhável.</small>
       ) : (
         <button type="button" onClick={download} disabled={!ready}>
           {ready ? "Baixar QR Code" : "Gerando QR Code…"}

@@ -4,7 +4,7 @@ import PropTypes from "prop-types";
 import { Link } from "react-router-dom";
 
 export default function EstablishmentActionsBar({ establishment, onDelete, deleting }) {
-  const catalogUrl = `/catalog/${establishment.slug}`;
+  const presentationUrl = `/establishment/view/${establishment.slug}`;
 
   return (
     <div className="company-card__actions" aria-label={`Ações de ${establishment.fantasy || establishment.name}`}>
@@ -12,11 +12,15 @@ export default function EstablishmentActionsBar({ establishment, onDelete, delet
         <i className="fas fa-boxes-stacked" aria-hidden="true" />
         <span>Itens</span>
       </Link>
+      <Link to={presentationUrl} className="company-action">
+        <i className="fas fa-arrow-up-right-from-square" aria-hidden="true" />
+        <span>Ver</span>
+      </Link>
       <Link to={`/establishment/update/${establishment.id}`} className="company-action">
         <i className="fas fa-pen" aria-hidden="true" />
         <span>Editar</span>
       </Link>
-      <Link to={`${catalogUrl}#compartilhar`} className="company-action">
+      <Link to={presentationUrl} className="company-action">
         <i className="fas fa-qrcode" aria-hidden="true" />
         <span>QR</span>
       </Link>
