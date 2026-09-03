@@ -20,7 +20,7 @@ export default function EstablishmentActionsBar({ establishment, onDelete, delet
         <i className="fas fa-pen" aria-hidden="true" />
         <span>Editar</span>
       </Link>
-      <Link to={`${presentationUrl}#compartilhar`} className="company-action">
+      <Link to={presentationUrl} className="company-action">
         <i className="fas fa-qrcode" aria-hidden="true" />
         <span>QR</span>
       </Link>
