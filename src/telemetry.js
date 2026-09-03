@@ -1,5 +1,14 @@
 const SENSITIVE_KEY_PATTERN = /password|token|secret|cookie|card|cpf|document|authorization|code/i
-const TELEMETRY_SCHEMA = "2"
+const TELEMETRY_SCHEMA = "3"
+
+export function trackTelemetry(type, details = {}) {
+  if (typeof window === "undefined" || !type) return
+  window.dispatchEvent(
+    new CustomEvent("peter:telemetry", {
+      detail: { type, ...details },
+    })
+  )
+}
 
 export function startTelemetry({ apiBaseUrl, appSlug, appId, getToken = () => localStorage.getItem("token") }) {
   if (typeof window === "undefined" || window.__peterTelemetryStarted) return () => {}
@@ -179,6 +188,13 @@ export function startTelemetry({ apiBaseUrl, appSlug, appId, getToken = () => lo
     })
   }
 
+  function onSemanticTelemetry(event) {
+    const detail = event?.detail || {}
+    if (!detail.type) return
+    const { type, ...eventDetails } = detail
+    enqueue(type, eventDetails)
+  }
+
   function onPopState() {
     recordNavigation("popstate")
   }
@@ -211,6 +227,7 @@ export function startTelemetry({ apiBaseUrl, appSlug, appId, getToken = () => lo
   window.addEventListener("error", onError)
   window.addEventListener("unhandledrejection", onRejection)
   window.addEventListener("nexus:api", onApi)
+  window.addEventListener("peter:telemetry", onSemanticTelemetry)
   window.addEventListener("scroll", onScroll, { passive: true })
   window.addEventListener("pagehide", onPageHide)
 
@@ -237,6 +254,7 @@ export function startTelemetry({ apiBaseUrl, appSlug, appId, getToken = () => lo
     window.removeEventListener("error", onError)
     window.removeEventListener("unhandledrejection", onRejection)
     window.removeEventListener("nexus:api", onApi)
+    window.removeEventListener("peter:telemetry", onSemanticTelemetry)
     window.removeEventListener("scroll", onScroll)
     window.removeEventListener("pagehide", onPageHide)
     window.history.pushState = originalPush
