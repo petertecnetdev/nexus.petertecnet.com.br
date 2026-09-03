@@ -1,0 +1,19 @@
+.company-card__visibility-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  margin: 2px 0 14px;
+  padding: 10px 12px;
+  color: #a9c6d6;
+  background: rgba(26, 94, 122, .12);
+  border: 1px solid rgba(99, 194, 221, .18);
+  border-radius: 12px;
+  font-size: .82rem;
+  line-height: 1.48;
+}
+
+.company-card__visibility-note i {
+  flex: 0 0 auto;
+  margin-top: 3px;
+  color: #6ddbee;
+}
