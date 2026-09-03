@@ -106,7 +106,7 @@ export default function PurchasePage() {
 
   const claimUrl = useMemo(() => {
     if (!order?.claim?.token || !order?.public_id) return "";
-    return `${window.location.origin}/redeem/${encodeURIComponent(order.public_id)}?token=${encodeURIComponent(order.claim.token)}`;
+    return `${window.location.origin}/redeem/${encodeURIComponent(order.public_id)}#token=${encodeURIComponent(order.claim.token)}`;
   }, [order]);
 
   const copy = async (text) => {
