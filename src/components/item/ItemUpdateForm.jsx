@@ -23,6 +23,7 @@ export default function ItemUpdateForm({
   if (!item) return null;
 
   const type = watch("type");
+  const isFeatured = Number(watch("is_featured")) === 1;
   const hasLinkedImage = Boolean(imageUrl?.trim());
 
   return (
@@ -151,12 +152,7 @@ export default function ItemUpdateForm({
           <Col xs={12} md={4}>
             <div className="form-group">
               <label htmlFor="item-update-price">Preço</label>
-              <input
-                id="item-update-price"
-                type="text"
-                inputMode="decimal"
-                {...register("price")}
-              />
+              <input id="item-update-price" type="text" inputMode="decimal" {...register("price")} />
             </div>
           </Col>
 
@@ -185,6 +181,36 @@ export default function ItemUpdateForm({
                 <option value="1">Ativo</option>
                 <option value="0">Inativo</option>
               </select>
+            </div>
+          </Col>
+
+          <Col xs={12} md={6}>
+            <div className="form-group">
+              <label htmlFor="item-update-featured">Destaque na apresentação</label>
+              <select id="item-update-featured" {...register("is_featured")}>
+                <option value="0">Não destacar</option>
+                <option value="1">Destacar este item</option>
+              </select>
+              <small className="d-block mt-2 text-body-secondary">
+                Itens destacados aparecem primeiro na vitrine pública da empresa.
+              </small>
+            </div>
+          </Col>
+
+          <Col xs={12} md={6}>
+            <div className="form-group">
+              <label htmlFor="item-update-display-order">Prioridade do destaque</label>
+              <input
+                id="item-update-display-order"
+                type="number"
+                min="0"
+                max="100000"
+                disabled={!isFeatured}
+                {...register("display_order", { valueAsNumber: true })}
+              />
+              <small className="d-block mt-2 text-body-secondary">
+                Números menores aparecem primeiro entre os itens destacados.
+              </small>
             </div>
           </Col>
 
