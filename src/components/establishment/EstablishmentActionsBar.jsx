@@ -4,7 +4,12 @@ import PropTypes from "prop-types";
 import { Link } from "react-router-dom";
 
 export default function EstablishmentActionsBar({ establishment, onDelete, deleting }) {
-  const presentationUrl = `/establishment/view/${establishment.slug}`;
+  const availability = establishment?.availability || {};
+  const needsPrivatePreview =
+    availability?.viewer?.can_preview === true && availability?.is_public !== true;
+  const presentationUrl = `/establishment/view/${establishment.slug}${
+    needsPrivatePreview ? "?preview=1" : ""
+  }`;
 
   return (
     <div className="company-card__actions" aria-label={`Ações de ${establishment.fantasy || establishment.name}`}>
@@ -13,8 +18,8 @@ export default function EstablishmentActionsBar({ establishment, onDelete, delet
         <span>Itens</span>
       </Link>
       <Link to={presentationUrl} className="company-action">
-        <i className="fas fa-arrow-up-right-from-square" aria-hidden="true" />
-        <span>Ver</span>
+        <i className={needsPrivatePreview ? "fas fa-eye" : "fas fa-arrow-up-right-from-square"} aria-hidden="true" />
+        <span>{needsPrivatePreview ? "Prévia" : "Ver"}</span>
       </Link>
       <Link to={`/establishment/update/${establishment.id}`} className="company-action">
         <i className="fas fa-pen" aria-hidden="true" />
@@ -43,6 +48,12 @@ EstablishmentActionsBar.propTypes = {
     slug: PropTypes.string.isRequired,
     name: PropTypes.string,
     fantasy: PropTypes.string,
+    availability: PropTypes.shape({
+      is_public: PropTypes.bool,
+      viewer: PropTypes.shape({
+        can_preview: PropTypes.bool,
+      }),
+    }),
   }).isRequired,
   onDelete: PropTypes.func.isRequired,
   deleting: PropTypes.bool,
