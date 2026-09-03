@@ -51,10 +51,7 @@ export default function ItemUpdatePage() {
         let variant = null;
         if (data.type === "product") {
           try {
-            const { data: resolved } = await catalogIntelligence.resolve({
-              name: data.name,
-              brand: data.brand,
-            });
+            const { data: resolved } = await catalogIntelligence.resolve({ name: data.name, brand: data.brand });
             variant = resolved?.data || null;
           } catch {
             variant = null;
@@ -104,9 +101,7 @@ export default function ItemUpdatePage() {
         }
       } catch (error) {
         if (error?.code === "ERR_CANCELED") return;
-        setApiError(
-          error?.response?.data?.message || error?.response?.data?.error || error?.message || "Erro ao carregar item."
-        );
+        setApiError(error?.response?.data?.message || error?.response?.data?.error || error?.message || "Erro ao carregar item.");
       } finally {
         if (!controller.signal.aborted) setLoading(false);
       }
@@ -156,7 +151,13 @@ export default function ItemUpdatePage() {
 
   const onSubmit = async (values) => {
     if (imageUrl.trim() && imageUrlStatus === "error") return;
-    const response = await updateItem(values, imageFile, removeImage, imageUrl);
+    const previousName = String(item?.name || "").trim();
+    const nextName = String(values.name || "").trim();
+    const payload = {
+      ...values,
+      alias: previousName && nextName && previousName.toLowerCase() !== nextName.toLowerCase() ? previousName : "",
+    };
+    const response = await updateItem(payload, imageFile, removeImage, imageUrl);
     if (!response) return;
     const updatedItem = response?.item ?? response?.data ?? null;
     const slug = updatedItem?.slug || item?.slug;
