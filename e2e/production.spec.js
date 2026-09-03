@@ -1,6 +1,11 @@
 const { test, expect } = require("@playwright/test");
 
 const apiBase = "https://api.petertecnet.com.br/api";
+const storageBase = "https://api.petertecnet.com.br/storage";
+const pixelPng = Buffer.from(
+  "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=",
+  "base64"
+);
 
 const establishmentFixture = {
   id: 10,
@@ -30,6 +35,19 @@ const establishmentFixture = {
   ],
 };
 
+const otherEstablishmentFixture = {
+  id: 11,
+  app_id: 2,
+  name: "Outra Empresa E2E",
+  fantasy: "Outra Empresa E2E",
+  slug: "outra-empresa-e2e",
+  description: "Outra empresa disponível para descoberta.",
+  city: "São Paulo",
+  uf: "SP",
+  total_views: 48,
+  files: [],
+};
+
 const catalogPayload = {
   target_application_id: 2,
   establishment: establishmentFixture,
@@ -51,6 +69,14 @@ const catalogPayload = {
 };
 
 async function mockPublicApi(page) {
+  await page.route(`${storageBase}/**`, async (route) => {
+    return route.fulfill({
+      status: 200,
+      contentType: "image/png",
+      body: pixelPng,
+    });
+  });
+
   await page.route(`${apiBase}/**`, async (route) => {
     const url = route.request().url();
 
@@ -76,8 +102,28 @@ async function mockPublicApi(page) {
               total_views: 120,
               source_app: { id: 2, name: "Nexus", slug: "nexus" },
             },
+            {
+              ...otherEstablishmentFixture,
+              source_app: { id: 2, name: "Nexus", slug: "nexus" },
+            },
           ],
-          items: [],
+          items: [
+            {
+              id: 100,
+              entity_id: 11,
+              establishment_id: 11,
+              app_id: 2,
+              name: "Outro Produto E2E",
+              slug: "outro-produto-e2e",
+              description: "Item de outro catálogo para descoberta.",
+              category: "Teste",
+              price: 29.9,
+              status: 1,
+              type: "product",
+              files: [],
+              establishment: otherEstablishmentFixture,
+            },
+          ],
         }),
       });
     }
@@ -128,6 +174,14 @@ test("public company presentation loads without authentication and shows the cov
   await expect(page.locator("body")).toContainText("Sobre Empresa E2E");
   await expect(page.locator("body")).toContainText("Acesse esta empresa rapidamente");
   await expect(page.getByRole("button", { name: "Ver catálogo", exact: true })).toBeVisible();
+});
+
+test("public company presentation exposes cross-catalog discovery links", async ({ page }) => {
+  await page.goto("/establishment/view/catalogo-e2e");
+  await expect(page.getByRole("heading", { name: "Descubra mais na Nexus" })).toBeVisible();
+  await expect(page.getByText("Outra Empresa E2E", { exact: true })).toBeVisible();
+  await expect(page.getByText("Outro Produto E2E", { exact: true })).toBeVisible();
+  await expect(page.getByRole("button", { name: /Explorar a Nexus/i })).toBeVisible();
 });
 
 test("public company presentation direct navigation survives SPA server fallback", async ({ page }) => {
