@@ -54,7 +54,6 @@ function loadAuthSession(apiBaseUrl, appSlug) {
         }
         return;
       }
-
       const script = document.createElement("script");
       script.src = AUTH_SESSION_URL;
       script.async = true;
@@ -75,7 +74,11 @@ export default function PeterAccountGateway({ apiBaseUrl, appSlug, children }) {
   useEffect(() => {
     let active = true;
     const host = hostRef.current;
-    Promise.all([loadSdk(), loadAuthSession(apiBaseUrl, appSlug)]).then(() => {
+
+    loadAuthSession(apiBaseUrl, appSlug)
+      .catch((error) => console.error("[Peter Tecnet Auth]", error));
+
+    loadSdk().then(() => {
       if (!active || !host) return;
       const launcher = document.createElement("peter-ecosystem-launcher");
       launcher.setAttribute("api-base", apiBaseUrl || "https://api.petertecnet.com.br/api");
@@ -83,6 +86,7 @@ export default function PeterAccountGateway({ apiBaseUrl, appSlug, children }) {
       launcher.setAttribute("sdk-version", SDK_VERSION);
       host.replaceChildren(launcher);
     }).catch((error) => console.error("[Peter Tecnet Ecosystem]", error));
+
     return () => { active = false; host?.replaceChildren(); };
   }, [apiBaseUrl, appSlug]);
   return <>{children}<span ref={hostRef} style={{ display: "contents" }} /></>;
