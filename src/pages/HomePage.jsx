@@ -9,7 +9,7 @@ import GlobalFooter from "../components/GlobalFooter";
 import EntityImage from "../components/EntityImage";
 import ExploreCatalogs from "../components/home/ExploreCatalogs";
 import api from "../services/api";
-import { appId } from "../config";
+import { apiV1BaseUrl, appId } from "../config";
 import useImageUtils from "../hooks/useImageUtils";
 
 import "./HomePage.css";
@@ -19,154 +19,25 @@ const formatPrice = (value) => {
   if (value === null || value === undefined || value === "" || !Number.isFinite(Number(value))) return null;
   return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(Number(value));
 };
-
-const getInitials = (name) => {
-  const parts = String(name || "").trim().split(/\s+/).filter(Boolean);
-  if (!parts.length) return "?";
-  if (parts.length === 1) return parts[0][0].toUpperCase();
-  return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
-};
-
-const getCompanyImages = (establishment) => {
-  const files = Array.isArray(establishment?.files) ? establishment.files : [];
-  return [
-    establishment?.images?.logo,
-    establishment?.logo,
-    files.find((file) => file?.type === "logo")?.public_url,
-    establishment?.images?.background,
-    files.find((file) => file?.type === "background")?.public_url,
-    files.find((file) => file?.is_primary)?.public_url,
-    files[0]?.public_url,
-  ];
-};
-
-function DiscoveryItemMedia({ image, name }) {
-  const [failed, setFailed] = useState(false);
-  const showImage = Boolean(image) && !failed;
-  return (
-    <div className={`hp-item-card__image ${showImage ? "" : "hp-item-card__image--initials"}`}>
-      {showImage ? <img src={image} alt={name || "Item"} loading="lazy" onError={() => setFailed(true)} /> : <span aria-label={`Sem foto: ${name || "item"}`}>{getInitials(name)}</span>}
-    </div>
-  );
-}
+const getInitials = (name) => { const parts = String(name || "").trim().split(/\s+/).filter(Boolean); if (!parts.length) return "?"; if (parts.length === 1) return parts[0][0].toUpperCase(); return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase(); };
+const getCompanyImages = (establishment) => { const files = Array.isArray(establishment?.files) ? establishment.files : []; return [establishment?.images?.logo, establishment?.logo, files.find((file) => file?.type === "logo")?.public_url, establishment?.images?.background, files.find((file) => file?.type === "background")?.public_url, files.find((file) => file?.is_primary)?.public_url, files[0]?.public_url]; };
+function DiscoveryItemMedia({ image, name }) { const [failed, setFailed] = useState(false); const showImage = Boolean(image) && !failed; return <div className={`hp-item-card__image ${showImage ? "" : "hp-item-card__image--initials"}`}>{showImage ? <img src={image} alt={name || "Item"} loading="lazy" onError={() => setFailed(true)} /> : <span aria-label={`Sem foto: ${name || "item"}`}>{getInitials(name)}</span>}</div>; }
 DiscoveryItemMedia.propTypes = { image: PropTypes.string, name: PropTypes.string };
-
-function Rail({ title, subtitle, children, railRef }) {
-  const move = (direction) => railRef.current?.scrollBy({ left: direction * Math.max(280, railRef.current.clientWidth * 0.82), behavior: "smooth" });
-  return <section className="hp-discovery-section"><div className="hp-discovery-heading"><div><h2>{title}</h2><p>{subtitle}</p></div><div className="hp-rail-controls" aria-label={`Navegar em ${title}`}><button type="button" onClick={() => move(-1)} aria-label="Anterior"><FaArrowLeft /></button><button type="button" onClick={() => move(1)} aria-label="Próximo"><FaArrowRight /></button></div></div><div className="hp-discovery-rail" ref={railRef}>{children}</div></section>;
-}
+function Rail({ title, subtitle, children, railRef }) { const move = (direction) => railRef.current?.scrollBy({ left: direction * Math.max(280, railRef.current.clientWidth * 0.82), behavior: "smooth" }); return <section className="hp-discovery-section"><div className="hp-discovery-heading"><div><h2>{title}</h2><p>{subtitle}</p></div><div className="hp-rail-controls" aria-label={`Navegar em ${title}`}><button type="button" onClick={() => move(-1)} aria-label="Anterior"><FaArrowLeft /></button><button type="button" onClick={() => move(1)} aria-label="Próximo"><FaArrowRight /></button></div></div><div className="hp-discovery-rail" ref={railRef}>{children}</div></section>; }
 Rail.propTypes = { title: PropTypes.string.isRequired, subtitle: PropTypes.string.isRequired, children: PropTypes.node.isRequired, railRef: PropTypes.shape({ current: PropTypes.instanceOf(Element) }).isRequired };
 
 export default function HomePage() {
-  const { user } = useContext(AuthContext);
-  const navigate = useNavigate();
-  const { imageUrl } = useImageUtils();
-  const [discovery, setDiscovery] = useState({ establishments: [], items: [], city: null, uf: null });
-  const [discoveryLoading, setDiscoveryLoading] = useState(true);
-  const [discoveryError, setDiscoveryError] = useState(false);
-  const companiesRail = useRef(null);
-  const itemsRail = useRef(null);
-  const primaryPath = user ? "/establishment/my" : "/register";
-  const primaryLabel = user ? "Gerenciar meus catálogos" : "Criar meu catálogo";
-
-  useEffect(() => {
-    const controller = new AbortController();
-
-    const loadDiscovery = async () => {
-      try {
-        setDiscoveryLoading(true);
-        setDiscoveryError(false);
-
-        let city = localStorage.getItem("selectedCity") || null;
-        let uf = localStorage.getItem("selectedUF") || null;
-
-        if (!city || !uf) {
-          try {
-            const { data: locationData } = await api.get(`/home/${appId}`, { signal: controller.signal });
-            const locationPayload = locationData?.payload || {};
-            city = city || locationData?.city || locationPayload?.app?.city || null;
-            uf = uf || locationData?.uf || locationPayload?.app?.uf || null;
-          } catch (locationError) {
-            if (locationError?.code === "ERR_CANCELED") throw locationError;
-            // A descoberta continua disponível mesmo sem localização; a cidade
-            // serve apenas para ordenar os catálogos válidos para este aplicativo.
-          }
-        }
-
-        const { data: ecosystemData } = await api.get(
-          `/v1/apps/${encodeURIComponent(appId)}/directory`,
-          {
-            params: {
-              city: city || undefined,
-              uf: uf || undefined,
-              limit: 100,
-            },
-            signal: controller.signal,
-          }
-        );
-
-        setDiscovery({
-          establishments: Array.isArray(ecosystemData?.establishments) ? ecosystemData.establishments : [],
-          items: Array.isArray(ecosystemData?.items) ? ecosystemData.items : [],
-          city: city || ecosystemData?.scope?.current_city || null,
-          uf: uf || ecosystemData?.scope?.current_uf || null,
-        });
-      } catch (error) {
-        if (error?.code !== "ERR_CANCELED") setDiscoveryError(true);
-      } finally {
-        if (!controller.signal.aborted) setDiscoveryLoading(false);
-      }
-    };
-
-    loadDiscovery();
-    return () => controller.abort();
-  }, []);
-
-  const locationLabel = useMemo(() => {
-    const parts = [discovery.city, discovery.uf].filter(Boolean);
-    return parts.length ? parts.join(" - ") : "em todos os catálogos disponíveis";
-  }, [discovery.city, discovery.uf]);
-
-  return (
-    <><GlobalNav /><main className="hp-wrapper">
-      <section className="hp-hero">
-        <div className="hp-hero__copy"><span className="hp-eyebrow">Seu catálogo. Um link. Um QR Code.</span><h1>Descubra, crie e compartilhe catálogos de qualquer lugar.</h1><p>A Nexus prioriza empresas próximas sem limitar a descoberta: explore catálogos da sua cidade, de outras regiões e de lugares que você pretende visitar.</p><div className="hp-hero__actions"><button type="button" className="hp-primary-action" onClick={() => navigate(primaryPath)}>{primaryLabel}</button>{!user && <button type="button" className="hp-secondary-action" onClick={() => navigate("/login")}>Já tenho conta</button>}</div><div className="hp-benefits" aria-label="Benefícios da Nexus"><span><i className="fas fa-location-dot" /> Descoberta local</span><span><i className="fas fa-compass" /> Explore outras cidades</span><span><i className="fas fa-qrcode" /> QR Code e link</span></div></div>
-        <div className="hp-hero__visual" aria-hidden="true"><div className="hp-orbit hp-orbit--one" /><div className="hp-orbit hp-orbit--two" /><div className="hp-logo-card"><img src="/images/logo.png" alt="" /><strong>Nexus</strong><span>catálogos de todos os lugares</span></div></div>
-      </section>
-
-      <section className="hp-discovery" aria-labelledby="hp-discovery-title">
-        <div className="hp-discovery-intro"><div><span className="hp-eyebrow">Descoberta Nexus</span><h2 id="hp-discovery-title">Empresas disponíveis {locationLabel}</h2><p>Empresas cadastradas no ecossistema Peter Tecnet aparecem aqui quando o catálogo está habilitado para a Nexus. A localização apenas organiza a prioridade dos resultados.</p></div><div className="hp-location-chip"><FaMapMarkerAlt /> {locationLabel}</div></div>
-        {discoveryLoading && <div className="hp-discovery-skeleton" aria-label="Carregando empresas">{Array.from({ length: 4 }).map((_, index) => <span key={index} />)}</div>}
-        {!discoveryLoading && discoveryError && <div className="hp-discovery-state"><strong>Não conseguimos carregar as empresas agora.</strong><span>Tente atualizar a página em alguns instantes.</span></div>}
-
-        {!discoveryLoading && !discoveryError && discovery.establishments.length > 0 && (
-          <Rail title="Empresas" subtitle="Catálogos habilitados para a Nexus, com os mais próximos priorizados quando sua localização estiver disponível." railRef={companiesRail}>
-            {discovery.establishments.slice(0, 24).map((establishment) => {
-              const companyName = establishment.fantasy || establishment.name || "Empresa";
-              const sourceApp = establishment?.source_app?.name || establishment?.app?.name;
-              return <article className="hp-company-card" key={establishment.id} onClick={() => navigate(`/catalog/${establishment.slug}`)} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") navigate(`/catalog/${establishment.slug}`); }} role="button" tabIndex={0}>
-                <EntityImage src={getCompanyImages(establishment)} name={companyName} alt={companyName} shape="establishment" loading="lazy" />
-                <div><h3>{companyName}</h3><span><FaMapMarkerAlt /> {[establishment.city, establishment.uf].filter(Boolean).join(" - ") || "Localização não informada"}</span>{sourceApp ? <small>{sourceApp} · {Number(establishment.total_views || 0).toLocaleString("pt-BR")} visualizações</small> : <small><FaEye /> {Number(establishment.total_views || 0).toLocaleString("pt-BR")} visualizações</small>}</div>
-              </article>;
-            })}
-          </Rail>
-        )}
-
-        {!discoveryLoading && !discoveryError && discovery.items.length > 0 && (
-          <Rail title="Itens em destaque" subtitle="Produtos e serviços dos catálogos disponíveis na Nexus." railRef={itemsRail}>
-            {discovery.items.slice(0, 32).map((item) => {
-              const files = Array.isArray(item?.files) ? item.files : [];
-              const image = imageUrl(item?.images?.avatar || item?.images?.gallery?.[0] || item?.image_url || item?.image || files.find((file) => file?.is_primary)?.public_url || files.find((file) => file?.type === "image")?.public_url || files[0]?.public_url);
-              const price = formatPrice(item.price);
-              return <article className="hp-item-card" key={item.id} onClick={() => navigate(`/item/view/${item.slug}`)} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") navigate(`/item/view/${item.slug}`); }} role="button" tabIndex={0}><DiscoveryItemMedia image={image} name={item.name} /><div className="hp-item-card__body"><span className="hp-item-card__company">{item.establishment?.fantasy || item.establishment?.name || "Catálogo Nexus"}</span><h3>{item.name}</h3><div className="hp-item-card__meta">{price && <strong>{price}</strong>}<span><FaEye /> {Number(item.total_views || 0).toLocaleString("pt-BR")}</span></div></div></article>;
-            })}
-          </Rail>
-        )}
-        {!discoveryLoading && !discoveryError && discovery.establishments.length === 0 && discovery.items.length === 0 && <div className="hp-discovery-state"><strong>Ainda não encontramos empresas disponíveis.</strong><span>Assim que houver catálogos habilitados para a Nexus eles aparecerão aqui.</span></div>}
-      </section>
-
-      <ExploreCatalogs currentCity={discovery.city} currentUf={discovery.uf} />
-      <section className="hp-content" aria-labelledby="hp-how-title"><div className="hp-section-intro"><span className="hp-eyebrow">Como funciona</span><h2 id="hp-how-title">Do cadastro ao compartilhamento em poucos passos.</h2><p>Cadastre a empresa, organize os itens, publique e acompanhe o interesse do público pelas visualizações.</p></div><div className="hp-flow-grid"><article className="hp-flow-card"><span>01</span><h3>Cadastre a empresa</h3><p>Crie um espaço próprio com identidade, informações e localização.</p></article><article className="hp-flow-card"><span>02</span><h3>Adicione e edite itens</h3><p>Mantenha fotos, descrição, preço, categoria e disponibilidade sempre atualizados.</p></article><article className="hp-flow-card"><span>03</span><h3>Ganhe visibilidade</h3><p>Itens e empresas podem aparecer primeiro para visitantes próximos e também ser descobertos por pessoas de outras regiões.</p></article><article className="hp-flow-card"><span>04</span><h3>Compartilhe e acompanhe</h3><p>Use QR Code, link público e visualizações para entender o interesse pelo catálogo.</p></article></div></section>
-    </main><GlobalFooter /></>
-  );
+  const { user } = useContext(AuthContext); const navigate = useNavigate(); const { imageUrl } = useImageUtils();
+  const [discovery, setDiscovery] = useState({ establishments: [], items: [], city: null, uf: null }); const [discoveryLoading, setDiscoveryLoading] = useState(true); const [discoveryError, setDiscoveryError] = useState(false); const companiesRail = useRef(null); const itemsRail = useRef(null);
+  const primaryPath = user ? "/establishment/my" : "/register"; const primaryLabel = user ? "Gerenciar meus catálogos" : "Criar meu catálogo";
+  useEffect(() => { const controller = new AbortController(); const loadDiscovery = async () => { try { setDiscoveryLoading(true); setDiscoveryError(false); let city = localStorage.getItem("selectedCity") || null; let uf = localStorage.getItem("selectedUF") || null; if (!city || !uf) { try { const { data: locationData } = await api.get(`/home/${appId}`, { signal: controller.signal }); const locationPayload = locationData?.payload || {}; city = city || locationData?.city || locationPayload?.app?.city || null; uf = uf || locationData?.uf || locationPayload?.app?.uf || null; } catch (locationError) { if (locationError?.code === "ERR_CANCELED") throw locationError; } }
+      const { data: ecosystemData } = await api.get(`${apiV1BaseUrl}/directory`, { params: { city: city || undefined, uf: uf || undefined, limit: 100 }, signal: controller.signal });
+      setDiscovery({ establishments: Array.isArray(ecosystemData?.establishments) ? ecosystemData.establishments : [], items: Array.isArray(ecosystemData?.items) ? ecosystemData.items : [], city: city || ecosystemData?.scope?.current_city || null, uf: uf || ecosystemData?.scope?.current_uf || null });
+    } catch (error) { if (error?.code !== "ERR_CANCELED") setDiscoveryError(true); } finally { if (!controller.signal.aborted) setDiscoveryLoading(false); } }; loadDiscovery(); return () => controller.abort(); }, []);
+  const locationLabel = useMemo(() => { const parts = [discovery.city, discovery.uf].filter(Boolean); return parts.length ? parts.join(" - ") : "em todos os catálogos disponíveis"; }, [discovery.city, discovery.uf]);
+  return <><GlobalNav /><main className="hp-wrapper"><section className="hp-hero"><div className="hp-hero__copy"><span className="hp-eyebrow">Seu catálogo. Um link. Um QR Code.</span><h1>Descubra, crie e compartilhe catálogos de qualquer lugar.</h1><p>A Nexus prioriza empresas próximas sem limitar a descoberta: explore catálogos da sua cidade, de outras regiões e de lugares que você pretende visitar.</p><div className="hp-hero__actions"><button type="button" className="hp-primary-action" onClick={() => navigate(primaryPath)}>{primaryLabel}</button>{!user && <button type="button" className="hp-secondary-action" onClick={() => navigate("/login")}>Já tenho conta</button>}</div><div className="hp-benefits"><span>Descoberta local</span><span>Explore outras cidades</span><span>QR Code e link</span></div></div><div className="hp-hero__visual" aria-hidden="true"><div className="hp-orbit hp-orbit--one" /><div className="hp-orbit hp-orbit--two" /><div className="hp-logo-card"><img src="/images/logo.png" alt="" /><strong>Nexus</strong><span>catálogos de todos os lugares</span></div></div></section>
+<section className="hp-discovery" aria-labelledby="hp-discovery-title"><div className="hp-discovery-intro"><div><span className="hp-eyebrow">Descoberta Nexus</span><h2 id="hp-discovery-title">Empresas disponíveis {locationLabel}</h2><p>Empresas cadastradas no ecossistema Peter Tecnet aparecem aqui quando o catálogo está habilitado para a Nexus. A localização apenas organiza a prioridade dos resultados.</p></div><div className="hp-location-chip"><FaMapMarkerAlt /> {locationLabel}</div></div>{discoveryLoading && <div className="hp-discovery-skeleton">{Array.from({length:4}).map((_,i)=><span key={i}/>)}</div>}{!discoveryLoading && discoveryError && <div className="hp-discovery-state"><strong>Não conseguimos carregar as empresas agora.</strong><span>Tente atualizar a página em alguns instantes.</span></div>}
+{!discoveryLoading && !discoveryError && discovery.establishments.length > 0 && <Rail title="Empresas" subtitle="Catálogos habilitados para a Nexus, com os mais próximos priorizados quando sua localização estiver disponível." railRef={companiesRail}>{discovery.establishments.slice(0,24).map((establishment)=>{const companyName=establishment.fantasy||establishment.name||"Empresa";const sourceApp=establishment?.source_app?.name||establishment?.app?.name;return <article className="hp-company-card" key={establishment.id} onClick={()=>navigate(`/catalog/${establishment.slug}`)} role="button" tabIndex={0}><EntityImage src={getCompanyImages(establishment)} name={companyName} alt={companyName} shape="establishment" loading="lazy"/><div><h3>{companyName}</h3><span><FaMapMarkerAlt /> {[establishment.city,establishment.uf].filter(Boolean).join(" - ")||"Localização não informada"}</span><small>{sourceApp ? `${sourceApp} · ` : ""}{Number(establishment.total_views||0).toLocaleString("pt-BR")} visualizações</small></div></article>;})}</Rail>}
+{!discoveryLoading && !discoveryError && discovery.items.length > 0 && <Rail title="Itens em destaque" subtitle="Produtos e serviços dos catálogos disponíveis na Nexus." railRef={itemsRail}>{discovery.items.slice(0,32).map((item)=>{const files=Array.isArray(item?.files)?item.files:[];const image=imageUrl(item?.images?.avatar||item?.images?.gallery?.[0]||item?.image_url||item?.image||files.find((f)=>f?.is_primary)?.public_url||files[0]?.public_url);const price=formatPrice(item.price);return <article className="hp-item-card" key={item.id} onClick={()=>navigate(`/item/view/${item.slug}`)} role="button" tabIndex={0}><DiscoveryItemMedia image={image} name={item.name}/><div className="hp-item-card__body"><span className="hp-item-card__company">{item.establishment?.fantasy||item.establishment?.name||"Catálogo Nexus"}</span><h3>{item.name}</h3><div className="hp-item-card__meta">{price&&<strong>{price}</strong>}<span><FaEye /> {Number(item.total_views||0).toLocaleString("pt-BR")}</span></div></div></article>;})}</Rail>}
+{!discoveryLoading&&!discoveryError&&discovery.establishments.length===0&&discovery.items.length===0&&<div className="hp-discovery-state"><strong>Ainda não encontramos empresas disponíveis.</strong><span>Assim que houver catálogos habilitados para a Nexus eles aparecerão aqui.</span></div>}</section><ExploreCatalogs currentCity={discovery.city} currentUf={discovery.uf}/><section className="hp-content" aria-labelledby="hp-how-title"><div className="hp-section-intro"><span className="hp-eyebrow">Como funciona</span><h2 id="hp-how-title">Do cadastro ao compartilhamento em poucos passos.</h2><p>Cadastre a empresa, organize os itens, publique e acompanhe o interesse do público pelas visualizações.</p></div></section></main><GlobalFooter /></>;
 }
