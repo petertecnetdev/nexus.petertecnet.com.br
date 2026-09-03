@@ -1,6 +1,7 @@
 import React, { useContext, useEffect, useState } from "react";
 import { Alert, Button, Container, Form, Spinner } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
+import { FaCamera, FaQrcode } from "react-icons/fa";
 
 import { AuthContext } from "../../App";
 import GlobalNav from "../../components/GlobalNav";
@@ -41,9 +42,13 @@ export default function SellerOrdersPage() {
   };
 
   return <div className="commerce-page"><GlobalNav /><Container className="commerce-shell">
-    <div className="commerce-heading"><span>Vendas</span><h1>Pedidos recebidos</h1><p>Prepare, entregue e valide as compras feitas pelos seus clientes.</p></div>
+    <div className="seller-orders-toolbar">
+      <div className="commerce-heading"><span>Vendas</span><h1>Pedidos recebidos</h1><p>Prepare, entregue e valide as compras feitas pelos seus clientes.</p></div>
+      <Button size="lg" className="seller-scan-button" onClick={() => navigate("/orders/scan")}><FaCamera /> Ler QR Code do cliente</Button>
+    </div>
+    <Alert variant="info" className="seller-qr-hint"><FaQrcode /> Quando o cliente chegar para retirar a compra, leia o QR dele. A Nexus mostrará os itens e só dará baixa depois da sua confirmação.</Alert>
     {establishments?.length > 0 && <Form.Select className="mb-3" value={establishmentId} onChange={(e) => setEstablishmentId(e.target.value)}>{establishments.map((est) => <option key={est.id} value={est.id}>{est.fantasy || est.name}</option>)}</Form.Select>}
     {error && <Alert variant="danger">{error}</Alert>}
-    {!establishmentId ? <Alert variant="info">Cadastre uma empresa para começar a receber pedidos.</Alert> : loading ? <div className="text-center"><Spinner animation="border" /></div> : orders.length === 0 ? <Alert variant="info">Nenhuma compra recebida ainda.</Alert> : <div className="orders-list">{orders.map((order) => <article className="order-card" key={order.public_id}><div className="order-card__top"><div><strong>#{order.order_number} · {order.customer_name}</strong><div>{(order.items || []).map((row) => `${row.quantity}× ${row.name}`).join(" · ")}</div></div><strong>{money(order.total_price)}</strong></div><div className="order-card__meta"><span>Pagamento: {order.payment_status}</span><span>{order.fulfillment === "delivery" ? "Entrega" : "Retirada"}</span><span>QR: {order.fulfillment_status || "aguardando"}</span></div>{order.delivery_address && <p className="mt-2 mb-0"><strong>Endereço:</strong> {order.delivery_address}</p>}<div className="commerce-actions"><Form.Select size="sm" value={order.status || "pending"} onChange={(e) => changeStatus(order, e.target.value)} style={{ maxWidth: 190 }}>{statuses.map((status) => <option key={status} value={status}>{status}</option>)}</Form.Select>{order.payment_status === "paid" && !["fulfilled", "delivered"].includes(order.fulfillment_status) && <Button size="sm" variant="outline-info" onClick={() => navigate(`/redeem/${order.public_id}`)}>Validar QR</Button>}</div></article>)}</div>}
+    {!establishmentId ? <Alert variant="info">Cadastre uma empresa para começar a receber pedidos.</Alert> : loading ? <div className="text-center"><Spinner animation="border" /></div> : orders.length === 0 ? <Alert variant="info">Nenhuma compra recebida ainda.</Alert> : <div className="orders-list">{orders.map((order) => <article className="order-card" key={order.public_id}><div className="order-card__top"><div><strong>#{order.order_number} · {order.customer_name}</strong><div>{(order.items || []).map((row) => `${row.quantity}× ${row.name}`).join(" · ")}</div></div><strong>{money(order.total_price)}</strong></div><div className="order-card__meta"><span>Pagamento: {order.payment_status}</span><span>{order.fulfillment === "delivery" ? "Entrega" : "Retirada"}</span><span>Recebimento: {order.fulfillment_status || "aguardando"}</span></div>{order.delivery_address && <p className="mt-2 mb-0"><strong>Endereço:</strong> {order.delivery_address}</p>}<div className="commerce-actions"><Form.Select size="sm" value={order.status || "pending"} onChange={(e) => changeStatus(order, e.target.value)} style={{ maxWidth: 190 }}>{statuses.map((status) => <option key={status} value={status}>{status}</option>)}</Form.Select>{order.payment_status === "paid" && !["fulfilled", "delivered"].includes(order.fulfillment_status) && <Button size="sm" variant="outline-info" onClick={() => navigate("/orders/scan")}><FaQrcode /> Ler QR para validar</Button>}</div></article>)}</div>}
   </Container></div>;
 }
