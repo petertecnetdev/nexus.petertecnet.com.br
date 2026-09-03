@@ -124,13 +124,13 @@ async function mockPublicApi(page) {
       });
     }
 
-    if (url.includes("/v1/apps/nexus/directory")) {
+    if (url.includes("/v1/apps/nexus/discovery")) {
       return route.fulfill({
         status: 200,
         contentType: "application/json",
         body: JSON.stringify({
           success: true,
-          scope: { target_application_id: 2 },
+          scope: { application_id: 2 },
           locations: [],
           establishments: [
             {
