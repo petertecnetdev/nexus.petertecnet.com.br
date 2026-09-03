@@ -167,9 +167,47 @@ const normalizeItem = (item, establishment) => ({
   image: resolveItemImage(item),
 });
 
-export default function useEstablishmentItemsByIdentifier(identifier) {
+const fallbackAvailability = (status) => {
+  if (status === 404) {
+    return {
+      status: "not_found",
+      reason: "not_found",
+      is_public: false,
+      indexable: false,
+      preview: false,
+      http_status: 404,
+      viewer: {},
+    };
+  }
+
+  if (status === 410) {
+    return {
+      status: "unavailable",
+      reason: "disabled",
+      is_public: false,
+      indexable: false,
+      preview: false,
+      http_status: 410,
+      viewer: {},
+    };
+  }
+
+  return {
+    status: "technical_error",
+    reason: "technical_error",
+    is_public: false,
+    indexable: false,
+    preview: false,
+    http_status: status || null,
+    viewer: {},
+  };
+};
+
+export default function useEstablishmentItemsByIdentifier(identifier, options = {}) {
+  const preview = options?.preview === true;
   const [establishment, setEstablishment] = useState(null);
   const [items, setItems] = useState([]);
+  const [availability, setAvailability] = useState(null);
   const [loading, setLoading] = useState(true);
   const [apiError, setApiError] = useState(null);
 
@@ -177,6 +215,7 @@ export default function useEstablishmentItemsByIdentifier(identifier) {
     if (!identifier) {
       setEstablishment(null);
       setItems([]);
+      setAvailability(fallbackAvailability(404));
       setApiError(null);
       setLoading(false);
       return;
@@ -187,21 +226,44 @@ export default function useEstablishmentItemsByIdentifier(identifier) {
 
     try {
       const { data } = await api.get(
-        `${apiV1BaseUrl}/catalog/${encodeURIComponent(identifier)}`
+        `${apiV1BaseUrl}/catalog/${encodeURIComponent(identifier)}`,
+        preview ? { params: { preview: 1 } } : undefined
       );
       const payload = data?.data || data || {};
       const resolvedEstablishment = normalizeEstablishment(
-        payload?.establishment || null
+        payload?.establishment || data?.establishment || null
       );
+      const resolvedAvailability =
+        data?.availability || payload?.availability || {
+          status: "public",
+          reason: null,
+          is_public: true,
+          indexable: true,
+          preview: false,
+          http_status: 200,
+          viewer: {},
+        };
 
       if (!resolvedEstablishment) throw new Error("Catálogo não encontrado.");
 
-      const resolvedItems = Array.isArray(payload?.items) ? payload.items : [];
+      const resolvedItems = Array.isArray(payload?.items)
+        ? payload.items
+        : Array.isArray(data?.items)
+          ? data.items
+          : [];
+      setAvailability(resolvedAvailability);
       setEstablishment(resolvedEstablishment);
       setItems(
         resolvedItems.map((item) => normalizeItem(item, resolvedEstablishment))
       );
     } catch (error) {
+      const responseData = error?.response?.data || {};
+      const responseAvailability =
+        responseData?.availability ||
+        responseData?.data?.availability ||
+        fallbackAvailability(error?.response?.status);
+
+      setAvailability(responseAvailability);
       setApiError(
         getApiMessage(error, error?.message || "Erro ao carregar o catálogo.")
       );
@@ -210,7 +272,7 @@ export default function useEstablishmentItemsByIdentifier(identifier) {
     } finally {
       setLoading(false);
     }
-  }, [identifier]);
+  }, [identifier, preview]);
 
   useEffect(() => {
     fetchItems();
@@ -220,6 +282,9 @@ export default function useEstablishmentItemsByIdentifier(identifier) {
     establishment,
     items,
     count: items.length,
+    availability,
+    viewer: availability?.viewer || {},
+    isPreview: availability?.preview === true || availability?.status === "preview",
     loading,
     apiError,
     reload: fetchItems,
