@@ -1,156 +1,413 @@
 // src/pages/establishment/EstablishmentViewPage.jsx
-import React, { useMemo, useEffect, useState } from "react";
-import { Container, Row, Col } from "react-bootstrap";
-import { useParams, useNavigate } from "react-router-dom";
-import { FaWhatsapp } from "react-icons/fa";
+import React, { useEffect, useMemo } from "react";
+import { Badge, Button, Col, Container, Row } from "react-bootstrap";
+import { useNavigate, useParams } from "react-router-dom";
+import {
+  FaArrowRight,
+  FaBoxOpen,
+  FaEnvelope,
+  FaGlobe,
+  FaMapMarkerAlt,
+  FaPhoneAlt,
+  FaQrcode,
+  FaShareAlt,
+  FaStore,
+  FaWhatsapp,
+} from "react-icons/fa";
 
-import GlobalNav from "../../components/GlobalNav";
-import GlobalHero from "../../components/GlobalHero";
-import EstablishmentSidebar from "../../components/establishment/EstablishmentSidebar";
-import EstablishmentMetrics from "../../components/establishment/EstablishmentMetrics";
-import GlobalCarousel from "../../components/GlobalCarousel";
-import GlobalMap from "../../components/GlobalMap";
-import AppointmentWizardModal from "../../components/appointment/AppointmentWizardModal";
-import GlobalRotativity from "../../components/GlobalRotativity";
+import EntityImage from "../../components/EntityImage";
+import GlobalCard from "../../components/GlobalCard";
 import GlobalGallery from "../../components/GlobalGallery";
-
-import { apiBaseUrl } from "../../config";
-import useAppointment from "../../hooks/useAppointment";
-import useEstablishmentView from "../../hooks/useEstablishmentView";
-import useItemsFilter from "../../hooks/useItemsFilter";
-import useWhatsappLink from "../../hooks/useWhatsappLink";
+import GlobalMap from "../../components/GlobalMap";
+import GlobalNav from "../../components/GlobalNav";
+import LocalQrCode from "../../components/LocalQrCode";
+import NexusFeedback from "../../components/NexusFeedback";
+import ProcessingIndicatorComponent from "../../components/ProcessingIndicatorComponent";
+import useEstablishmentItemsByIdentifier from "../../hooks/useEstablishmentItemsByIdentifier";
 import useImageUtils from "../../hooks/useImageUtils";
-import useScrollControl from "../../hooks/useScrollControl";
-import useAuthPrompt from "../../hooks/useAuthPrompt";
-
-import ShareButton from "../../components/ShareButton";
+import useWhatsappLink from "../../hooks/useWhatsappLink";
+import { linkApp } from "../../config";
 import "./EstablishmentView.css";
 
-const APP_ID = 3;
+const fmtBRL = (value) =>
+  `R$ ${Number(value || 0).toFixed(2).replace(".", ",")}`;
+
+const ensureExternalUrl = (value) => {
+  if (!value) return null;
+  const trimmed = String(value).trim();
+  if (!trimmed) return null;
+  return /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`;
+};
+
+const setMeta = (name, content, property = false) => {
+  if (!content) return;
+  const selector = property
+    ? `meta[property="${name}"]`
+    : `meta[name="${name}"]`;
+  let element = document.head.querySelector(selector);
+  if (!element) {
+    element = document.createElement("meta");
+    element.setAttribute(property ? "property" : "name", name);
+    document.head.appendChild(element);
+  }
+  element.setAttribute("content", content);
+};
 
 export default function EstablishmentViewPage() {
   const { slug } = useParams();
   const navigate = useNavigate();
-  const token = useMemo(() => localStorage.getItem("token"), []);
-
-  const {
-    establishment,
-    metrics,
-    interactionSummary,
-    userInteractions,
-    otherEstablishments,
-    otherEmployers,
-    otherItems,
-    items,
-    employers,
-    ordersSummary,
-    completedAppointments,
-    isLoading,
-  } = useEstablishmentView(apiBaseUrl, slug, token, navigate);
-
-  const { services, products } = useItemsFilter(items);
+  const { establishment, items, loading, apiError } =
+    useEstablishmentItemsByIdentifier(slug);
+  const { imageUrl } = useImageUtils();
   const whatsappLink = useWhatsappLink(establishment);
-  const { imageUrl, handleImgError } = useImageUtils();
 
-  useScrollControl();
-  useAuthPrompt();
+  const activeItems = useMemo(
+    () => items.filter((item) => Number(item.status ?? 1) !== 0),
+    [items]
+  );
 
-  const { loadAvailableTimes } = useAppointment(apiBaseUrl, APP_ID, token, establishment);
-  const [showWizard, setShowWizard] = useState(false);
-  const [wizardOptions, setWizardOptions] = useState({});
+  const title = establishment?.fantasy || establishment?.name || "Empresa";
+  const companyUrl = `${linkApp}/establishment/view/${encodeURIComponent(
+    slug || ""
+  )}`;
+  const catalogUrl = `/catalog/${encodeURIComponent(slug || "")}`;
+  const websiteUrl = ensureExternalUrl(
+    establishment?.website || establishment?.site || establishment?.url
+  );
+  const gallery = Array.isArray(establishment?.images?.gallery)
+    ? establishment.images.gallery
+    : [];
+  const cover =
+    establishment?.images?.background ||
+    establishment?.images?.cover ||
+    establishment?.background ||
+    establishment?.cover ||
+    establishment?.banner ||
+    null;
+  const resolvedCover = cover ? imageUrl(cover) : null;
+  const files = Array.isArray(establishment?.files) ? establishment.files : [];
+  const logoCandidates = [
+    establishment?.images?.logo,
+    establishment?.logo,
+    files.find((file) => file?.type === "logo")?.public_url,
+    files.find((file) => file?.is_primary)?.public_url,
+  ];
+  const socialImage = cover || logoCandidates.find(Boolean) || null;
+  const featuredItems = activeItems.slice(0, 6);
+  const locationLabel = [establishment?.city, establishment?.uf]
+    .filter(Boolean)
+    .join(" - ");
 
-  const openSchedulePopup = (target = {}) => {
-    const opts = {};
-    if (target?.type === "service" || target?.price || target?.duration) opts.preselectedService = target;
-    if (target?.type === "employer" || target?.user || target?.establishment_id) opts.preselectedEmployer = target;
-    setWizardOptions(opts);
-    setTimeout(() => setShowWizard(true), 50);
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [slug]);
+
+  useEffect(() => {
+    if (!establishment) return undefined;
+
+    const previousTitle = document.title;
+    const description =
+      establishment.description ||
+      `Conheça ${title}, veja informações, localização e catálogo na Nexus.`;
+
+    document.title = `${title} — Nexus`;
+    setMeta("description", description);
+    setMeta("og:title", `${title} — Nexus`, true);
+    setMeta("og:description", description, true);
+    setMeta("og:type", "business.business", true);
+    setMeta("og:url", companyUrl, true);
+    if (socialImage) setMeta("og:image", imageUrl(socialImage), true);
+    setMeta("twitter:card", socialImage ? "summary_large_image" : "summary");
+    setMeta("twitter:title", `${title} — Nexus`);
+    setMeta("twitter:description", description);
+    if (socialImage) setMeta("twitter:image", imageUrl(socialImage));
+
+    let canonical = document.head.querySelector('link[rel="canonical"]');
+    if (!canonical) {
+      canonical = document.createElement("link");
+      canonical.setAttribute("rel", "canonical");
+      document.head.appendChild(canonical);
+    }
+    canonical.setAttribute("href", companyUrl);
+
+    return () => {
+      document.title = previousTitle;
+    };
+  }, [companyUrl, establishment, imageUrl, socialImage, title]);
+
+  const shareCompany = async () => {
+    const shareData = {
+      title,
+      text: `Conheça ${title} na Nexus.`,
+      url: companyUrl,
+    };
+
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData);
+        return;
+      } catch (error) {
+        if (error?.name === "AbortError") return;
+      }
+    }
+
+    try {
+      await navigator.clipboard.writeText(companyUrl);
+    } catch {
+      window.prompt("Copie o link da empresa:", companyUrl);
+    }
   };
 
-  useEffect(() => { window.scrollTo({ top: 0, behavior: "smooth" }); }, [slug]);
+  if (loading) {
+    return (
+      <ProcessingIndicatorComponent
+        messages={["Carregando empresa…", "Preparando a apresentação…"]}
+      />
+    );
+  }
 
-  if (!establishment && !isLoading) return null;
-  if (!establishment) return null;
-
-  const fmtBRL = (v) => `R$ ${Number(v || 0).toFixed(2).replace(".", ",")}`;
-
-  const mappedServices = services.map((i) => ({ ...i, type: "service", image: i.image || null }));
-  const mappedProducts = products.map((i) => ({ ...i, type: "product", image: i.image || null }));
-  const hasServices = mappedServices.length > 0;
-  const hasProducts = mappedProducts.length > 0;
-  const mappedGenericItems = !hasServices && !hasProducts && items.length
-    ? items.map((i) => ({ ...i, type: i.type === "product" ? "product" : "service", image: i.image || null }))
-    : [];
-
-  const mappedEmployers = employers?.map((e) => {
-    const avatar = e.user?.files?.find((f) => f.type === "avatar")?.public_url || e.user?.avatar || null;
-    const name = `${e.user?.first_name || ""} ${e.user?.last_name || ""}`.trim();
-    return {
-      id: e.id,
-      type: "employer",
-      name,
-      image: avatar,
-      images: { avatar, gallery: e.files?.filter((f) => f.type !== "avatar").map((f) => f.public_url) || [] },
-      user: e.user,
-    };
-  }) || [];
-
-  const mappedOtherEstablishments = otherEstablishments.map((e) => {
-    const logo = e.images?.logo || e.logo || null;
-    const background = e.images?.background || e.background || null;
-    return { ...e, type: "establishment", image: logo || background || null, images: { logo, background, gallery: e.images?.gallery || [] } };
-  });
-
-  const mappedOtherEmployers = otherEmployers.map((e) => {
-    const avatar = e.images?.avatar || e.avatar || e.image || e.user?.avatar || null;
-    return { ...e, type: "employer", image: avatar, images: { avatar, gallery: e.images?.gallery || [] }, user: e.user || { first_name: e.name || "", avatar } };
-  });
-
-  const mappedOtherItems = otherItems.map((i) => ({ ...i, type: i.type === "product" ? "product" : "service", image: i.image || null }));
+  if (apiError || !establishment) {
+    return (
+      <>
+        <GlobalNav />
+        <Container className="py-5">
+          <NexusFeedback
+            type="error"
+            title="Empresa indisponível"
+            actionLabel="Ir para a Nexus"
+            onAction={() => navigate("/")}
+          >
+            {apiError ||
+              "Não encontramos esta empresa. O link pode estar incorreto ou a empresa pode não estar mais disponível."}
+          </NexusFeedback>
+        </Container>
+      </>
+    );
+  }
 
   return (
     <div className="estv-root">
       <GlobalNav />
-      <GlobalHero
-        entity="establishment"
-        title={establishment.fantasy || establishment.name}
-        description={establishment.description}
-        background={establishment.images?.background || establishment.background || null}
-        logo={establishment.images?.logo || establishment.logo || null}
-        imageUrl={imageUrl}
-        handleImgError={handleImgError}
-        establishment={establishment}
-        interactionSummary={interactionSummary}
-        metrics={metrics}
-        ordersSummary={ordersSummary}
-        whatsappLink={whatsappLink}
-        onScheduleClick={() => openSchedulePopup({ type: "establishment", establishment })}
-        images={establishment.images?.gallery || []}
-      />
 
-      <Container fluid className="estv-main">
-        <Row className="gx-3 gy-4">
-          <Col md={8}>
-            <GlobalGallery images={establishment.images?.gallery || []} />
-            {!hasServices && !hasProducts && mappedGenericItems.length > 0 && <GlobalCarousel title="Serviços e Produtos" items={mappedGenericItems} carouselActive fmtBRL={fmtBRL} apiBaseUrl={apiBaseUrl} openSchedulePopup={openSchedulePopup} navigate={navigate} showSchedule />}
-            {mappedEmployers.length > 0 && <GlobalCarousel title="Profissionais" items={mappedEmployers} carouselActive fmtBRL={fmtBRL} apiBaseUrl={apiBaseUrl} openSchedulePopup={openSchedulePopup} navigate={navigate} showSchedule />}
-            <GlobalMap location={establishment?.location} address={establishment?.address} city={establishment?.city} uf={establishment?.uf} />
-          </Col>
+      <header
+        className={`estv-presentation-hero${resolvedCover ? " has-cover" : ""}`}
+        style={
+          resolvedCover ? { backgroundImage: `url(${resolvedCover})` } : undefined
+        }
+      >
+        <div className="estv-presentation-overlay" />
+        <Container className="estv-presentation-container">
+          <div className="estv-brand-row">
+            <EntityImage
+              src={logoCandidates}
+              name={title}
+              alt={`Logo de ${title}`}
+              shape="establishment"
+              className="estv-brand-logo"
+              loading="eager"
+            />
+            <div className="estv-brand-copy">
+              <Badge className="estv-profile-badge">
+                <FaStore /> Perfil da empresa
+              </Badge>
+              <h1>{title}</h1>
+              {establishment.description && (
+                <p>{establishment.description}</p>
+              )}
+              <div className="estv-hero-meta">
+                {locationLabel && (
+                  <span>
+                    <FaMapMarkerAlt /> {locationLabel}
+                  </span>
+                )}
+                {activeItems.length > 0 && (
+                  <span>
+                    <FaBoxOpen /> {activeItems.length}{" "}
+                    {activeItems.length === 1 ? "item" : "itens"}
+                  </span>
+                )}
+              </div>
+              <div className="estv-hero-actions">
+                <Button onClick={() => navigate(catalogUrl)}>
+                  Ver catálogo <FaArrowRight />
+                </Button>
+                {whatsappLink && (
+                  <a
+                    className="estv-action estv-action--whatsapp"
+                    href={whatsappLink}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    <FaWhatsapp /> WhatsApp
+                  </a>
+                )}
+                <button
+                  type="button"
+                  className="estv-action estv-action--ghost"
+                  onClick={shareCompany}
+                >
+                  <FaShareAlt /> Compartilhar
+                </button>
+              </div>
+            </div>
+          </div>
+        </Container>
+      </header>
 
-          <Col md={4}>
-            <EstablishmentSidebar establishment={establishment} metrics={metrics} ordersSummary={ordersSummary} userInteractions={userInteractions} otherEstablishments={mappedOtherEstablishments} imageUrl={imageUrl} handleImgError={handleImgError} navigate={navigate} openSchedulePopup={openSchedulePopup} />
-            {metrics && <EstablishmentMetrics metrics={metrics} />}
-          </Col>
+      <main className="estv-main">
+        <Container>
+          <Row className="g-4">
+            <Col lg={8}>
+              <section className="estv-section estv-about-card">
+                <div className="estv-section-heading">
+                  <span>Apresentação</span>
+                  <h2>Sobre {title}</h2>
+                </div>
+                <p className="estv-about-text">
+                  {establishment.description ||
+                    `${title} faz parte da Nexus. Explore as informações da empresa e acesse o catálogo para conhecer seus produtos e serviços.`}
+                </p>
 
-          <Col md={12}>
-            <GlobalRotativity otherEstablishments={mappedOtherEstablishments} otherEmployers={mappedOtherEmployers} otherItems={mappedOtherItems} navigate={navigate} openSchedulePopup={openSchedulePopup} fmtBRL={fmtBRL} />
-          </Col>
-        </Row>
-      </Container>
+                <div className="estv-contact-grid">
+                  {establishment.phone && (
+                    <div className="estv-contact-item">
+                      <FaPhoneAlt />
+                      <div>
+                        <small>Telefone</small>
+                        <strong>{establishment.phone}</strong>
+                      </div>
+                    </div>
+                  )}
+                  {establishment.email && (
+                    <a
+                      className="estv-contact-item"
+                      href={`mailto:${establishment.email}`}
+                    >
+                      <FaEnvelope />
+                      <div>
+                        <small>E-mail</small>
+                        <strong>{establishment.email}</strong>
+                      </div>
+                    </a>
+                  )}
+                  {locationLabel && (
+                    <div className="estv-contact-item">
+                      <FaMapMarkerAlt />
+                      <div>
+                        <small>Localização</small>
+                        <strong>{locationLabel}</strong>
+                      </div>
+                    </div>
+                  )}
+                  {websiteUrl && (
+                    <a
+                      className="estv-contact-item"
+                      href={websiteUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      <FaGlobe />
+                      <div>
+                        <small>Site</small>
+                        <strong>Visitar site</strong>
+                      </div>
+                    </a>
+                  )}
+                </div>
+              </section>
 
-      <AppointmentWizardModal show={showWizard} onHide={() => setShowWizard(false)} employers={mappedEmployers} services={mappedServices.length ? mappedServices : mappedGenericItems} loadAvailableTimes={loadAvailableTimes} imageUrl={imageUrl} preselectedService={wizardOptions.preselectedService || null} preselectedEmployer={wizardOptions.preselectedEmployer || null} establishment={establishment} />
-      {whatsappLink && <a href={whatsappLink} target="_blank" rel="noreferrer" className="estv-whatsapp-fab" title="Chamar no WhatsApp"><FaWhatsapp className="estv-whatsapp-icon" /></a>}
-      <ShareButton />
+              {gallery.length > 0 && (
+                <section className="estv-section">
+                  <div className="estv-section-heading">
+                    <span>Ambiente e identidade</span>
+                    <h2>Galeria da empresa</h2>
+                  </div>
+                  <GlobalGallery images={gallery} />
+                </section>
+              )}
+
+              {featuredItems.length > 0 && (
+                <section className="estv-section">
+                  <div className="estv-section-heading estv-section-heading--inline">
+                    <div>
+                      <span>Destaques</span>
+                      <h2>Produtos e serviços</h2>
+                    </div>
+                    <Button
+                      variant="outline-info"
+                      onClick={() => navigate(catalogUrl)}
+                    >
+                      Ver catálogo completo <FaArrowRight />
+                    </Button>
+                  </div>
+                  <Row className="g-3">
+                    {featuredItems.map((item) => (
+                      <Col key={item.id} xs={12} md={6} xl={4}>
+                        <GlobalCard
+                          item={item}
+                          fmtBRL={fmtBRL}
+                          navigate={navigate}
+                        />
+                      </Col>
+                    ))}
+                  </Row>
+                </section>
+              )}
+
+              <GlobalMap
+                location={establishment.location}
+                address={establishment.address}
+                city={establishment.city}
+                uf={establishment.uf}
+              />
+            </Col>
+
+            <Col lg={4}>
+              <aside className="estv-side-stack">
+                <section className="estv-side-card estv-qr-card">
+                  <div className="estv-side-icon">
+                    <FaQrcode />
+                  </div>
+                  <h2>Acesse esta empresa rapidamente</h2>
+                  <p>
+                    O QR Code abre diretamente esta apresentação pública, sem
+                    exigir que a pessoa procure a empresa manualmente.
+                  </p>
+                  <LocalQrCode value={companyUrl} title={title} />
+                  <button type="button" onClick={shareCompany}>
+                    <FaShareAlt /> Compartilhar empresa
+                  </button>
+                </section>
+
+                <section className="estv-side-card estv-catalog-card">
+                  <span>Catálogo Nexus</span>
+                  <h2>Veja tudo que {title} oferece</h2>
+                  <p>
+                    Navegue pelos itens, filtre por categoria e abra os detalhes
+                    de cada produto ou serviço.
+                  </p>
+                  <Button onClick={() => navigate(catalogUrl)}>
+                    Abrir catálogo <FaArrowRight />
+                  </Button>
+                </section>
+              </aside>
+            </Col>
+          </Row>
+        </Container>
+      </main>
+
+      {whatsappLink && (
+        <a
+          href={whatsappLink}
+          target="_blank"
+          rel="noreferrer"
+          className="estv-whatsapp-fab"
+          title="Chamar no WhatsApp"
+          aria-label={`Chamar ${title} no WhatsApp`}
+        >
+          <FaWhatsapp className="estv-whatsapp-icon" />
+        </a>
+      )}
     </div>
   );
 }
