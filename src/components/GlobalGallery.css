@@ -5,15 +5,22 @@
 .gg-thumb {
   width: 100%;
   aspect-ratio: 1 / 1;
+  padding: 0;
+  border: 0;
   border-radius: 10px;
   overflow: hidden;
   cursor: pointer;
-  transition: transform 0.2s ease;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
   background: rgba(255, 255, 255, 0.05);
 }
 
 .gg-thumb:hover {
   transform: scale(1.03);
+}
+
+.gg-thumb:focus-visible {
+  outline: 3px solid rgba(86, 230, 255, 0.4);
+  outline-offset: 3px;
 }
 
 .gg-img {
