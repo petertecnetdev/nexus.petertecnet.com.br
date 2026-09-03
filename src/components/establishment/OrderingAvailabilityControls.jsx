@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Alert, Button, Form, Spinner } from "react-bootstrap";
 import Swal from "sweetalert2";
 import { getOrderingSettings, updateOrderingSettings } from "../../services/ordering";
+import "./OrderingAvailabilityControls.css";
 
 const PAYMENT_OPTIONS = [
   { value: "pix", label: "Pix", hint: "Pagamento instantâneo por QR Code ou copia e cola." },
