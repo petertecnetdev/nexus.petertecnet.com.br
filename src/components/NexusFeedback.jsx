@@ -27,6 +27,16 @@ const DEFAULT_TITLES = {
   neutral: "Aviso",
 };
 
+const RESTRICTED_RESOURCE_MESSAGES = [
+  "recurso não encontrado",
+  "catálogo não encontrado",
+  "estabelecimento não encontrado",
+  "não encontramos esta empresa",
+];
+
+const normalizeFeedbackText = (value) =>
+  typeof value === "string" ? value.trim().toLocaleLowerCase("pt-BR") : "";
+
 export default function NexusFeedback({
   type = "info",
   title,
@@ -37,8 +47,14 @@ export default function NexusFeedback({
   className = "",
 }) {
   const normalizedType = ICONS[type] ? type : "info";
+  const messageText = normalizeFeedbackText(children);
+  const isUnavailableResourceMessage = RESTRICTED_RESOURCE_MESSAGES.some(
+    (message) => messageText.includes(message)
+  );
   const isRestrictedEstablishment =
-    normalizedType === "error" && title === "Empresa indisponível";
+    normalizedType === "error" &&
+    title === "Empresa indisponível" &&
+    isUnavailableResourceMessage;
   const Icon = isRestrictedEstablishment ? FaLock : ICONS[normalizedType];
   const feedbackClassName = [
     "nx-feedback",
@@ -49,24 +65,18 @@ export default function NexusFeedback({
   ]
     .filter(Boolean)
     .join(" ");
+  const feedbackRole =
+    isRestrictedEstablishment || normalizedType !== "error" ? "status" : "alert";
+  const feedbackLive =
+    isRestrictedEstablishment || normalizedType !== "error"
+      ? "polite"
+      : "assertive";
 
   return (
     <div
       className={feedbackClassName}
-      role={
-        isRestrictedEstablishment
-          ? "status"
-          : normalizedType === "error"
-            ? "alert"
-            : "status"
-      }
-      aria-live={
-        isRestrictedEstablishment
-          ? "polite"
-          : normalizedType === "error"
-            ? "assertive"
-            : "polite"
-      }
+      role={feedbackRole}
+      aria-live={feedbackLive}
     >
       <div className="nx-feedback__icon" aria-hidden="true">
         <Icon />
