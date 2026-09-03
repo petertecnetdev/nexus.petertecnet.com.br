@@ -3,8 +3,7 @@ import PropTypes from "prop-types";
 import { FaArrowLeft, FaArrowRight, FaEye, FaMapMarkerAlt, FaSearch } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 
-import api from "../../services/api";
-import { appId } from "../../config";
+import { getFromApiV1 } from "../../services/apiV1";
 import useImageUtils from "../../hooks/useImageUtils";
 import "./ExploreCatalogs.css";
 
@@ -81,20 +80,17 @@ export default function ExploreCatalogs({ currentCity, currentUf }) {
       try {
         setLoading(true);
         setError(false);
-        const { data } = await api.get(
-          `/v1/apps/${encodeURIComponent(appId)}/directory`,
-          {
-            params: {
-              city: currentCity || undefined,
-              uf: currentUf || undefined,
-              target_city: selected?.city || undefined,
-              target_uf: selected?.uf || undefined,
-              q: appliedQuery || undefined,
-              limit: 60,
-            },
-            signal: controller.signal,
-          }
-        );
+        const { data } = await getFromApiV1("/discovery", {
+          params: {
+            city: currentCity || undefined,
+            uf: currentUf || undefined,
+            target_city: selected?.city || undefined,
+            target_uf: selected?.uf || undefined,
+            q: appliedQuery || undefined,
+            limit: 60,
+          },
+          signal: controller.signal,
+        });
 
         setCompanies(Array.isArray(data?.establishments) ? data.establishments : []);
         if (Array.isArray(data?.locations)) setLocations(data.locations);
@@ -168,9 +164,9 @@ export default function ExploreCatalogs({ currentCity, currentUf }) {
                 className="explore-company-card"
                 role="button"
                 tabIndex={0}
-                onClick={() => navigate(`/catalog/${company.slug}`)}
+                onClick={() => navigate(`/establishment/view/${company.slug}`)}
                 onKeyDown={(event) => {
-                  if (event.key === "Enter" || event.key === " ") navigate(`/catalog/${company.slug}`);
+                  if (event.key === "Enter" || event.key === " ") navigate(`/establishment/view/${company.slug}`);
                 }}
               >
                 <div className="explore-company-card__media">
@@ -182,7 +178,7 @@ export default function ExploreCatalogs({ currentCity, currentUf }) {
                   {company.description && <p>{company.description}</p>}
                   <div className="explore-company-card__footer">
                     <span><FaEye /> {Number(company.total_views || 0).toLocaleString("pt-BR")}</span>
-                    <strong>Ver catálogo</strong>
+                    <strong>Ver empresa</strong>
                   </div>
                 </div>
               </article>
