@@ -1,13 +1,17 @@
 // src/hooks/useItemUpdate.js
 import { useCallback, useState } from "react";
 import Swal from "sweetalert2";
-import { appId } from "../config";
+import { apiV1BaseUrl, appId } from "../config";
 import api from "../services/api";
 
 function normalizeBoolean(value) {
   if (value === true || value === 1 || value === "1" || value === "true" || value === "on") return "1";
   if (value === false || value === 0 || value === "0" || value === "false" || value === "off") return "0";
   return null;
+}
+
+function booleanValue(value) {
+  return normalizeBoolean(value) === "1";
 }
 
 const getApiMessage = (error, fallback) =>
@@ -31,6 +35,7 @@ export default function useItemUpdate(id) {
         const payload = { ...values, app_id: appId };
 
         Object.entries(payload).forEach(([key, value]) => {
+          if (key === "display_order") return;
           if (value === undefined || value === null || value === "") return;
 
           if (key === "status" || key === "is_featured") {
@@ -67,13 +72,24 @@ export default function useItemUpdate(id) {
           });
         }
 
+        const { data: genericResponse } = await api.patch(
+          `${apiV1BaseUrl}/items/${encodeURIComponent(id)}`,
+          {
+            is_featured: booleanValue(values?.is_featured),
+            display_order: Math.max(0, Number(values?.display_order || 0)),
+          }
+        );
+
         await Swal.fire({
           icon: "success",
           title: "Item atualizado",
           text: data?.message || "As alterações foram salvas.",
         });
 
-        return data;
+        return {
+          ...data,
+          item: genericResponse?.data || data?.item,
+        };
       } catch (error) {
         const validationErrors = error?.response?.data?.errors || {};
         setApiErrors(validationErrors);
