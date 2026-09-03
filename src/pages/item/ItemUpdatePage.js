@@ -9,6 +9,7 @@ import ProcessingIndicatorComponent from "../../components/ProcessingIndicatorCo
 import ItemUpdateForm from "../../components/item/ItemUpdateForm";
 import useItemUpdate from "../../hooks/useItemUpdate";
 import api from "../../services/api";
+import catalogIntelligence from "../../services/catalogIntelligence";
 import { appId } from "../../config";
 
 export default function ItemUpdatePage() {
@@ -17,7 +18,6 @@ export default function ItemUpdatePage() {
 
   const form = useForm();
   const { register, handleSubmit, reset, watch } = form;
-
   const { updateItem, loading: saving, apiErrors } = useItemUpdate(id);
 
   const [item, setItem] = useState(null);
@@ -48,6 +48,20 @@ export default function ItemUpdatePage() {
           throw new Error("Este item não pertence à Nexus.");
         }
 
+        let variant = null;
+        if (data.type === "product") {
+          try {
+            const { data: resolved } = await catalogIntelligence.resolve({
+              name: data.name,
+              brand: data.brand,
+            });
+            variant = resolved?.data || null;
+          } catch {
+            variant = null;
+          }
+        }
+
+        const specs = variant?.specifications || {};
         setItem(data);
         reset({
           name: data.name ?? "",
@@ -57,15 +71,27 @@ export default function ItemUpdatePage() {
           status: Number(data.status ?? 1),
           duration: data.duration ?? "",
           description: data.description ?? "",
-          category: data.category ?? "",
-          subcategory: data.subcategory ?? "",
-          brand: data.brand ?? "",
+          category: data.category ?? variant?.product?.category ?? "",
+          subcategory: data.subcategory ?? variant?.product?.subcategory ?? "",
+          brand: data.brand ?? variant?.product?.brand ?? "",
+          sku: data.sku ?? variant?.sku ?? "",
+          gtin: variant?.gtin ?? "",
+          sale_unit: data.sale_unit ?? "un",
+          package_quantity: variant?.package_quantity ?? "",
+          package_unit: variant?.package_unit ?? "",
+          spec_length: specs.length ?? "",
+          spec_width: specs.width ?? "",
+          spec_height: specs.height ?? "",
+          spec_diameter: specs.diameter ?? "",
+          spec_thickness: specs.thickness ?? "",
+          spec_color: specs.color ?? "",
+          spec_finish: specs.finish ?? "",
+          spec_material: specs.material ?? "",
+          spec_application: specs.application ?? "",
           is_featured: Number(data.is_featured ?? 0),
         });
 
-        const img = data.files?.find(
-          (file) => file.entity_name === "item" && file.type === "image"
-        );
+        const img = data.files?.find((file) => file.entity_name === "item" && file.type === "image");
         const currentImage = img?.public_url || data.image_url || data.image || null;
         setImagePreview(currentImage);
 
@@ -79,10 +105,7 @@ export default function ItemUpdatePage() {
       } catch (error) {
         if (error?.code === "ERR_CANCELED") return;
         setApiError(
-          error?.response?.data?.message ||
-          error?.response?.data?.error ||
-          error?.message ||
-          "Erro ao carregar item."
+          error?.response?.data?.message || error?.response?.data?.error || error?.message || "Erro ao carregar item."
         );
       } finally {
         if (!controller.signal.aborted) setLoading(false);
@@ -96,12 +119,10 @@ export default function ItemUpdatePage() {
   const handleImageChange = (event) => {
     const file = event.target.files?.[0];
     if (!file) return;
-
     setImageFile(file);
     setImageUrl("");
     setImageUrlStatus("idle");
     setRemoveImage(false);
-
     const reader = new FileReader();
     reader.onload = () => setImagePreview(reader.result);
     reader.readAsDataURL(file);
@@ -112,14 +133,12 @@ export default function ItemUpdatePage() {
     setImageUrl(value);
     setImageFile(null);
     setRemoveImage(false);
-
     const trimmed = value.trim();
     if (!trimmed) {
       setImageUrlStatus("idle");
       setImagePreview(null);
       return;
     }
-
     setImageUrlStatus("loading");
     setImagePreview(trimmed);
   };
@@ -137,39 +156,25 @@ export default function ItemUpdatePage() {
 
   const onSubmit = async (values) => {
     if (imageUrl.trim() && imageUrlStatus === "error") return;
-
     const response = await updateItem(values, imageFile, removeImage, imageUrl);
     if (!response) return;
-
     const updatedItem = response?.item ?? response?.data ?? null;
     const slug = updatedItem?.slug || item?.slug;
-
     if (slug) {
       navigate(`/item/${encodeURIComponent(slug)}`, { replace: true });
       return;
     }
-
     navigate("/establishment/my", { replace: true });
   };
 
   if (loading) {
-    return (
-      <ProcessingIndicatorComponent
-        messages={["Carregando item…", "Preparando a edição…"]}
-      />
-    );
+    return <ProcessingIndicatorComponent messages={["Carregando item…", "Preparando a edição…"]} />;
   }
 
   return (
     <>
       <GlobalNav />
-
-      {apiError && (
-        <Container className="my-4">
-          <Alert variant="danger">{apiError}</Alert>
-        </Container>
-      )}
-
+      {apiError && <Container className="my-4"><Alert variant="danger">{apiError}</Alert></Container>}
       {!apiError && item && (
         <ItemUpdateForm
           register={register}
