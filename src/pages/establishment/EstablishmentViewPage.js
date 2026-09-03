@@ -1,22 +1,29 @@
 // src/pages/establishment/EstablishmentViewPage.jsx
-import React, { useEffect, useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Badge, Button, Col, Container, Row } from "react-bootstrap";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   FaArrowRight,
   FaBoxOpen,
+  FaCheckCircle,
+  FaCompass,
   FaEnvelope,
+  FaFacebookF,
   FaGlobe,
+  FaInstagram,
   FaMapMarkerAlt,
   FaPhoneAlt,
   FaQrcode,
   FaShareAlt,
   FaStore,
   FaWhatsapp,
+  FaYoutube,
 } from "react-icons/fa";
 
 import EntityImage from "../../components/EntityImage";
+import EstablishmentDiscoveryLinks from "../../components/establishment/EstablishmentDiscoveryLinks";
 import GlobalCard from "../../components/GlobalCard";
+import GlobalFooter from "../../components/GlobalFooter";
 import GlobalGallery from "../../components/GlobalGallery";
 import GlobalMap from "../../components/GlobalMap";
 import GlobalNav from "../../components/GlobalNav";
@@ -37,6 +44,23 @@ const ensureExternalUrl = (value) => {
   const trimmed = String(value).trim();
   if (!trimmed) return null;
   return /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`;
+};
+
+const parseList = (value) => {
+  if (Array.isArray(value)) return value.filter(Boolean);
+  if (!value || typeof value !== "string") return [];
+
+  try {
+    const parsed = JSON.parse(value);
+    if (Array.isArray(parsed)) return parsed.filter(Boolean);
+  } catch {
+    // Fall through to comma-separated values.
+  }
+
+  return value
+    .split(",")
+    .map((entry) => entry.trim())
+    .filter(Boolean);
 };
 
 const setMeta = (name, content, property = false) => {
@@ -60,6 +84,7 @@ export default function EstablishmentViewPage() {
     useEstablishmentItemsByIdentifier(slug);
   const { imageUrl } = useImageUtils();
   const whatsappLink = useWhatsappLink(establishment);
+  const [coverReady, setCoverReady] = useState(false);
 
   const activeItems = useMemo(
     () => items.filter((item) => Number(item.status ?? 1) !== 0),
@@ -72,24 +97,38 @@ export default function EstablishmentViewPage() {
   )}`;
   const catalogUrl = `/catalog/${encodeURIComponent(slug || "")}`;
   const websiteUrl = ensureExternalUrl(
-    establishment?.website || establishment?.site || establishment?.url
+    establishment?.website_url ||
+      establishment?.website ||
+      establishment?.site ||
+      establishment?.url
   );
   const gallery = Array.isArray(establishment?.images?.gallery)
     ? establishment.images.gallery
     : [];
   const cover =
     establishment?.images?.background ||
+    establishment?.images?.background_url ||
     establishment?.images?.cover ||
+    establishment?.images?.cover_url ||
     establishment?.background ||
+    establishment?.background_url ||
+    establishment?.background_image ||
     establishment?.cover ||
+    establishment?.cover_url ||
     establishment?.banner ||
     null;
   const resolvedCover = cover ? imageUrl(cover) : null;
   const files = Array.isArray(establishment?.files) ? establishment.files : [];
   const logoCandidates = [
     establishment?.images?.logo,
+    establishment?.images?.logo_url,
     establishment?.logo,
-    files.find((file) => file?.type === "logo")?.public_url,
+    establishment?.logo_url,
+    files.find((file) =>
+      String(file?.type || file?.role || "")
+        .toLowerCase()
+        .includes("logo")
+    )?.public_url,
     files.find((file) => file?.is_primary)?.public_url,
   ];
   const socialImage = cover || logoCandidates.find(Boolean) || null;
@@ -97,10 +136,69 @@ export default function EstablishmentViewPage() {
   const locationLabel = [establishment?.city, establishment?.uf]
     .filter(Boolean)
     .join(" - ");
+  const addressLabel = [
+    establishment?.address,
+    establishment?.city,
+    establishment?.uf,
+    establishment?.cep ? `CEP ${establishment.cep}` : null,
+  ]
+    .filter(Boolean)
+    .join(" · ");
+  const segments = parseList(establishment?.segments).slice(0, 5);
+  const additionalInfo =
+    establishment?.additional_info ||
+    establishment?.additional_information ||
+    establishment?.details ||
+    null;
+
+  const socialLinks = [
+    {
+      label: "Instagram",
+      icon: FaInstagram,
+      href: ensureExternalUrl(
+        establishment?.instagram_url || establishment?.instagram
+      ),
+    },
+    {
+      label: "Facebook",
+      icon: FaFacebookF,
+      href: ensureExternalUrl(
+        establishment?.facebook_url || establishment?.facebook
+      ),
+    },
+    {
+      label: "YouTube",
+      icon: FaYoutube,
+      href: ensureExternalUrl(
+        establishment?.youtube_url || establishment?.youtube
+      ),
+    },
+  ].filter((social) => social.href);
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, [slug]);
+
+  useEffect(() => {
+    if (!resolvedCover) {
+      setCoverReady(false);
+      return undefined;
+    }
+
+    let active = true;
+    const preload = new Image();
+    preload.onload = () => {
+      if (active) setCoverReady(true);
+    };
+    preload.onerror = () => {
+      if (active) setCoverReady(false);
+    };
+    preload.src = resolvedCover;
+
+    return () => {
+      active = false;
+    };
+  }, [resolvedCover]);
 
   useEffect(() => {
     if (!establishment) return undefined;
@@ -181,6 +279,7 @@ export default function EstablishmentViewPage() {
               "Não encontramos esta empresa. O link pode estar incorreto ou a empresa pode não estar mais disponível."}
           </NexusFeedback>
         </Container>
+        <GlobalFooter />
       </>
     );
   }
@@ -190,13 +289,29 @@ export default function EstablishmentViewPage() {
       <GlobalNav />
 
       <header
-        className={`estv-presentation-hero${resolvedCover ? " has-cover" : ""}`}
+        className={`estv-presentation-hero${coverReady ? " has-cover" : ""}`}
         style={
-          resolvedCover ? { backgroundImage: `url(${resolvedCover})` } : undefined
+          coverReady
+            ? {
+                backgroundImage: `linear-gradient(180deg, rgba(3, 10, 20, .05), rgba(3, 10, 20, .24)), url("${resolvedCover}")`,
+              }
+            : undefined
         }
       >
         <div className="estv-presentation-overlay" />
         <Container className="estv-presentation-container">
+          <nav className="estv-breadcrumbs" aria-label="Navegação da empresa">
+            <button type="button" onClick={() => navigate("/")}>
+              Nexus
+            </button>
+            <span>/</span>
+            <button type="button" onClick={() => navigate("/")}>
+              Empresas
+            </button>
+            <span>/</span>
+            <strong>{title}</strong>
+          </nav>
+
           <div className="estv-brand-row">
             <EntityImage
               src={logoCandidates}
@@ -207,25 +322,37 @@ export default function EstablishmentViewPage() {
               loading="eager"
             />
             <div className="estv-brand-copy">
-              <Badge className="estv-profile-badge">
-                <FaStore /> Perfil da empresa
-              </Badge>
+              <div className="estv-hero-kickers">
+                <Badge className="estv-profile-badge">
+                  <FaStore /> Perfil da empresa
+                </Badge>
+                <span className="estv-live-badge">
+                  <FaCheckCircle /> Catálogo disponível
+                </span>
+              </div>
               <h1>{title}</h1>
               {establishment.description && (
                 <p>{establishment.description}</p>
               )}
+
+              {segments.length > 0 && (
+                <div className="estv-segment-list" aria-label="Segmentos">
+                  {segments.map((segment) => (
+                    <span key={segment}>{segment}</span>
+                  ))}
+                </div>
+              )}
+
               <div className="estv-hero-meta">
                 {locationLabel && (
                   <span>
                     <FaMapMarkerAlt /> {locationLabel}
                   </span>
                 )}
-                {activeItems.length > 0 && (
-                  <span>
-                    <FaBoxOpen /> {activeItems.length}{" "}
-                    {activeItems.length === 1 ? "item" : "itens"}
-                  </span>
-                )}
+                <span>
+                  <FaBoxOpen /> {activeItems.length}{" "}
+                  {activeItems.length === 1 ? "item disponível" : "itens disponíveis"}
+                </span>
               </div>
               <div className="estv-hero-actions">
                 <Button onClick={() => navigate(catalogUrl)}>
@@ -248,6 +375,13 @@ export default function EstablishmentViewPage() {
                 >
                   <FaShareAlt /> Compartilhar
                 </button>
+                <button
+                  type="button"
+                  className="estv-action estv-action--ghost"
+                  onClick={() => navigate("/")}
+                >
+                  <FaCompass /> Explorar Nexus
+                </button>
               </div>
             </div>
           </div>
@@ -256,6 +390,28 @@ export default function EstablishmentViewPage() {
 
       <main className="estv-main">
         <Container>
+          <section className="estv-overview-strip" aria-label="Resumo da empresa">
+            <div>
+              <span>Catálogo</span>
+              <strong>{activeItems.length} itens</strong>
+              <small>Produtos e serviços ativos</small>
+            </div>
+            <div>
+              <span>Localização</span>
+              <strong>{locationLabel || "Não informada"}</strong>
+              <small>{establishment?.address || "Consulte os dados da empresa"}</small>
+            </div>
+            <div>
+              <span>Contato rápido</span>
+              <strong>
+                {whatsappLink
+                  ? "WhatsApp disponível"
+                  : establishment?.phone || "Dados no perfil"}
+              </strong>
+              <small>Acesso direto pelos canais cadastrados</small>
+            </div>
+          </section>
+
           <Row className="g-4">
             <Col lg={8}>
               <section className="estv-section estv-about-card">
@@ -270,13 +426,16 @@ export default function EstablishmentViewPage() {
 
                 <div className="estv-contact-grid">
                   {establishment.phone && (
-                    <div className="estv-contact-item">
+                    <a
+                      className="estv-contact-item"
+                      href={`tel:${String(establishment.phone).replace(/\s+/g, "")}`}
+                    >
                       <FaPhoneAlt />
                       <div>
                         <small>Telefone</small>
                         <strong>{establishment.phone}</strong>
                       </div>
-                    </div>
+                    </a>
                   )}
                   {establishment.email && (
                     <a
@@ -290,12 +449,12 @@ export default function EstablishmentViewPage() {
                       </div>
                     </a>
                   )}
-                  {locationLabel && (
+                  {addressLabel && (
                     <div className="estv-contact-item">
                       <FaMapMarkerAlt />
                       <div>
-                        <small>Localização</small>
-                        <strong>{locationLabel}</strong>
+                        <small>Endereço</small>
+                        <strong>{addressLabel}</strong>
                       </div>
                     </div>
                   )}
@@ -309,12 +468,32 @@ export default function EstablishmentViewPage() {
                       <FaGlobe />
                       <div>
                         <small>Site</small>
-                        <strong>Visitar site</strong>
+                        <strong>Visitar site oficial</strong>
                       </div>
                     </a>
                   )}
                 </div>
+
+                {socialLinks.length > 0 && (
+                  <div className="estv-social-links" aria-label="Redes sociais">
+                    {socialLinks.map(({ label, icon: Icon, href }) => (
+                      <a key={label} href={href} target="_blank" rel="noreferrer">
+                        <Icon /> {label}
+                      </a>
+                    ))}
+                  </div>
+                )}
               </section>
+
+              {additionalInfo && (
+                <section className="estv-section estv-info-card">
+                  <div className="estv-section-heading">
+                    <span>Informações úteis</span>
+                    <h2>Antes de visitar ou comprar</h2>
+                  </div>
+                  <p>{additionalInfo}</p>
+                </section>
+              )}
 
               {gallery.length > 0 && (
                 <section className="estv-section">
@@ -327,7 +506,7 @@ export default function EstablishmentViewPage() {
               )}
 
               {featuredItems.length > 0 && (
-                <section className="estv-section">
+                <section className="estv-section estv-featured-section">
                   <div className="estv-section-heading estv-section-heading--inline">
                     <div>
                       <span>Destaques</span>
@@ -390,11 +569,28 @@ export default function EstablishmentViewPage() {
                     Abrir catálogo <FaArrowRight />
                   </Button>
                 </section>
+
+                <section className="estv-side-card estv-explore-card">
+                  <div className="estv-side-icon">
+                    <FaCompass />
+                  </div>
+                  <h2>Continue descobrindo</h2>
+                  <p>
+                    Conheça outros estabelecimentos e itens disponíveis na Nexus.
+                  </p>
+                  <button type="button" onClick={() => navigate("/")}>
+                    Explorar empresas e itens <FaArrowRight />
+                  </button>
+                </section>
               </aside>
             </Col>
           </Row>
+
+          <EstablishmentDiscoveryLinks establishment={establishment} />
         </Container>
       </main>
+
+      <GlobalFooter />
 
       {whatsappLink && (
         <a
