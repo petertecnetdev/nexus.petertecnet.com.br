@@ -23,6 +23,7 @@ export default function EstablishmentUpdateForm({
 }) {
   const name = watch?.("fantasy") || watch?.("name") || "Nome da empresa";
   const description = watch?.("description") || "A descrição do catálogo aparecerá aqui.";
+  const isPublished = String(watch?.("is_published") ?? "1") === "1";
 
   return (
     <form className="eup-form" onSubmit={handleSubmit(onSubmit)} encType="multipart/form-data">
@@ -36,7 +37,7 @@ export default function EstablishmentUpdateForm({
           {logoPreview ? <img src={logoPreview} alt="Logo da empresa" /> : <span>N</span>}
         </div>
         <div className="eup-preview__copy">
-          <span>Prévia do catálogo</span>
+          <span>{isPublished ? "Prévia do catálogo" : "Catálogo desativado"}</span>
           <h2>{name}</h2>
           <p>{description}</p>
         </div>
@@ -48,6 +49,24 @@ export default function EstablishmentUpdateForm({
         <input id="backgroundInput" type="file" accept="image/*" onChange={handleBackgroundChange} />
         <input id="logoInput" type="file" accept="image/*" onChange={handleLogoChange} />
       </div>
+
+      <Section title="Disponibilidade do catálogo" subtitle="Desative temporariamente a empresa sem apagar dados, itens, QR Code ou histórico.">
+        <div className="eup-grid">
+          <Field label="Catálogo da empresa" className="span-6">
+            <select {...register("is_published")}>
+              <option value="1">Ativo — catálogo público</option>
+              <option value="0">Inativo — catálogo oculto</option>
+            </select>
+          </Field>
+          <div className="span-6">
+            <p className="mb-0">
+              {isPublished
+                ? "O estabelecimento está visível e pode receber acessos pelo catálogo/QR Code, respeitando as configurações de compra abaixo."
+                : "O estabelecimento fica indisponível publicamente. Clientes não conseguem abrir o catálogo nem iniciar compras."}
+            </p>
+          </div>
+        </div>
+      </Section>
 
       <Section title="Informações da empresa" subtitle="Estes são os dados atuais. Edite apenas o que desejar mudar.">
         <div className="eup-grid">
