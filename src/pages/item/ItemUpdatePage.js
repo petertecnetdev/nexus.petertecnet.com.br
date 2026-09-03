@@ -51,8 +51,8 @@ export default function ItemUpdatePage() {
         let variant = null;
         if (data.type === "product") {
           try {
-            const { data: resolved } = await catalogIntelligence.resolve({ name: data.name, brand: data.brand });
-            variant = resolved?.data || null;
+            const { data: intelligence } = await catalogIntelligence.item(data.id);
+            variant = intelligence?.data?.variant || null;
           } catch {
             variant = null;
           }
