@@ -3,8 +3,19 @@ import { appSlug } from "../config";
 
 const base = `/v1/apps/${encodeURIComponent(appSlug)}/commerce`;
 
-const backgroundConfig = (options = {}) =>
-  options?.background === true ? { metadata: { background: true } } : {};
+const requestConfig = (options = {}) => {
+  const config = {};
+
+  if (options?.background === true) {
+    config.metadata = { background: true };
+  }
+
+  if (options?.background === true || options?.silent === true) {
+    config.skipGlobalLoading = true;
+  }
+
+  return config;
+};
 
 export async function getCommerceCatalog(slug) {
   const { data } = await api.get(`${base}/catalog/${encodeURIComponent(slug)}`);
@@ -31,7 +42,7 @@ export async function getMyCommerceOrders(params = {}) {
 export async function getCommerceOrder(publicId, options = {}) {
   const { data } = await api.get(
     `${base}/orders/${encodeURIComponent(publicId)}`,
-    backgroundConfig(options)
+    requestConfig(options)
   );
   return data?.data || null;
 }
@@ -39,7 +50,7 @@ export async function getCommerceOrder(publicId, options = {}) {
 export async function getCommercePayment(publicId, options = {}) {
   const { data } = await api.get(
     `${base}/orders/${encodeURIComponent(publicId)}/payment`,
-    backgroundConfig(options)
+    requestConfig(options)
   );
   return data?.data || null;
 }
