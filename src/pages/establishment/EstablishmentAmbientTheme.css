@@ -123,13 +123,59 @@
 .establishment-theme-shell .estv-section,
 .establishment-theme-shell .estv-side-card,
 .establishment-theme-shell .estv-discovery-section {
-  border-color: rgba(var(--entity-accent-rgb), .24);
-  background:
-    linear-gradient(150deg, rgba(14, 34, 54, .82), rgba(6, 20, 34, .90));
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  border-color: rgba(var(--entity-accent-rgb), .30);
+  background: rgba(5, 18, 31, .78);
   box-shadow:
-    0 22px 56px rgba(0, 0, 0, .22),
-    0 0 36px rgba(var(--entity-primary-rgb), .035);
+    0 22px 56px rgba(0, 0, 0, .24),
+    0 0 42px rgba(var(--entity-primary-rgb), .055);
   backdrop-filter: blur(14px) saturate(1.08);
+}
+
+/* Reuse the establishment cover inside each main card. The image is deliberately
+ * enlarged and heavily blurred so only its color distribution remains visible.
+ */
+.establishment-theme-shell.has-establishment-image .estv-overview-strip::before,
+.establishment-theme-shell.has-establishment-image .estv-section::before,
+.establishment-theme-shell.has-establishment-image .estv-side-card::before,
+.establishment-theme-shell.has-establishment-image .estv-discovery-section::before {
+  content: "";
+  position: absolute;
+  inset: -54px;
+  z-index: -2;
+  pointer-events: none;
+  background-image: var(--entity-ambient-image);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  filter: blur(48px) saturate(1.5) brightness(.58);
+  transform: scale(1.18);
+  opacity: .58;
+}
+
+.establishment-theme-shell.has-establishment-image .estv-overview-strip::after,
+.establishment-theme-shell.has-establishment-image .estv-section::after,
+.establishment-theme-shell.has-establishment-image .estv-side-card::after,
+.establishment-theme-shell.has-establishment-image .estv-discovery-section::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 18% 12%, rgba(var(--entity-primary-rgb), .16), transparent 42%),
+    radial-gradient(circle at 86% 78%, rgba(var(--entity-accent-rgb), .12), transparent 44%),
+    linear-gradient(145deg, rgba(5, 16, 28, .66), rgba(4, 15, 27, .84));
+}
+
+.establishment-theme-shell .estv-overview-strip > *,
+.establishment-theme-shell .estv-section > *,
+.establishment-theme-shell .estv-side-card > *,
+.establishment-theme-shell .estv-discovery-section > * {
+  position: relative;
+  z-index: 1;
 }
 
 .establishment-theme-shell .estv-overview-strip span,
@@ -149,8 +195,19 @@
 .establishment-theme-shell .estx-sort-select.form-select,
 .establishment-theme-shell .estx-category-chips button,
 .establishment-theme-shell .estx-catalog-empty {
-  border-color: rgba(var(--entity-primary-rgb), .18);
-  background-color: rgba(5, 19, 32, .68);
+  border-color: rgba(var(--entity-primary-rgb), .22);
+  background-color: rgba(5, 19, 32, .58);
+  backdrop-filter: blur(10px) saturate(1.06);
+}
+
+.establishment-theme-shell.has-establishment-image .estv-contact-item,
+.establishment-theme-shell.has-establishment-image .estx-business-fact,
+.establishment-theme-shell.has-establishment-image .estx-schedule,
+.establishment-theme-shell.has-establishment-image .estx-search-box,
+.establishment-theme-shell.has-establishment-image .estx-sort-select.form-select,
+.establishment-theme-shell.has-establishment-image .estx-category-chips button,
+.establishment-theme-shell.has-establishment-image .estx-catalog-empty {
+  background-color: rgba(4, 15, 27, .50);
 }
 
 .establishment-theme-shell .estv-contact-item:hover,
@@ -203,6 +260,15 @@
       linear-gradient(180deg, rgba(3, 9, 17, .54), rgba(4, 12, 21, .95));
   }
 
+  .establishment-theme-shell.has-establishment-image .estv-overview-strip::before,
+  .establishment-theme-shell.has-establishment-image .estv-section::before,
+  .establishment-theme-shell.has-establishment-image .estv-side-card::before,
+  .establishment-theme-shell.has-establishment-image .estv-discovery-section::before {
+    inset: -40px;
+    filter: blur(38px) saturate(1.38) brightness(.56);
+    opacity: .48;
+  }
+
   .establishment-theme-shell .estv-overview-strip,
   .establishment-theme-shell .estv-section,
   .establishment-theme-shell .estv-side-card,
@@ -222,6 +288,6 @@
   .establishment-theme-shell .estv-section,
   .establishment-theme-shell .estv-side-card,
   .establishment-theme-shell .estv-discovery-section {
-    background: rgba(7, 22, 37, .96);
+    background: rgba(7, 22, 37, .90);
   }
 }
