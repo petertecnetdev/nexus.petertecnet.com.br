@@ -1,0 +1,51 @@
+name: Ambient Theme Validation
+
+on:
+  push:
+    branches:
+      - "validate/establishment-ambient-theme"
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install locked dependencies
+        run: npm ci --no-fund
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Unit and integration tests
+        run: npm test
+        env:
+          CI: true
+
+      - name: Production build
+        run: npm run build
+        env:
+          CI: true
+          REACT_APP_API_BASE_URL: https://api.petertecnet.com.br/api
+          REACT_APP_STORAGE_URL: https://api.petertecnet.com.br/storage
+          REACT_APP_PUBLIC_URL: https://nexus.petertecnet.com.br
+          REACT_APP_ID: 2
+          REACT_APP_GOOGLE_CLIENT_ID: test.apps.googleusercontent.com
+
+      - name: Verify build artifacts
+        run: |
+          test -s build/index.html
+          test -d build/static/js
+          test -d build/static/css
