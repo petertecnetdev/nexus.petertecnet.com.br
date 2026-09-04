@@ -1,0 +1,227 @@
+/* Ambient entity theme for the public establishment experience.
+ * The image is intentionally blurred until it behaves as color/light, not content.
+ */
+.establishment-theme-shell {
+  --entity-primary-rgb: 0, 194, 255;
+  --entity-accent-rgb: 86, 117, 255;
+  --entity-ambient-image: none;
+  position: relative;
+  min-height: 100vh;
+  isolation: isolate;
+  overflow: clip;
+  background: #06111d;
+}
+
+.establishment-theme-shell::before,
+.establishment-theme-shell::after {
+  content: "";
+  position: fixed;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.establishment-theme-shell::before {
+  inset: -12vh -10vw;
+  opacity: 0;
+  background-image: var(--entity-ambient-image);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  filter: blur(104px) saturate(1.42) brightness(.7);
+  transform: scale(1.16);
+  transition: opacity .35s ease;
+}
+
+.establishment-theme-shell::after {
+  inset: 0;
+  background:
+    radial-gradient(circle at 12% 10%, rgba(var(--entity-primary-rgb), .22), transparent 34%),
+    radial-gradient(circle at 86% 28%, rgba(var(--entity-accent-rgb), .18), transparent 36%),
+    radial-gradient(circle at 48% 80%, rgba(var(--entity-primary-rgb), .10), transparent 42%),
+    linear-gradient(180deg, rgba(3, 9, 17, .44) 0%, rgba(4, 12, 22, .74) 48%, rgba(4, 12, 21, .94) 100%);
+}
+
+.establishment-theme-shell.has-establishment-image::before {
+  opacity: .72;
+}
+
+.establishment-theme-shell.is-default-theme::after {
+  background:
+    radial-gradient(circle at 12% 12%, rgba(0, 194, 255, .08), transparent 30%),
+    radial-gradient(circle at 82% 22%, rgba(86, 117, 255, .06), transparent 32%),
+    linear-gradient(180deg, #07111d 0%, #06111d 100%);
+}
+
+.establishment-theme-shell > .estv-root {
+  --nx-accent: rgb(var(--entity-accent-rgb));
+  position: relative;
+  z-index: 1;
+  background: transparent;
+}
+
+/* The establishment photo stops acting as a sharp hero image. The same photo is
+ * rendered by the shell as a strongly blurred ambient field behind the page.
+ */
+.establishment-theme-shell.has-establishment-image .estv-presentation-hero.has-cover {
+  background-image:
+    radial-gradient(circle at 16% 18%, rgba(var(--entity-primary-rgb), .34), transparent 38%),
+    radial-gradient(circle at 84% 14%, rgba(var(--entity-accent-rgb), .28), transparent 34%),
+    linear-gradient(135deg, rgba(5, 14, 25, .80) 0%, rgba(7, 24, 38, .72) 46%, rgba(5, 15, 26, .92) 100%) !important;
+}
+
+.establishment-theme-shell .estv-presentation-overlay {
+  background:
+    linear-gradient(180deg, rgba(3, 10, 20, .08) 0%, rgba(3, 10, 20, .38) 42%, rgba(4, 12, 22, .94) 100%),
+    linear-gradient(90deg, rgba(3, 10, 20, .64) 0%, rgba(3, 10, 20, .16) 74%);
+}
+
+.establishment-theme-shell .estv-brand-logo {
+  border-color: rgba(var(--entity-accent-rgb), .56);
+  box-shadow:
+    0 24px 64px rgba(0, 0, 0, .42),
+    0 0 0 6px rgba(var(--entity-primary-rgb), .07),
+    0 0 52px rgba(var(--entity-accent-rgb), .24);
+}
+
+.establishment-theme-shell .estv-profile-badge,
+.establishment-theme-shell .estv-live-badge,
+.establishment-theme-shell .estv-segment-list span,
+.establishment-theme-shell .estv-hero-meta span {
+  border-color: rgba(var(--entity-accent-rgb), .28);
+  background: rgba(7, 24, 39, .66) !important;
+}
+
+.establishment-theme-shell .estv-hero-meta svg,
+.establishment-theme-shell .estv-live-badge svg,
+.establishment-theme-shell .estv-contact-item > svg,
+.establishment-theme-shell .estx-business-fact > svg,
+.establishment-theme-shell .estx-schedule-title > svg,
+.establishment-theme-shell .estx-search-box > svg,
+.establishment-theme-shell .estx-catalog-empty > svg {
+  color: rgb(var(--entity-accent-rgb));
+}
+
+.establishment-theme-shell .estv-hero-actions .btn {
+  color: #06121e;
+  border-color: rgba(var(--entity-accent-rgb), .48);
+  background: linear-gradient(
+    135deg,
+    rgb(var(--entity-primary-rgb)),
+    rgb(var(--entity-accent-rgb))
+  );
+  box-shadow:
+    0 14px 34px rgba(var(--entity-primary-rgb), .18),
+    0 0 28px rgba(var(--entity-accent-rgb), .10);
+}
+
+.establishment-theme-shell .estv-action--ghost {
+  border-color: rgba(var(--entity-accent-rgb), .30);
+  background: rgba(8, 25, 42, .66);
+}
+
+.establishment-theme-shell .estv-overview-strip,
+.establishment-theme-shell .estv-section,
+.establishment-theme-shell .estv-side-card,
+.establishment-theme-shell .estv-discovery-section {
+  border-color: rgba(var(--entity-accent-rgb), .24);
+  background:
+    linear-gradient(150deg, rgba(14, 34, 54, .82), rgba(6, 20, 34, .90));
+  box-shadow:
+    0 22px 56px rgba(0, 0, 0, .22),
+    0 0 36px rgba(var(--entity-primary-rgb), .035);
+  backdrop-filter: blur(14px) saturate(1.08);
+}
+
+.establishment-theme-shell .estv-overview-strip span,
+.establishment-theme-shell .estv-section-heading span,
+.establishment-theme-shell .estv-catalog-card > span,
+.establishment-theme-shell .estv-discovery-heading > div > span,
+.establishment-theme-shell .estx-side-eyebrow,
+.establishment-theme-shell .estx-results-summary button,
+.establishment-theme-shell .estx-hours-card button {
+  color: rgb(var(--entity-accent-rgb));
+}
+
+.establishment-theme-shell .estv-contact-item,
+.establishment-theme-shell .estx-business-fact,
+.establishment-theme-shell .estx-schedule,
+.establishment-theme-shell .estx-search-box,
+.establishment-theme-shell .estx-sort-select.form-select,
+.establishment-theme-shell .estx-category-chips button,
+.establishment-theme-shell .estx-catalog-empty {
+  border-color: rgba(var(--entity-primary-rgb), .18);
+  background-color: rgba(5, 19, 32, .68);
+}
+
+.establishment-theme-shell .estv-contact-item:hover,
+.establishment-theme-shell .estx-item-qr:hover {
+  border-color: rgba(var(--entity-accent-rgb), .50);
+  background: rgba(var(--entity-primary-rgb), .14);
+}
+
+.establishment-theme-shell .estx-search-box:focus-within,
+.establishment-theme-shell .estx-sort-select.form-select:focus {
+  border-color: rgba(var(--entity-accent-rgb), .62);
+  box-shadow: 0 0 0 4px rgba(var(--entity-accent-rgb), .10);
+}
+
+.establishment-theme-shell .estx-category-chips button:hover,
+.establishment-theme-shell .estx-category-chips button.is-active {
+  color: #fff;
+  border-color: rgba(var(--entity-accent-rgb), .58);
+  background: rgba(var(--entity-primary-rgb), .20);
+}
+
+.establishment-theme-shell .estx-catalog-empty button {
+  color: #06121e;
+  background: linear-gradient(
+    135deg,
+    rgb(var(--entity-primary-rgb)),
+    rgb(var(--entity-accent-rgb))
+  );
+}
+
+.establishment-theme-shell .estx-item-qr {
+  border-color: rgba(var(--entity-accent-rgb), .28);
+}
+
+@media (max-width: 767.98px) {
+  .establishment-theme-shell::before {
+    inset: -8vh -18vw;
+    filter: blur(68px) saturate(1.32) brightness(.68);
+    transform: scale(1.12);
+  }
+
+  .establishment-theme-shell.has-establishment-image::before {
+    opacity: .56;
+  }
+
+  .establishment-theme-shell::after {
+    background:
+      radial-gradient(circle at 15% 8%, rgba(var(--entity-primary-rgb), .17), transparent 30%),
+      radial-gradient(circle at 88% 30%, rgba(var(--entity-accent-rgb), .13), transparent 34%),
+      linear-gradient(180deg, rgba(3, 9, 17, .54), rgba(4, 12, 21, .95));
+  }
+
+  .establishment-theme-shell .estv-overview-strip,
+  .establishment-theme-shell .estv-section,
+  .establishment-theme-shell .estv-side-card,
+  .establishment-theme-shell .estv-discovery-section {
+    backdrop-filter: blur(10px) saturate(1.04);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .establishment-theme-shell::before {
+    transition: none;
+  }
+}
+
+@supports not (backdrop-filter: blur(1px)) {
+  .establishment-theme-shell .estv-overview-strip,
+  .establishment-theme-shell .estv-section,
+  .establishment-theme-shell .estv-side-card,
+  .establishment-theme-shell .estv-discovery-section {
+    background: rgba(7, 22, 37, .96);
+  }
+}
