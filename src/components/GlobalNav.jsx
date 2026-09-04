@@ -124,6 +124,7 @@ export default function GlobalNav({ loadingMenu, handleLogout }) {
     fallbackText: fullName,
     fallbackShape: "round",
   });
+
   const avatarSrc = useMemo(
     () => imageUrl(user?.images?.avatar || user?.images?.profile || user?.avatar || null)
       || placeholderSvg
@@ -134,6 +135,7 @@ export default function GlobalNav({ loadingMenu, handleLogout }) {
   const closeUserMenu = useCallback(() => setUserMenuOpen(false), []);
   const closeMobileMenu = useCallback(() => setMobileMenuOpen(false), []);
   const closeSearch = useCallback(() => setSearchOpen(false), []);
+
   const goToResult = (path) => {
     closeSearch();
     closeMobileMenu();
@@ -225,6 +227,7 @@ export default function GlobalNav({ loadingMenu, handleLogout }) {
       if (userMenuRef.current && !userMenuRef.current.contains(event.target)) closeUserMenu();
       if (searchRef.current && !searchRef.current.contains(event.target)) closeSearch();
     };
+
     const onKeyDown = (event) => {
       if (event.key === "Escape") {
         closeUserMenu();
@@ -246,6 +249,7 @@ export default function GlobalNav({ loadingMenu, handleLogout }) {
 
     const previousOverflow = document.body.style.overflow;
     const previouslyFocused = document.activeElement;
+    const menuButton = mobileMenuButtonRef.current;
     document.body.style.overflow = "hidden";
 
     const drawer = mobileMenuRef.current;
@@ -256,6 +260,7 @@ export default function GlobalNav({ loadingMenu, handleLogout }) {
       if (event.key !== "Tab" || focusable.length === 0) return;
       const first = focusable[0];
       const last = focusable[focusable.length - 1];
+
       if (event.shiftKey && document.activeElement === first) {
         event.preventDefault();
         last.focus();
@@ -269,21 +274,34 @@ export default function GlobalNav({ loadingMenu, handleLogout }) {
     return () => {
       document.removeEventListener("keydown", trapFocus);
       document.body.style.overflow = previousOverflow;
+
       if (previouslyFocused instanceof HTMLElement && document.contains(previouslyFocused)) {
         previouslyFocused.focus();
-      } else {
-        mobileMenuButtonRef.current?.focus();
+      } else if (menuButton instanceof HTMLElement && document.contains(menuButton)) {
+        menuButton.focus();
       }
     };
   }, [mobileMenuOpen]);
 
   useEffect(() => {
+    if (typeof window.matchMedia !== "function") return undefined;
+
     const media = window.matchMedia("(min-width: 901px)");
     const handleDesktop = (event) => {
       if (event.matches) closeMobileMenu();
     };
-    media.addEventListener?.("change", handleDesktop);
-    return () => media.removeEventListener?.("change", handleDesktop);
+
+    if (typeof media.addEventListener === "function") {
+      media.addEventListener("change", handleDesktop);
+      return () => media.removeEventListener("change", handleDesktop);
+    }
+
+    if (typeof media.addListener === "function") {
+      media.addListener(handleDesktop);
+      return () => media.removeListener(handleDesktop);
+    }
+
+    return undefined;
   }, [closeMobileMenu]);
 
   const hasResults = results.companies.length > 0 || results.items.length > 0;
@@ -299,6 +317,7 @@ export default function GlobalNav({ loadingMenu, handleLogout }) {
             </span>
             <span className="globalnav__brandName">Nexus</span>
           </Link>
+
           <nav className="globalnav__links" aria-label="Navegação principal">
             {publicNavigation.map((item) => (
               <NavLink
@@ -348,9 +367,11 @@ export default function GlobalNav({ loadingMenu, handleLogout }) {
                 <strong>Resultados</strong>
                 <span>{searching ? "Buscando…" : `${results.companies.length + results.items.length} encontrados`}</span>
               </div>
+
               {!searching && !hasResults && (
                 <div className="globalnav__searchEmpty">Nenhum resultado para “{search.trim()}”.</div>
               )}
+
               {results.companies.length > 0 && (
                 <div className="globalnav__searchGroup">
                   <small>Empresas</small>
@@ -369,6 +390,7 @@ export default function GlobalNav({ loadingMenu, handleLogout }) {
                   ))}
                 </div>
               )}
+
               {results.items.length > 0 && (
                 <div className="globalnav__searchGroup">
                   <small>Itens</small>
@@ -426,7 +448,10 @@ export default function GlobalNav({ loadingMenu, handleLogout }) {
               >
                 <img src={avatarSrc} alt="" className="globalnav__avatar" onError={handleImgError} />
                 <span className="globalnav__userName">{fullName}</span>
-                <FaChevronRight className={`globalnav__userChevron ${userMenuOpen ? "globalnav__userChevron--open" : ""}`} aria-hidden="true" />
+                <FaChevronRight
+                  className={`globalnav__userChevron ${userMenuOpen ? "globalnav__userChevron--open" : ""}`}
+                  aria-hidden="true"
+                />
               </button>
 
               {userMenuOpen && (
@@ -435,7 +460,8 @@ export default function GlobalNav({ loadingMenu, handleLogout }) {
                     const Icon = item.icon;
                     return (
                       <React.Fragment key={item.path}>
-                        {(index === commerceNavigation.length || index === commerceNavigation.length + catalogNavigation.length) && (
+                        {(index === commerceNavigation.length
+                          || index === commerceNavigation.length + catalogNavigation.length) && (
                           <div className="globalnav__divider" role="separator" />
                         )}
                         <Link
@@ -450,6 +476,7 @@ export default function GlobalNav({ loadingMenu, handleLogout }) {
                       </React.Fragment>
                     );
                   })}
+
                   <div className="globalnav__divider" role="separator" />
                   <button
                     type="button"
@@ -489,6 +516,7 @@ export default function GlobalNav({ loadingMenu, handleLogout }) {
             onClick={closeMobileMenu}
             aria-label="Fechar menu"
           />
+
           <aside
             id="nexus-mobile-menu"
             ref={mobileMenuRef}
@@ -507,7 +535,12 @@ export default function GlobalNav({ loadingMenu, handleLogout }) {
                   <small>Seu catálogo em todo lugar</small>
                 </span>
               </Link>
-              <button type="button" className="globalnav__mobileClose" onClick={closeMobileMenu} aria-label="Fechar menu">
+              <button
+                type="button"
+                className="globalnav__mobileClose"
+                onClick={closeMobileMenu}
+                aria-label="Fechar menu"
+              >
                 <FaTimes aria-hidden="true" />
               </button>
             </div>
@@ -528,8 +561,13 @@ export default function GlobalNav({ loadingMenu, handleLogout }) {
                 {publicNavigation.map((item) => (
                   <MobileNavLink key={item.path} item={item} onClick={closeMobileMenu} />
                 ))}
+
                 {cartItems > 0 && (
-                  <button type="button" className="globalnav__mobileLink globalnav__mobileCartLink" onClick={goToCheckout}>
+                  <button
+                    type="button"
+                    className="globalnav__mobileLink globalnav__mobileCartLink"
+                    onClick={goToCheckout}
+                  >
                     <span className="globalnav__mobileLinkIcon"><FaShoppingCart aria-hidden="true" /></span>
                     <span>Carrinho</span>
                     <span className="globalnav__mobileCartCount">{cartLabel}</span>
@@ -576,10 +614,18 @@ export default function GlobalNav({ loadingMenu, handleLogout }) {
               {!navIsLoading && !isAuthed && (
                 <section className="globalnav__mobileAuth" aria-label="Acessar conta">
                   <p>Entre para comprar, acompanhar pedidos e administrar seus catálogos.</p>
-                  <Link to="/login" className="globalnav__mobileAuthBtn globalnav__mobileAuthBtn--ghost" onClick={closeMobileMenu}>
+                  <Link
+                    to="/login"
+                    className="globalnav__mobileAuthBtn globalnav__mobileAuthBtn--ghost"
+                    onClick={closeMobileMenu}
+                  >
                     <FaSignInAlt aria-hidden="true" /> Entrar
                   </Link>
-                  <Link to="/register" className="globalnav__mobileAuthBtn globalnav__mobileAuthBtn--primary" onClick={closeMobileMenu}>
+                  <Link
+                    to="/register"
+                    className="globalnav__mobileAuthBtn globalnav__mobileAuthBtn--primary"
+                    onClick={closeMobileMenu}
+                  >
                     <FaUserPlus aria-hidden="true" /> Criar conta
                   </Link>
                 </section>
