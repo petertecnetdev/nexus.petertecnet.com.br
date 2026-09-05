@@ -104,6 +104,22 @@ export default function CatalogPage() {
   const logoCandidates = [establishment?.images?.logo, establishment?.logo, files.find((file) => file?.type === "logo")?.public_url, files.find((file) => file?.is_primary)?.public_url, files[0]?.public_url];
   const socialLogo = logoCandidates.find(Boolean) || null;
   const background = establishment?.images?.background || establishment?.background || files.find((file) => file?.type === "background")?.public_url;
+  const pageBackgroundStyle = background
+    ? {
+        backgroundImage: `linear-gradient(rgba(3,10,20,.90), rgba(3,10,20,.96)), url("${background}")`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
+      }
+    : undefined;
+  const heroBackgroundStyle = background
+    ? {
+        backgroundImage: `linear-gradient(rgba(2,8,18,.24), rgba(2,8,18,.58)), url("${background}")`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
+      }
+    : undefined;
 
   useEffect(() => {
     if (!establishment) return undefined;
@@ -140,9 +156,9 @@ export default function CatalogPage() {
   if (loading) return <ProcessingIndicatorComponent messages={["Carregando catálogo…", "Organizando os itens…"]} />;
   if (apiError || !establishment) return <><GlobalNav /><Container className="py-5"><NexusFeedback type="error" title="Catálogo indisponível" actionLabel="Ir para a Nexus" onAction={() => navigate("/")}>{apiError || "Não encontramos este catálogo. Ele pode estar desativado, removido ou o link pode estar incorreto."}</NexusFeedback></Container></>;
 
-  return <div className="catalog-page">
+  return <div className="catalog-page" style={pageBackgroundStyle}>
     <GlobalNav />
-    <section className="catalog-hero" style={background ? { backgroundImage: `linear-gradient(rgba(2,8,18,.76), rgba(2,8,18,.92)), url(${background})` } : undefined}><Container><div className="catalog-hero__content"><EntityImage src={logoCandidates} name={title} alt={`Imagem de ${title}`} shape="establishment" className="catalog-hero__logo" loading="eager" /><div><Badge bg="info" text="dark" className="mb-2">Catálogo online</Badge><h1>{title}</h1>{establishment.description && <p>{establishment.description}</p>}<div className="catalog-hero__meta">{[establishment.city, establishment.uf].filter(Boolean).join(" / ")}</div></div></div></Container></section>
+    <section className="catalog-hero" style={heroBackgroundStyle}><Container><div className="catalog-hero__content"><EntityImage src={logoCandidates} name={title} alt={`Imagem de ${title}`} shape="establishment" className="catalog-hero__logo" loading="eager" /><div><Badge bg="info" text="dark" className="mb-2">Catálogo online</Badge><h1>{title}</h1>{establishment.description && <p>{establishment.description}</p>}<div className="catalog-hero__meta">{[establishment.city, establishment.uf].filter(Boolean).join(" / ")}</div></div></div></Container></section>
 
     <Container className="catalog-content py-4">
       {!orderingLoading && !purchaseEnabled && hasItems && <Alert variant="warning" className="mb-4"><strong>Compras pausadas.</strong> {purchaseUnavailableReason} O catálogo continua disponível apenas para consulta.</Alert>}
