@@ -1,22 +1,30 @@
+import { resolveImageUrl } from "../hooks/useImageUtils";
+
+const normalizeMediaUrl = (value) => {
+  if (!value || typeof value !== "string") return null;
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+  return resolveImageUrl(trimmed) || trimmed;
+};
+
 const mediaUrl = (file) => {
   if (!file) return null;
 
   if (typeof file === "string") {
-    const value = file.trim();
-    return value || null;
+    return normalizeMediaUrl(file);
   }
 
   if (typeof file !== "object") return null;
 
-  return (
+  return normalizeMediaUrl(
     file?.public_url ||
-    file?.full_url ||
-    file?.media_url ||
-    file?.image_url ||
-    file?.url ||
-    file?.src ||
-    file?.path ||
-    null
+      file?.full_url ||
+      file?.media_url ||
+      file?.image_url ||
+      file?.url ||
+      file?.src ||
+      file?.path ||
+      null
   );
 };
 
@@ -126,9 +134,6 @@ export const resolveEstablishmentBackground = (
   const resolvedLogo = mediaUrl(logo) || resolveEstablishmentLogo(establishment, mediaFiles);
   const logoIdentity = mediaIdentity(resolvedLogo);
 
-  // The uploaded file explicitly classified as "background" is authoritative.
-  // Normalize both string URLs and media objects returned by the API so the
-  // public catalog always receives a usable cover URL.
   const candidates = unique([
     findTypedMedia(mediaFiles, ["background"]),
     establishment.background,
