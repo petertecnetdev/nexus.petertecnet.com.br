@@ -1,49 +1,26 @@
 // src/App.jsx
-import React, { useEffect, useState, useContext, createContext } from "react";
+import React, {
+  Suspense,
+  createContext,
+  lazy,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 import {
   BrowserRouter as Router,
-  Routes,
-  Route,
   Navigate,
+  Route,
+  Routes,
   useParams,
 } from "react-router-dom";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 
 import ProcessingIndicatorComponent from "./components/ProcessingIndicatorComponent";
-import PeterFrontendCoreGateway from "./components/PeterFrontendCoreGateway";
 import SeoManager from "./components/SeoManager";
-import { LoadingProvider, LoadingContext } from "./contexts/LoadingContext";
+import { LoadingContext, LoadingProvider } from "./contexts/LoadingContext";
 import { appId } from "./config";
 import api from "./services/api";
-
-import HomePage from "./pages/HomePage";
-import NotFoundPage from "./pages/NotFoundPage";
-import LoginPage from "./pages/auth/LoginPage";
-import RegisterPage from "./pages/auth/RegisterPage";
-import EmailVerifyPage from "./pages/auth/EmailVerifyPage";
-import LogoutPage from "./pages/auth/LogoutPage";
-import PasswordEmailPage from "./pages/auth/PasswordEmailPage";
-import PasswordResetPage from "./pages/auth/PasswordResetPage";
-import PasswordPage from "./pages/auth/PasswordPage";
-import InviteCompletePage from "./pages/auth/InviteCompletePage";
-import UserUpdatePage from "./pages/user/UserUpdatePage";
-
-import ItemCreatePage from "./pages/item/ItemCreatePage";
-import ItemViewPage from "./pages/item/ItemViewPage";
-import ItemUpdatePage from "./pages/item/ItemUpdatePage";
-
-import EstablishmentCreatePage from "./pages/establishment/EstablishmentCreatePage";
-import EstablishmentUpdatePage from "./pages/establishment/EstablishmentUpdatePage";
-import EstablishmentMyPage from "./pages/establishment/EstablishmentMyPage";
-import EstablishmentItemPage from "./pages/establishment/EstablishmentItemPage";
-import EstablishmentViewPage from "./pages/establishment/EstablishmentViewPage";
-import CatalogPage from "./pages/catalog/CatalogPage";
-import CheckoutPage from "./pages/commerce/CheckoutPage";
-import PurchasePage from "./pages/commerce/PurchasePage";
-import MyPurchasesPage from "./pages/commerce/MyPurchasesPage";
-import SellerOrdersPage from "./pages/commerce/SellerOrdersPage";
-import OrderScannerPage from "./pages/commerce/OrderScannerPage";
-import RedeemOrderPage from "./pages/commerce/RedeemOrderPage";
 
 import "./index.css";
 import "./styles/readability.css";
@@ -51,11 +28,63 @@ import "./styles/form-contrast-dark.css";
 import "./styles/page-consistency.css";
 import "./styles/form-visibility-guard.css";
 
+const PeterFrontendCoreGateway = lazy(() => import("./components/PeterFrontendCoreGateway"));
+const HomePage = lazy(() => import("./pages/HomePage"));
+const NotFoundPage = lazy(() => import("./pages/NotFoundPage"));
+const LoginPage = lazy(() => import("./pages/auth/LoginPage"));
+const RegisterPage = lazy(() => import("./pages/auth/RegisterPage"));
+const EmailVerifyPage = lazy(() => import("./pages/auth/EmailVerifyPage"));
+const LogoutPage = lazy(() => import("./pages/auth/LogoutPage"));
+const PasswordEmailPage = lazy(() => import("./pages/auth/PasswordEmailPage"));
+const PasswordResetPage = lazy(() => import("./pages/auth/PasswordResetPage"));
+const PasswordPage = lazy(() => import("./pages/auth/PasswordPage"));
+const InviteCompletePage = lazy(() => import("./pages/auth/InviteCompletePage"));
+const UserUpdatePage = lazy(() => import("./pages/user/UserUpdatePage"));
+const ItemCreatePage = lazy(() => import("./pages/item/ItemCreatePage"));
+const ItemViewPage = lazy(() => import("./pages/item/ItemViewPage"));
+const ItemUpdatePage = lazy(() => import("./pages/item/ItemUpdatePage"));
+const EstablishmentCreatePage = lazy(() => import("./pages/establishment/EstablishmentCreatePage"));
+const EstablishmentUpdatePage = lazy(() => import("./pages/establishment/EstablishmentUpdatePage"));
+const EstablishmentMyPage = lazy(() => import("./pages/establishment/EstablishmentMyPage"));
+const EstablishmentItemPage = lazy(() => import("./pages/establishment/EstablishmentItemPage"));
+const EstablishmentViewPage = lazy(() => import("./pages/establishment/EstablishmentViewPage"));
+const CatalogPage = lazy(() => import("./pages/catalog/CatalogPage"));
+const CheckoutPage = lazy(() => import("./pages/commerce/CheckoutPage"));
+const PurchasePage = lazy(() => import("./pages/commerce/PurchasePage"));
+const MyPurchasesPage = lazy(() => import("./pages/commerce/MyPurchasesPage"));
+const SellerOrdersPage = lazy(() => import("./pages/commerce/SellerOrdersPage"));
+const OrderScannerPage = lazy(() => import("./pages/commerce/OrderScannerPage"));
+const RedeemOrderPage = lazy(() => import("./pages/commerce/RedeemOrderPage"));
+
 export const AuthContext = createContext(null);
+
+const AUTH_FREE_PATHS = new Set([
+  "/",
+  "/register",
+  "/login",
+  "/password-email",
+  "/password-reset",
+  "/invite-complete",
+  "/logout",
+  "/establishments",
+]);
+
+const isPublicPath = (pathname) => {
+  if (AUTH_FREE_PATHS.has(pathname)) return true;
+
+  return /^\/(?:catalog|catalogo)\/[^/]+\/?$/.test(pathname)
+    || /^\/(?:establishment\/view|empresa)\/[^/]+\/?$/.test(pathname)
+    || /^\/item(?:\/view)?\/[^/]+\/?$/.test(pathname)
+    || /^\/redeem\/[^/]+\/?$/.test(pathname);
+};
 
 function CatalogRedirect() {
   const { slug } = useParams();
   return <Navigate to={`/catalog/${encodeURIComponent(slug || "")}`} replace />;
+}
+
+function RouteFallback() {
+  return <ProcessingIndicatorComponent messages={["Abrindo a página…", "Carregando somente o necessário…"]} />;
 }
 
 function AppInner() {
@@ -130,56 +159,64 @@ function AppInner() {
     };
   }, []);
 
-  if (initialLoading) {
+  if (initialLoading && !isPublicPath(window.location.pathname)) {
     return <ProcessingIndicatorComponent messages={["Conectando à Nexus…", "Preparando sua experiência…"]} />;
   }
 
-  const protectedRoute = (element) => user ? (user.email_verified_at ? element : <Navigate to="/email-verify" replace />) : <Navigate to="/login" replace />;
-  const emailVerifiedRoute = (element) => user ? (!user.email_verified_at ? element : <Navigate to="/establishment/my" replace />) : <Navigate to="/login" replace />;
-  const restrictedRoute = (element) => user ? <Navigate to="/establishment/my" replace /> : element;
+  const protectedRoute = (element) => user
+    ? (user.email_verified_at ? element : <Navigate to="/email-verify" replace />)
+    : <Navigate to="/login" replace />;
+  const emailVerifiedRoute = (element) => user
+    ? (!user.email_verified_at ? element : <Navigate to="/establishment/my" replace />)
+    : <Navigate to="/login" replace />;
+  const restrictedRoute = (element) => user
+    ? <Navigate to="/establishment/my" replace />
+    : element;
 
   return (
     <AuthContext.Provider value={{ user, setUser, employer, isEmployer, establishments }}>
       {isLoading && <ProcessingIndicatorComponent messages={["Salvando suas alterações…", "Atualizando a Nexus…"]} />}
       <Router>
         <SeoManager />
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/register" element={restrictedRoute(<RegisterPage />)} />
-          <Route path="/login" element={restrictedRoute(<LoginPage />)} />
-          <Route path="/password-email" element={restrictedRoute(<PasswordEmailPage />)} />
-          <Route path="/password-reset" element={restrictedRoute(<PasswordResetPage />)} />
-          <Route path="/email-verify" element={emailVerifiedRoute(<EmailVerifyPage />)} />
-          <Route path="/password" element={protectedRoute(<PasswordPage />)} />
-          <Route path="/invite-complete" element={restrictedRoute(<InviteCompletePage redirectTo="/login" />)} />
-          <Route path="/logout" element={<LogoutPage />} />
+        <Suspense fallback={<RouteFallback />}>
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/register" element={restrictedRoute(<RegisterPage />)} />
+            <Route path="/login" element={restrictedRoute(<LoginPage />)} />
+            <Route path="/password-email" element={restrictedRoute(<PasswordEmailPage />)} />
+            <Route path="/password-reset" element={restrictedRoute(<PasswordResetPage />)} />
+            <Route path="/email-verify" element={emailVerifiedRoute(<EmailVerifyPage />)} />
+            <Route path="/password" element={protectedRoute(<PasswordPage />)} />
+            <Route path="/invite-complete" element={restrictedRoute(<InviteCompletePage redirectTo="/login" />)} />
+            <Route path="/logout" element={<LogoutPage />} />
 
-          <Route path="/catalog/:slug" element={<CatalogPage />} />
-          <Route path="/catalogo/:slug" element={<CatalogRedirect />} />
-          <Route path="/establishment/view/:slug" element={<EstablishmentViewPage />} />
-          <Route path="/empresa/:slug" element={<EstablishmentViewPage />} />
-          <Route path="/establishments" element={<Navigate to="/" replace />} />
-          <Route path="/item/view/:slug" element={<ItemViewPage />} />
-          <Route path="/item/:slug" element={<ItemViewPage />} />
+            <Route path="/catalog/:slug" element={<CatalogPage />} />
+            <Route path="/catalogo/:slug" element={<CatalogRedirect />} />
+            <Route path="/establishment/view/:slug" element={<EstablishmentViewPage />} />
+            <Route path="/empresa/:slug" element={<EstablishmentViewPage />} />
+            <Route path="/establishments" element={<Navigate to="/" replace />} />
+            <Route path="/item/view/:slug" element={<ItemViewPage />} />
+            <Route path="/item/:slug" element={<ItemViewPage />} />
 
-          <Route path="/checkout" element={protectedRoute(<CheckoutPage />)} />
-          <Route path="/purchase/:publicId" element={protectedRoute(<PurchasePage />)} />
-          <Route path="/purchases" element={protectedRoute(<MyPurchasesPage />)} />
-          <Route path="/orders/manage" element={protectedRoute(<SellerOrdersPage />)} />
-          <Route path="/orders/scan" element={protectedRoute(<OrderScannerPage />)} />
-          <Route path="/redeem/:publicId" element={<RedeemOrderPage />} />
+            <Route path="/checkout" element={protectedRoute(<CheckoutPage />)} />
+            <Route path="/purchase/:publicId" element={protectedRoute(<PurchasePage />)} />
+            <Route path="/purchases" element={protectedRoute(<MyPurchasesPage />)} />
+            <Route path="/orders/manage" element={protectedRoute(<SellerOrdersPage />)} />
+            <Route path="/orders/scan" element={protectedRoute(<OrderScannerPage />)} />
+            <Route path="/redeem/:publicId" element={<RedeemOrderPage />} />
 
-          <Route path="/user/update" element={protectedRoute(<UserUpdatePage />)} />
-          <Route path="/establishment/create" element={protectedRoute(<EstablishmentCreatePage />)} />
-          <Route path="/establishment/update/:id" element={protectedRoute(<EstablishmentUpdatePage />)} />
-          <Route path="/establishment/my" element={protectedRoute(<EstablishmentMyPage />)} />
-          <Route path="/establishment/item/:slug" element={protectedRoute(<EstablishmentItemPage />)} />
-          <Route path="/item/create/:slug" element={protectedRoute(<ItemCreatePage />)} />
-          <Route path="/item/update/:id" element={protectedRoute(<ItemUpdatePage />)} />
+            <Route path="/user/update" element={protectedRoute(<UserUpdatePage />)} />
+            <Route path="/establishment/create" element={protectedRoute(<EstablishmentCreatePage />)} />
+            <Route path="/establishment/update/:id" element={protectedRoute(<EstablishmentUpdatePage />)} />
+            <Route path="/establishment/my" element={protectedRoute(<EstablishmentMyPage />)} />
+            <Route path="/establishment/item/:slug" element={protectedRoute(<EstablishmentItemPage />)} />
+            <Route path="/item/create/:slug" element={protectedRoute(<ItemCreatePage />)} />
+            <Route path="/item/update/:id" element={protectedRoute(<ItemUpdatePage />)} />
 
-          <Route path="/dashboard" element={<Navigate to="/establishment/my" replace />} />
-          <Route path="*" element={<NotFoundPage />} />
-        </Routes>
+            <Route path="/dashboard" element={<Navigate to="/establishment/my" replace />} />
+            <Route path="*" element={<NotFoundPage />} />
+          </Routes>
+        </Suspense>
       </Router>
     </AuthContext.Provider>
   );
@@ -188,7 +225,9 @@ function AppInner() {
 export default function App() {
   return (
     <>
-      <PeterFrontendCoreGateway />
+      <Suspense fallback={null}>
+        <PeterFrontendCoreGateway />
+      </Suspense>
       <LoadingProvider>
         <GoogleOAuthProvider clientId={process.env.REACT_APP_GOOGLE_CLIENT_ID || ""} locale="pt-BR">
           <AppInner />

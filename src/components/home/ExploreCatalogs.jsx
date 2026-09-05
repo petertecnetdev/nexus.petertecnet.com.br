@@ -26,7 +26,15 @@ function CompanyMedia({ company, imageUrl }) {
   const image = imageUrl(path);
 
   if (image && !failed) {
-    return <img src={image} alt={company?.fantasy || company?.name || "Empresa"} loading="lazy" onError={() => setFailed(true)} />;
+    return (
+      <img
+        src={image}
+        alt={company?.fantasy || company?.name || "Empresa"}
+        loading="lazy"
+        decoding="async"
+        onError={() => setFailed(true)}
+      />
+    );
   }
 
   return <span className="explore-company-card__initials">{getInitials(company?.fantasy || company?.name)}</span>;
@@ -55,16 +63,22 @@ RailControls.propTypes = {
   label: PropTypes.string.isRequired,
 };
 
-export default function ExploreCatalogs({ currentCity, currentUf }) {
+export default function ExploreCatalogs({
+  currentCity,
+  currentUf,
+  initialCompanies = [],
+  initialLocations = [],
+  sourceReady = false,
+}) {
   const navigate = useNavigate();
   const { imageUrl } = useImageUtils();
   const railRef = useRef(null);
-  const [locations, setLocations] = useState([]);
-  const [companies, setCompanies] = useState([]);
+  const [locations, setLocations] = useState(initialLocations);
+  const [companies, setCompanies] = useState(initialCompanies);
   const [selectedLocation, setSelectedLocation] = useState("");
   const [query, setQuery] = useState("");
   const [appliedQuery, setAppliedQuery] = useState("");
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!sourceReady);
   const [error, setError] = useState(false);
 
   const selected = useMemo(() => {
@@ -73,7 +87,17 @@ export default function ExploreCatalogs({ currentCity, currentUf }) {
     return { uf, city: cityParts.join("|") };
   }, [selectedLocation]);
 
+  const hasActiveFilters = Boolean(selectedLocation || appliedQuery);
+
   useEffect(() => {
+    if (!hasActiveFilters) {
+      setCompanies(Array.isArray(initialCompanies) ? initialCompanies : []);
+      setLocations(Array.isArray(initialLocations) ? initialLocations : []);
+      setLoading(!sourceReady);
+      setError(false);
+      return undefined;
+    }
+
     const controller = new AbortController();
 
     const load = async () => {
@@ -104,7 +128,16 @@ export default function ExploreCatalogs({ currentCity, currentUf }) {
 
     load();
     return () => controller.abort();
-  }, [currentCity, currentUf, selected, appliedQuery]);
+  }, [
+    appliedQuery,
+    currentCity,
+    currentUf,
+    hasActiveFilters,
+    initialCompanies,
+    initialLocations,
+    selected,
+    sourceReady,
+  ]);
 
   const submitSearch = (event) => {
     event.preventDefault();
@@ -193,4 +226,7 @@ export default function ExploreCatalogs({ currentCity, currentUf }) {
 ExploreCatalogs.propTypes = {
   currentCity: PropTypes.string,
   currentUf: PropTypes.string,
+  initialCompanies: PropTypes.arrayOf(PropTypes.object),
+  initialLocations: PropTypes.arrayOf(PropTypes.object),
+  sourceReady: PropTypes.bool,
 };
