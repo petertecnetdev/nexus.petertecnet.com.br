@@ -8,6 +8,7 @@ import { AuthContext } from "../../App";
 import GlobalNav from "../../components/GlobalNav";
 import GlobalCard from "../../components/GlobalCard";
 import EntityImage from "../../components/EntityImage";
+import GlobalWhatsappButton from "../../components/GlobalWhatsappButton";
 import ShareButton from "../../components/ShareButton";
 import useItemView from "../../hooks/useItemView";
 import useWhatsappLink from "../../hooks/useWhatsappLink";
@@ -23,6 +24,7 @@ export default function ItemViewPage() {
   const { user } = useContext(AuthContext);
   const { item, otherItems, establishment, loading, error } = useItemView(slug);
   const whatsappLink = useWhatsappLink(establishment);
+  const whatsappMessage = `Olá, gostaria de saber mais informações sobre o item "${item?.name || item?.title || "selecionado"}". Você poderia me ajudar?`;
 
   useEffect(() => { window.scrollTo({ top: 0, behavior: "smooth" }); }, [slug]);
 
@@ -60,6 +62,7 @@ export default function ItemViewPage() {
       </Row>
       {otherItems?.length > 0 && <section className="item-detail-related"><h2>Outros itens deste catálogo</h2><Row className="g-3">{otherItems.slice(0, 8).map((related) => <Col key={related.id} xs={12} sm={6} lg={3}><GlobalCard item={related} fmtBRL={fmtBRL} navigate={navigate} /></Col>)}</Row></section>}
     </Container>
+    <GlobalWhatsappButton link={whatsappLink} message={whatsappMessage} />
     <ShareButton />
   </div>;
 }
