@@ -22,6 +22,14 @@ import { LoadingContext, LoadingProvider } from "./contexts/LoadingContext";
 import { appId } from "./config";
 import api from "./services/api";
 
+// Critical public journey stays in the initial bundle so navigation from discovery
+// to company/catalog/item is immediate. Heavier/private flows are split by route.
+import HomePage from "./pages/HomePage";
+import NotFoundPage from "./pages/NotFoundPage";
+import ItemViewPage from "./pages/item/ItemViewPage";
+import EstablishmentViewPage from "./pages/establishment/EstablishmentViewPage";
+import CatalogPage from "./pages/catalog/CatalogPage";
+
 import "./index.css";
 import "./styles/readability.css";
 import "./styles/form-contrast-dark.css";
@@ -29,8 +37,6 @@ import "./styles/page-consistency.css";
 import "./styles/form-visibility-guard.css";
 
 const PeterFrontendCoreGateway = lazy(() => import("./components/PeterFrontendCoreGateway"));
-const HomePage = lazy(() => import("./pages/HomePage"));
-const NotFoundPage = lazy(() => import("./pages/NotFoundPage"));
 const LoginPage = lazy(() => import("./pages/auth/LoginPage"));
 const RegisterPage = lazy(() => import("./pages/auth/RegisterPage"));
 const EmailVerifyPage = lazy(() => import("./pages/auth/EmailVerifyPage"));
@@ -41,14 +47,11 @@ const PasswordPage = lazy(() => import("./pages/auth/PasswordPage"));
 const InviteCompletePage = lazy(() => import("./pages/auth/InviteCompletePage"));
 const UserUpdatePage = lazy(() => import("./pages/user/UserUpdatePage"));
 const ItemCreatePage = lazy(() => import("./pages/item/ItemCreatePage"));
-const ItemViewPage = lazy(() => import("./pages/item/ItemViewPage"));
 const ItemUpdatePage = lazy(() => import("./pages/item/ItemUpdatePage"));
 const EstablishmentCreatePage = lazy(() => import("./pages/establishment/EstablishmentCreatePage"));
 const EstablishmentUpdatePage = lazy(() => import("./pages/establishment/EstablishmentUpdatePage"));
 const EstablishmentMyPage = lazy(() => import("./pages/establishment/EstablishmentMyPage"));
 const EstablishmentItemPage = lazy(() => import("./pages/establishment/EstablishmentItemPage"));
-const EstablishmentViewPage = lazy(() => import("./pages/establishment/EstablishmentViewPage"));
-const CatalogPage = lazy(() => import("./pages/catalog/CatalogPage"));
 const CheckoutPage = lazy(() => import("./pages/commerce/CheckoutPage"));
 const PurchasePage = lazy(() => import("./pages/commerce/PurchasePage"));
 const MyPurchasesPage = lazy(() => import("./pages/commerce/MyPurchasesPage"));
