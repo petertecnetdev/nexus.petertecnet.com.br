@@ -1,4 +1,5 @@
 {
+  "id": "/",
   "short_name": "Nexus",
   "name": "Nexus — Catálogos Online",
   "description": "Crie e compartilhe o catálogo online da sua empresa por link ou QR Code.",
@@ -21,5 +22,13 @@
   "display": "standalone",
   "theme_color": "#07251b",
   "background_color": "#03100d",
-  "lang": "pt-BR"
+  "lang": "pt-BR",
+  "prefer_related_applications": false,
+  "related_applications": [
+    {
+      "platform": "webapp",
+      "url": "https://nexus.petertecnet.com.br/manifest.json",
+      "id": "/"
+    }
+  ]
 }
