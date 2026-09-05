@@ -4,13 +4,22 @@ import PropTypes from "prop-types";
 import { useNavigate } from "react-router-dom";
 import GlobalButton from "../GlobalButton";
 import EntityImage from "../EntityImage";
+import useImageUtils from "../../hooks/useImageUtils";
+import {
+  mediaUrl,
+  resolveEstablishmentBackground,
+  resolveEstablishmentLogo,
+} from "../../utils/establishmentMedia";
 import "./EstablishmentHero.css";
 
 export default function EstablishmentHero({ entity, logo, background, title, subtitle, description, city, uf, showBack }) {
   const navigate = useNavigate();
+  const { imageUrl } = useImageUtils();
   const resolved = entity || {};
-  const finalLogo = logo ?? resolved?.images?.logo ?? resolved?.logo ?? null;
-  const finalBackground = background ?? resolved?.images?.background ?? resolved?.background ?? null;
+  const finalLogo = mediaUrl(logo) || resolveEstablishmentLogo(resolved);
+  const backgroundSource =
+    mediaUrl(background) || resolveEstablishmentBackground(resolved, null, finalLogo);
+  const finalBackground = backgroundSource ? imageUrl(backgroundSource) : null;
   const finalTitle = title ?? resolved.fantasy ?? resolved.name ?? "Empresa";
   const finalDescription = description ?? resolved.description;
   const finalCity = city ?? resolved.city;
