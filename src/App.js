@@ -10,6 +10,7 @@ import {
 import { GoogleOAuthProvider } from "@react-oauth/google";
 
 import ProcessingIndicatorComponent from "./components/ProcessingIndicatorComponent";
+import PeterFrontendCoreGateway from "./components/PeterFrontendCoreGateway";
 import SeoManager from "./components/SeoManager";
 import { LoadingProvider, LoadingContext } from "./contexts/LoadingContext";
 import { appId } from "./config";
@@ -186,10 +187,13 @@ function AppInner() {
 
 export default function App() {
   return (
-    <LoadingProvider>
-      <GoogleOAuthProvider clientId={process.env.REACT_APP_GOOGLE_CLIENT_ID || ""} locale="pt-BR">
-        <AppInner />
-      </GoogleOAuthProvider>
-    </LoadingProvider>
+    <>
+      <PeterFrontendCoreGateway />
+      <LoadingProvider>
+        <GoogleOAuthProvider clientId={process.env.REACT_APP_GOOGLE_CLIENT_ID || ""} locale="pt-BR">
+          <AppInner />
+        </GoogleOAuthProvider>
+      </LoadingProvider>
+    </>
   );
 }
