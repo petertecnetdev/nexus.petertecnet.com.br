@@ -63,7 +63,6 @@ export default function PeterFrontendCoreGateway() {
       script.src = CORE_URL;
       script.async = true;
       script.dataset.peterFrontendCore = CORE_VERSION;
-      script.crossOrigin = "anonymous";
       document.head.appendChild(script);
     }
 
