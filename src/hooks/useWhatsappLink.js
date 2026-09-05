@@ -22,7 +22,8 @@ const normalizeWhatsappLink = (establishment) => {
   const raw = String(phone || "").replace(/\D/g, "").replace(/^0+/, "");
   if (!raw) return null;
 
-  const withCountryCode = raw.startsWith("55") ? raw : `55${raw}`;
+  const hasBrazilCountryCode = raw.startsWith("55") && raw.length >= 12;
+  const withCountryCode = hasBrazilCountryCode ? raw : `55${raw}`;
   return `https://wa.me/${withCountryCode}`;
 };
 
