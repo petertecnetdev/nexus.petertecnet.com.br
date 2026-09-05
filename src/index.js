@@ -2,6 +2,7 @@ import { startTelemetry } from "./telemetry";
 import { apiBaseUrl, appId, appSlug } from "./config";
 import { installGlobalImageFallbacks } from "./utils/imageFallback";
 import { installPasswordFieldEnhancer } from "./utils/passwordFieldEnhancer";
+import { installPeterWhatsappFallback } from "./utils/peterWhatsappFallback";
 import React from "react";
 import ReactDOM from "react-dom/client";
 import axios from "axios";
@@ -14,6 +15,7 @@ import "./styles/nexus-brand-refresh.css";
 
 installGlobalImageFallbacks();
 installPasswordFieldEnhancer();
+installPeterWhatsappFallback();
 startTelemetry({ apiBaseUrl, appSlug, appId });
 
 axios.defaults.headers.common["X-Peter-App"] = appSlug;
