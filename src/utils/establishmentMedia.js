@@ -1,12 +1,24 @@
-const mediaUrl = (file) =>
-  file?.public_url ||
-  file?.full_url ||
-  file?.media_url ||
-  file?.image_url ||
-  file?.url ||
-  file?.src ||
-  file?.path ||
-  null;
+const mediaUrl = (file) => {
+  if (!file) return null;
+
+  if (typeof file === "string") {
+    const value = file.trim();
+    return value || null;
+  }
+
+  if (typeof file !== "object") return null;
+
+  return (
+    file?.public_url ||
+    file?.full_url ||
+    file?.media_url ||
+    file?.image_url ||
+    file?.url ||
+    file?.src ||
+    file?.path ||
+    null
+  );
+};
 
 const mediaType = (file) =>
   String(
@@ -21,7 +33,9 @@ const mediaType = (file) =>
     .trim()
     .toLowerCase();
 
-const unique = (values) => [...new Set(values.filter(Boolean))];
+const unique = (values) => [
+  ...new Set(values.map((value) => mediaUrl(value)).filter(Boolean)),
+];
 
 const findTypedMedia = (files, types) => {
   if (!Array.isArray(files)) return null;
@@ -38,8 +52,10 @@ const findTypedMedia = (files, types) => {
 };
 
 const mediaIdentity = (value) => {
-  if (!value) return null;
-  const raw = String(value).trim();
+  const resolved = mediaUrl(value);
+  if (!resolved) return null;
+
+  const raw = String(resolved).trim();
   if (!raw) return null;
 
   try {
@@ -79,17 +95,18 @@ export const resolveEstablishmentLogo = (establishment, files = null) => {
       : {};
 
   return (
-    findTypedMedia(mediaFiles, ["logo", "avatar", "profile"]) ||
-    images.logo ||
-    images.logo_url ||
-    images.avatar ||
-    images.avatar_url ||
-    establishment.logo ||
-    establishment.logo_url ||
-    establishment.avatar ||
-    establishment.avatar_url ||
-    establishment.image_logo ||
-    null
+    unique([
+      findTypedMedia(mediaFiles, ["logo", "avatar", "profile"]),
+      images.logo,
+      images.logo_url,
+      images.avatar,
+      images.avatar_url,
+      establishment.logo,
+      establishment.logo_url,
+      establishment.avatar,
+      establishment.avatar_url,
+      establishment.image_logo,
+    ])[0] || null
   );
 };
 
@@ -106,12 +123,12 @@ export const resolveEstablishmentBackground = (
     typeof establishment.images === "object"
       ? establishment.images
       : {};
-  const resolvedLogo = logo || resolveEstablishmentLogo(establishment, mediaFiles);
+  const resolvedLogo = mediaUrl(logo) || resolveEstablishmentLogo(establishment, mediaFiles);
   const logoIdentity = mediaIdentity(resolvedLogo);
 
   // The uploaded file explicitly classified as "background" is authoritative.
-  // This mirrors the establishment editor and prevents a stale images.background
-  // alias from accidentally reusing the logo as the visual cover.
+  // Normalize both string URLs and media objects returned by the API so the
+  // public catalog always receives a usable cover URL.
   const candidates = unique([
     findTypedMedia(mediaFiles, ["background"]),
     establishment.background,
