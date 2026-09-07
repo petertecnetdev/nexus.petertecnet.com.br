@@ -1,26 +1,38 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import PropTypes from "prop-types";
 import "./ProcessingIndicatorComponent.css";
 
+const DEFAULT_MESSAGES = [
+  "Organizando seu catálogo com calma…",
+  "Conectando produtos, pedidos e gestão…",
+  "Carregando somente o que você precisa…",
+  "Quase lá — a Nexus já está abrindo.",
+];
+
 export default function ProcessingIndicatorComponent({
-  messages = ["Carregando a Nexus…", "Preparando seu catálogo…"],
-  interval = 2400,
+  messages = DEFAULT_MESSAGES,
+  interval = 2600,
   logoSrc = "/images/logo.png",
   compact = false,
 }) {
-  const messageIndex = useRef(0);
-  const [currentMessage, setCurrentMessage] = useState(messages[0] || "Carregando…");
+  const safeMessages = useMemo(
+    () => (Array.isArray(messages) && messages.filter(Boolean).length ? messages.filter(Boolean) : DEFAULT_MESSAGES),
+    [messages],
+  );
+  const [index, setIndex] = useState(0);
 
   useEffect(() => {
-    if (!messages?.length || messages.length === 1) return undefined;
+    setIndex(0);
+    if (safeMessages.length < 2) return undefined;
 
     const timer = window.setInterval(() => {
-      messageIndex.current = (messageIndex.current + 1) % messages.length;
-      setCurrentMessage(messages[messageIndex.current]);
+      setIndex((current) => (current + 1) % safeMessages.length);
     }, interval);
 
     return () => window.clearInterval(timer);
-  }, [messages, interval]);
+  }, [interval, safeMessages]);
+
+  const currentMessage = safeMessages[index] || safeMessages[0] || "Carregando…";
 
   return (
     <div
@@ -28,23 +40,36 @@ export default function ProcessingIndicatorComponent({
       role="status"
       aria-live="polite"
       aria-busy="true"
+      aria-label={currentMessage}
     >
-      <div className="processing-loader">
-        <div className="processing-orbit processing-orbit--outer" aria-hidden="true" />
-        <div className="processing-orbit processing-orbit--inner" aria-hidden="true" />
-        <div className="processing-logo-shell">
-          <img className="processing-logo" src={logoSrc} alt="Nexus" draggable={false} />
-        </div>
-        <span className="processing-pulse" aria-hidden="true" />
+      <div className="processing-ambient" aria-hidden="true">
+        <i className="processing-spark processing-spark--one" />
+        <i className="processing-spark processing-spark--two" />
+        <i className="processing-spark processing-spark--three" />
       </div>
 
-      <div className="processing-copy">
-        <strong>Nexus</strong>
-        <span>{currentMessage}</span>
-        <div className="processing-dots" aria-hidden="true">
-          <i />
-          <i />
-          <i />
+      <div className="processing-card">
+        <div className="processing-loader" aria-hidden="true">
+          <div className="processing-orbit processing-orbit--outer" />
+          <div className="processing-orbit processing-orbit--inner" />
+          <div className="processing-logo-shell">
+            <img className="processing-logo" src={logoSrc} alt="" draggable={false} />
+          </div>
+          <span className="processing-pulse" />
+        </div>
+
+        <div className="processing-copy">
+          <span className="processing-kicker">Peter Tecnet</span>
+          <strong>Nexus</strong>
+          <span className="processing-message" key={currentMessage}>{currentMessage}</span>
+        </div>
+
+        <div className="processing-progress" aria-hidden="true">
+          <span />
+        </div>
+
+        <div className="processing-beat" aria-hidden="true">
+          <i /><i /><i /><i /><i />
         </div>
       </div>
     </div>
