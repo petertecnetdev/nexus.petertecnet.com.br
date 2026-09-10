@@ -5,7 +5,7 @@ import { FaCreditCard, FaMinus, FaPlus, FaQrcode, FaTrash } from "react-icons/fa
 
 import { AuthContext } from "../../App";
 import GlobalNav from "../../components/GlobalNav";
-import { createCommerceOrder, getCommerceCatalog, getCommerceOrder } from "../../services/commerce";
+import { createCommerceIdempotencyKey, createCommerceOrder, getCommerceCatalog, getCommerceOrder } from "../../services/commerce";
 import { clearCart, readCart, setCartItemQuantity } from "../../services/cart";
 import "./Commerce.css";
 
@@ -16,6 +16,7 @@ export default function CheckoutPage() {
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
   const submittingRef = useRef(false);
+  const orderAttemptRef = useRef(null);
   const [cart, setCart] = useState(() => readCart());
   const [commerce, setCommerce] = useState(null);
   const [loadingConfig, setLoadingConfig] = useState(true);
@@ -79,24 +80,36 @@ export default function CheckoutPage() {
     event.preventDefault();
     if (!cart?.items?.length || processing || submittingRef.current) return;
 
+    const payload = {
+      establishment_id: cart.establishment.id,
+      fulfillment: form.fulfillment,
+      payment_method: form.payment_method,
+      customer_name: form.customer_name,
+      customer_phone: form.customer_phone || null,
+      delivery_address: form.fulfillment === "delivery" ? form.delivery_address : null,
+      notes: form.notes || null,
+      items: cart.items.map((row) => ({ item_id: row.item.id, quantity: Number(row.quantity) })),
+    };
+    const signature = JSON.stringify(payload);
+    if (orderAttemptRef.current?.signature !== signature) {
+      orderAttemptRef.current = {
+        signature,
+        idempotencyKey: createCommerceIdempotencyKey("order"),
+      };
+    }
+
     submittingRef.current = true;
     setError("");
     setProcessing(true);
     try {
-      const result = await createCommerceOrder({
-        establishment_id: cart.establishment.id,
-        fulfillment: form.fulfillment,
-        payment_method: form.payment_method,
-        customer_name: form.customer_name,
-        customer_phone: form.customer_phone || null,
-        delivery_address: form.fulfillment === "delivery" ? form.delivery_address : null,
-        notes: form.notes || null,
-        items: cart.items.map((row) => ({ item_id: row.item.id, quantity: Number(row.quantity) })),
+      const result = await createCommerceOrder(payload, {
+        idempotencyKey: orderAttemptRef.current.idempotencyKey,
       });
       const order = result?.order;
       const payment = result?.payment;
       if (!order?.public_id) throw new Error("A API não retornou a identificação da compra.");
 
+      orderAttemptRef.current = null;
       sessionStorage.setItem(`nexus_payment_${order.public_id}`, JSON.stringify(payment || null));
       sessionStorage.setItem(PENDING_ORDER_KEY, order.public_id);
 
