@@ -28,20 +28,41 @@ const fulfillmentCredentialPayload = (credential) => {
   return { token: String(credential || "").trim() };
 };
 
+const createIdempotencyKey = (scope = "commerce") => {
+  const randomPart =
+    typeof globalThis !== "undefined" && globalThis.crypto?.randomUUID
+      ? globalThis.crypto.randomUUID()
+      : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+
+  return `${appSlug}:${scope}:${randomPart}`;
+};
+
+const idempotencyConfig = (key, scope) => ({
+  headers: {
+    "Idempotency-Key": key || createIdempotencyKey(scope),
+  },
+});
+
 export async function getCommerceCatalog(slug) {
   const { data } = await api.get(`${base}/catalog/${encodeURIComponent(slug)}`);
   return data?.data || null;
 }
 
-export async function createCommerceOrder(payload) {
-  const { data } = await api.post(`${base}/orders`, payload);
+export async function createCommerceOrder(payload, options = {}) {
+  const { data } = await api.post(
+    `${base}/orders`,
+    payload,
+    idempotencyConfig(options?.idempotencyKey, "order")
+  );
   return data?.data || null;
 }
 
-export async function retryCommercePayment(publicId, paymentMethod) {
-  const { data } = await api.post(`${base}/orders/${encodeURIComponent(publicId)}/payment`, {
-    payment_method: paymentMethod,
-  });
+export async function retryCommercePayment(publicId, paymentMethod, options = {}) {
+  const { data } = await api.post(
+    `${base}/orders/${encodeURIComponent(publicId)}/payment`,
+    { payment_method: paymentMethod },
+    idempotencyConfig(options?.idempotencyKey, `payment:${publicId}`)
+  );
   return data?.data || null;
 }
 
