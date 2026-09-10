@@ -80,6 +80,17 @@ jobs:
             rm -f "$output"
           }
 
+          require_json() {
+            local label="$1"
+            local expression="$2"
+            local payload="$3"
+            if ! echo "$payload" | jq -e "$expression" >/dev/null; then
+              echo "${label}: assertion failed (${expression})" >&2
+              echo "$payload" | jq -c '{success, keys: (keys), data_type: ((.data // null) | type), data_keys: ((.data // {}) | if type == "object" then keys else [] end)}' >&2 || head -c 1200 <<<"$payload" >&2
+              return 1
+            fi
+          }
+
           command -v curl >/dev/null
           command -v jq >/dev/null
 
@@ -88,8 +99,8 @@ jobs:
           DISCOVERY_URL='https://api.petertecnet.com.br/api/v1/apps/nexus/discovery?limit=10'
           DISCOVERY_JSON="$(fetch 'Nexus discovery' "$DISCOVERY_URL")"
 
-          echo "$DISCOVERY_JSON" | jq -e '.success == true' >/dev/null
-          echo "$DISCOVERY_JSON" | jq -e '(.establishments // .data.establishments // .data // []) | type == "array" and length > 0' >/dev/null
+          require_json 'Nexus discovery success' '.success == true' "$DISCOVERY_JSON"
+          require_json 'Nexus discovery establishments' '(.establishments // .data.establishments // .data // []) | type == "array" and length > 0' "$DISCOVERY_JSON"
 
           SLUG="$(echo "$DISCOVERY_JSON" | jq -r '((.establishments // .data.establishments // .data // [])[0].slug) // empty')"
           if [[ -z "$SLUG" ]]; then
@@ -101,9 +112,13 @@ jobs:
           CATALOG_URL="https://api.petertecnet.com.br/api/v1/apps/nexus/catalog/${SLUG}"
           CATALOG_JSON="$(fetch 'Nexus catalog API' "$CATALOG_URL")"
 
-          echo "$CATALOG_JSON" | jq -e '.success == true' >/dev/null
-          echo "$CATALOG_JSON" | jq -e '(.data.establishment.slug // .establishment.slug) == $slug' --arg slug "$SLUG" >/dev/null
-          echo "$CATALOG_JSON" | jq -e '(.data.items // .items // []) | type == "array"' >/dev/null
+          require_json 'Nexus catalog success' '.success == true' "$CATALOG_JSON"
+          if ! echo "$CATALOG_JSON" | jq -e '(.data.establishment.slug // .establishment.slug) == $slug' --arg slug "$SLUG" >/dev/null; then
+            echo "Nexus catalog establishment mismatch for ${SLUG}." >&2
+            echo "$CATALOG_JSON" | jq -c '{success, keys: keys, data_keys: ((.data // {}) | if type == "object" then keys else [] end)}' >&2 || true
+            exit 1
+          fi
+          require_json 'Nexus catalog items' '(.data.items // .items // []) | type == "array"' "$CATALOG_JSON"
 
           AVAILABILITY_STATUS="$(echo "$CATALOG_JSON" | jq -r '.availability.status // .data.availability.status // empty')"
           INDEXABLE="$(echo "$CATALOG_JSON" | jq -r '.availability.indexable // .data.availability.indexable // empty')"
