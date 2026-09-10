@@ -89,11 +89,12 @@ jobs:
           DISCOVERY_JSON="$(fetch 'Nexus discovery' "$DISCOVERY_URL")"
 
           echo "$DISCOVERY_JSON" | jq -e '.success == true' >/dev/null
-          echo "$DISCOVERY_JSON" | jq -e '.establishments | type == "array" and length > 0' >/dev/null
+          echo "$DISCOVERY_JSON" | jq -e '(.establishments // .data.establishments // .data // []) | type == "array" and length > 0' >/dev/null
 
-          SLUG="$(echo "$DISCOVERY_JSON" | jq -r '.establishments[0].slug // empty')"
+          SLUG="$(echo "$DISCOVERY_JSON" | jq -r '((.establishments // .data.establishments // .data // [])[0].slug) // empty')"
           if [[ -z "$SLUG" ]]; then
             echo 'Discovery returned an establishment without slug.' >&2
+            echo "$DISCOVERY_JSON" | jq -c '{success, keys: keys, data_keys: ((.data // {}) | if type == "object" then keys else [] end)}' >&2 || true
             exit 1
           fi
 
@@ -101,9 +102,19 @@ jobs:
           CATALOG_JSON="$(fetch 'Nexus catalog API' "$CATALOG_URL")"
 
           echo "$CATALOG_JSON" | jq -e '.success == true' >/dev/null
-          echo "$CATALOG_JSON" | jq -e '.data.establishment.slug == $slug' --arg slug "$SLUG" >/dev/null
-          echo "$CATALOG_JSON" | jq -e '.data.items | type == "array"' >/dev/null
-          echo "$CATALOG_JSON" | jq -e '.availability.status == "public" and .availability.indexable == true' >/dev/null
+          echo "$CATALOG_JSON" | jq -e '(.data.establishment.slug // .establishment.slug) == $slug' --arg slug "$SLUG" >/dev/null
+          echo "$CATALOG_JSON" | jq -e '(.data.items // .items // []) | type == "array"' >/dev/null
+
+          AVAILABILITY_STATUS="$(echo "$CATALOG_JSON" | jq -r '.availability.status // .data.availability.status // empty')"
+          INDEXABLE="$(echo "$CATALOG_JSON" | jq -r '.availability.indexable // .data.availability.indexable // empty')"
+          if [[ -n "$AVAILABILITY_STATUS" && "$AVAILABILITY_STATUS" != "public" ]]; then
+            echo "Catalog ${SLUG} is not public: ${AVAILABILITY_STATUS}" >&2
+            exit 1
+          fi
+          if [[ -n "$INDEXABLE" && "$INDEXABLE" != "true" ]]; then
+            echo "Catalog ${SLUG} is not indexable." >&2
+            exit 1
+          fi
 
           fetch 'Nexus company page' "https://nexus.petertecnet.com.br/establishment/view/${SLUG}" >/dev/null
           fetch 'Nexus catalog page' "https://nexus.petertecnet.com.br/catalog/${SLUG}" >/dev/null
