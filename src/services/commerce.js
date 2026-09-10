@@ -30,8 +30,8 @@ const fulfillmentCredentialPayload = (credential) => {
 
 const createIdempotencyKey = (scope = "commerce") => {
   const randomPart =
-    typeof globalThis !== "undefined" && globalThis.crypto?.randomUUID
-      ? globalThis.crypto.randomUUID()
+    typeof window !== "undefined" && window.crypto?.randomUUID
+      ? window.crypto.randomUUID()
       : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 
   return `${appSlug}:${scope}:${randomPart}`;
