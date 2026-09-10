@@ -5,7 +5,7 @@ import { FaCreditCard, FaMinus, FaPlus, FaQrcode, FaTrash } from "react-icons/fa
 
 import { AuthContext } from "../../App";
 import GlobalNav from "../../components/GlobalNav";
-import { createCommerceOrder, getCommerceCatalog } from "../../services/commerce";
+import { createCommerceOrder, getCommerceCatalog, getCommerceOrder } from "../../services/commerce";
 import { clearCart, readCart, setCartItemQuantity } from "../../services/cart";
 import "./Commerce.css";
 
@@ -31,9 +31,25 @@ export default function CheckoutPage() {
 
   useEffect(() => {
     const pendingOrder = sessionStorage.getItem(PENDING_ORDER_KEY);
-    if (pendingOrder && cart?.items?.length) {
-      navigate(`/purchase/${encodeURIComponent(pendingOrder)}`, { replace: true });
-    }
+    if (!pendingOrder || !cart?.items?.length) return undefined;
+
+    let active = true;
+    getCommerceOrder(pendingOrder, { background: true, silent: true })
+      .then((order) => {
+        if (!active) return;
+        const status = String(order?.payment_status || "").toLowerCase();
+        if (status === "paid") {
+          clearCart();
+          sessionStorage.removeItem(PENDING_ORDER_KEY);
+          setCart(readCart());
+        }
+        navigate(`/purchase/${encodeURIComponent(pendingOrder)}`, { replace: true });
+      })
+      .catch(() => {
+        if (active) navigate(`/purchase/${encodeURIComponent(pendingOrder)}`, { replace: true });
+      });
+
+    return () => { active = false; };
   }, [cart?.items?.length, navigate]);
 
   useEffect(() => {
