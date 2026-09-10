@@ -29,32 +29,28 @@ jobs:
     needs: deploy
     runs-on: ubuntu-latest
     steps:
-      - name: Diagnose production transport
+      - name: Configure SSH
         shell: bash
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_PORT: ${{ secrets.VPS_PORT }}
+          VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
         run: |
           set -euo pipefail
+          mkdir -p ~/.ssh
+          printf '%s\n' "$VPS_SSH_KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -p "${VPS_PORT:-22}" -H "$VPS_HOST" >> ~/.ssh/known_hosts
 
-          diagnose_host() {
-            local host="$1"
-            echo "--- DNS: ${host} ---"
-            getent ahostsv4 "$host" || true
-            echo "--- HTTPS: ${host} ---"
-            if ! curl --silent --show-error --location \
-              --connect-timeout 8 --max-time 20 \
-              --retry 2 --retry-delay 2 --retry-connrefused \
-              --output /dev/null --write-out 'status=%{http_code} remote=%{remote_ip} connect=%{time_connect}s tls=%{time_appconnect}s total=%{time_total}s\n' \
-              "https://${host}/"; then
-              echo "::error title=Production transport unavailable::Não foi possível estabelecer conexão HTTPS com ${host}. A falha é de DNS/rede/TLS/disponibilidade e ocorreu antes dos testes funcionais."
-              return 28
-            fi
-          }
-
-          diagnose_host "api.petertecnet.com.br"
-          diagnose_host "nexus.petertecnet.com.br"
-
-      - name: Verify Nexus discovery, company presentation and catalog
+      - name: Verify Nexus production from VPS
         shell: bash
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_PORT: ${{ secrets.VPS_PORT }}
+          VPS_USER: ${{ secrets.VPS_USER }}
         run: |
+          set -euo pipefail
+          ssh -p "${VPS_PORT:-22}" "$VPS_USER@$VPS_HOST" 'bash -se' <<'REMOTE'
           set -euo pipefail
 
           fetch() {
@@ -68,13 +64,13 @@ jobs:
               --connect-timeout 8 --max-time 25 \
               --retry 2 --retry-delay 2 --retry-connrefused \
               --output "$output" --write-out '%{http_code}' "$url")"; then
-              echo "::error title=${label} transport failure::Falha de transporte ao acessar ${url}." >&2
+              echo "${label}: transport failure accessing ${url}" >&2
               rm -f "$output"
               return 28
             fi
 
             if [[ "$status" -lt 200 || "$status" -ge 400 ]]; then
-              echo "::error title=${label} HTTP ${status}::O endpoint respondeu, mas retornou HTTP ${status}: ${url}" >&2
+              echo "${label}: HTTP ${status} from ${url}" >&2
               head -c 1200 "$output" >&2 || true
               rm -f "$output"
               return 22
@@ -84,7 +80,12 @@ jobs:
             rm -f "$output"
           }
 
-          DISCOVERY_URL="https://api.petertecnet.com.br/api/v1/apps/nexus/discovery?limit=10"
+          command -v curl >/dev/null
+          command -v jq >/dev/null
+
+          fetch 'Nexus frontend' 'https://nexus.petertecnet.com.br/' >/dev/null
+
+          DISCOVERY_URL='https://api.petertecnet.com.br/api/v1/apps/nexus/discovery?limit=10'
           DISCOVERY_JSON="$(fetch 'Nexus discovery' "$DISCOVERY_URL")"
 
           echo "$DISCOVERY_JSON" | jq -e '.success == true' >/dev/null
@@ -92,7 +93,7 @@ jobs:
 
           SLUG="$(echo "$DISCOVERY_JSON" | jq -r '.establishments[0].slug // empty')"
           if [[ -z "$SLUG" ]]; then
-            echo "::error title=Invalid discovery payload::Discovery retornou um estabelecimento sem slug."
+            echo 'Discovery returned an establishment without slug.' >&2
             exit 1
           fi
 
@@ -104,10 +105,8 @@ jobs:
           echo "$CATALOG_JSON" | jq -e '.data.items | type == "array"' >/dev/null
           echo "$CATALOG_JSON" | jq -e '.availability.status == "public" and .availability.indexable == true' >/dev/null
 
-          COMPANY_PAGE="$(fetch 'Nexus company page' "https://nexus.petertecnet.com.br/establishment/view/${SLUG}")"
-          test -n "$COMPANY_PAGE"
-
-          CATALOG_PAGE="$(fetch 'Nexus catalog page' "https://nexus.petertecnet.com.br/catalog/${SLUG}")"
-          test -n "$CATALOG_PAGE"
+          fetch 'Nexus company page' "https://nexus.petertecnet.com.br/establishment/view/${SLUG}" >/dev/null
+          fetch 'Nexus catalog page' "https://nexus.petertecnet.com.br/catalog/${SLUG}" >/dev/null
 
           echo "Production smoke test passed for discovery, company presentation and catalog: $SLUG"
+          REMOTE
