@@ -37,10 +37,26 @@ jobs:
           VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
         run: |
           set -euo pipefail
+          : "${VPS_HOST:?VPS_HOST is required}"
+          : "${VPS_SSH_KEY:?VPS_SSH_KEY is required}"
+          PORT="${VPS_PORT:-22}"
           mkdir -p ~/.ssh
           printf '%s\n' "$VPS_SSH_KEY" > ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_ed25519
-          ssh-keyscan -p "${VPS_PORT:-22}" -H "$VPS_HOST" >> ~/.ssh/known_hosts
+          : > ~/.ssh/known_hosts
+
+          # ssh-keyscan can fail transiently while the VPS is restarting or the
+          # network path is converging. Retry before classifying production as broken.
+          for attempt in 1 2 3 4 5; do
+            if ssh-keyscan -T 10 -p "$PORT" -H "$VPS_HOST" >> ~/.ssh/known_hosts 2>/dev/null && [[ -s ~/.ssh/known_hosts ]]; then
+              break
+            fi
+            if [[ "$attempt" -eq 5 ]]; then
+              echo "Unable to obtain VPS SSH host key after ${attempt} attempts." >&2
+              exit 1
+            fi
+            sleep $((attempt * 2))
+          done
 
       - name: Verify Nexus production from VPS
         shell: bash
@@ -50,7 +66,7 @@ jobs:
           VPS_USER: ${{ secrets.VPS_USER }}
         run: |
           set -euo pipefail
-          ssh -p "${VPS_PORT:-22}" "$VPS_USER@$VPS_HOST" 'bash -se' <<'REMOTE'
+          ssh -o BatchMode=yes -o ConnectTimeout=15 -p "${VPS_PORT:-22}" "$VPS_USER@$VPS_HOST" 'bash -se' <<'REMOTE'
           set -euo pipefail
 
           fetch() {
