@@ -6,9 +6,36 @@ const DEFAULT_TITLE = "Nexus | Catálogos digitais e produtos online";
 const DEFAULT_DESCRIPTION = "Crie e compartilhe catálogos digitais com produtos, serviços e QR Code pela Nexus, uma plataforma Peter Tecnet.";
 
 const PUBLIC_ROUTES = [
-  { test: (path) => path === "/", title: DEFAULT_TITLE, description: DEFAULT_DESCRIPTION },
-  { test: (path) => path.startsWith("/catalog/"), title: "Catálogo digital | Nexus", description: "Explore produtos e serviços deste catálogo digital na Nexus." },
-  { test: (path) => path.startsWith("/item/view/") || path.startsWith("/item/"), title: "Item do catálogo | Nexus", description: "Veja detalhes, preço e informações deste item publicado na Nexus." },
+  {
+    test: (path) => path === "/",
+    title: DEFAULT_TITLE,
+    description: DEFAULT_DESCRIPTION,
+    canonicalPath: () => "/",
+  },
+  {
+    test: (path) => path.startsWith("/catalog/"),
+    title: "Catálogo digital | Nexus",
+    description: "Explore produtos e serviços deste catálogo digital na Nexus.",
+    canonicalPath: (path) => path,
+  },
+  {
+    test: (path) => path.startsWith("/catalogo/"),
+    title: "Catálogo digital | Nexus",
+    description: "Explore produtos e serviços deste catálogo digital na Nexus.",
+    canonicalPath: (path) => path.replace(/^\/catalogo\//, "/catalog/"),
+  },
+  {
+    test: (path) => path.startsWith("/establishment/view/") || path.startsWith("/empresa/"),
+    title: "Empresa e catálogo digital | Nexus",
+    description: "Conheça esta empresa, explore seu catálogo de produtos e serviços e acesse suas informações pela Nexus.",
+    canonicalPath: (path) => path.replace(/^\/empresa\//, "/establishment/view/"),
+  },
+  {
+    test: (path) => path.startsWith("/item/view/") || path.startsWith("/item/"),
+    title: "Item do catálogo | Nexus",
+    description: "Veja detalhes, preço e informações deste item publicado na Nexus.",
+    canonicalPath: (path) => path.startsWith("/item/view/") ? path : path.replace(/^\/item\//, "/item/view/"),
+  },
 ];
 
 const PRIVATE_PREFIXES = ["/login", "/register", "/password", "/email-verify", "/logout", "/user/", "/establishment/create", "/establishment/update", "/establishment/my", "/establishment/item", "/item/create", "/item/update", "/dashboard"];
@@ -41,7 +68,8 @@ export default function SeoManager() {
     const indexable = Boolean(route) && !PRIVATE_PREFIXES.some((prefix) => path === prefix || path.startsWith(prefix));
     const title = route?.title || DEFAULT_TITLE;
     const description = route?.description || DEFAULT_DESCRIPTION;
-    const canonical = `${SITE_URL}${path === "/" ? "/" : path}`;
+    const canonicalPath = route?.canonicalPath ? route.canonicalPath(path) : path;
+    const canonical = `${SITE_URL}${canonicalPath === "/" ? "/" : canonicalPath}`;
 
     document.title = title;
     upsertMeta('meta[name="description"]', { name: "description", content: description });
