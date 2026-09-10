@@ -28,7 +28,7 @@ const fulfillmentCredentialPayload = (credential) => {
   return { token: String(credential || "").trim() };
 };
 
-const createIdempotencyKey = (scope = "commerce") => {
+export const createCommerceIdempotencyKey = (scope = "commerce") => {
   const randomPart =
     typeof window !== "undefined" && window.crypto?.randomUUID
       ? window.crypto.randomUUID()
@@ -39,7 +39,7 @@ const createIdempotencyKey = (scope = "commerce") => {
 
 const idempotencyConfig = (key, scope) => ({
   headers: {
-    "Idempotency-Key": key || createIdempotencyKey(scope),
+    "Idempotency-Key": key || createCommerceIdempotencyKey(scope),
   },
 });
 
