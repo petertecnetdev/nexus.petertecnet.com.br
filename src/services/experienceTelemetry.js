@@ -8,6 +8,8 @@ const allowedTypes = new Set([
   "filter",
   "scroll",
   "frontend_error",
+  "frontend_checkout_recovery_notification_cta_viewed",
+  "frontend_checkout_recovery_notification_cta_clicked",
 ]);
 
 const randomId = (prefix) => {
