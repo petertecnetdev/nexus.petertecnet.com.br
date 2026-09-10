@@ -56,18 +56,19 @@ export default function MyPurchasesPage() {
   }, [loading, recoveryOrder, variant]);
 
   const continuePayment = (order) => {
-    const orderVariant = recoveryOrder?.public_id === order.public_id ? variant : recoveryVariant(order.public_id);
-    trackExperienceEvent(
-      "frontend_checkout_recovery_notification_cta_clicked",
-      "Continuar pagamento",
-      `/purchase/${order.public_id}`,
-      {
-        order_public_id: order.public_id,
-        recovery_prominence_experiment: RECOVERY_EXPERIMENT,
-        recovery_prominence_variant: orderVariant,
-        payment_status: order.payment_status,
-      }
-    );
+    if (recoveryOrder?.public_id === order.public_id && variant) {
+      trackExperienceEvent(
+        "frontend_checkout_recovery_notification_cta_clicked",
+        "Continuar pagamento",
+        `/purchase/${order.public_id}`,
+        {
+          order_public_id: order.public_id,
+          recovery_prominence_experiment: RECOVERY_EXPERIMENT,
+          recovery_prominence_variant: variant,
+          payment_status: order.payment_status,
+        }
+      );
+    }
     navigate(`/purchase/${order.public_id}`);
   };
 
