@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useMemo, useState } from "react";
+import React, { useContext, useEffect, useMemo, useRef, useState } from "react";
 import { Alert, Button, Container, Form, Spinner } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { FaCreditCard, FaMinus, FaPlus, FaQrcode, FaTrash } from "react-icons/fa";
@@ -15,6 +15,7 @@ const PENDING_ORDER_KEY = "nexus_pending_commerce_order";
 export default function CheckoutPage() {
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
+  const submittingRef = useRef(false);
   const [cart, setCart] = useState(() => readCart());
   const [commerce, setCommerce] = useState(null);
   const [loadingConfig, setLoadingConfig] = useState(true);
@@ -76,7 +77,9 @@ export default function CheckoutPage() {
 
   const submit = async (event) => {
     event.preventDefault();
-    if (!cart?.items?.length || processing) return;
+    if (!cart?.items?.length || processing || submittingRef.current) return;
+
+    submittingRef.current = true;
     setError("");
     setProcessing(true);
     try {
@@ -108,6 +111,7 @@ export default function CheckoutPage() {
     } catch (requestError) {
       setError(requestError?.response?.data?.message || requestError?.message || "Não foi possível finalizar a compra.");
     } finally {
+      submittingRef.current = false;
       setProcessing(false);
     }
   };
