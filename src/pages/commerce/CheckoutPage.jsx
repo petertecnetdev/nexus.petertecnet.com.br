@@ -10,6 +10,7 @@ import { clearCart, readCart, setCartItemQuantity } from "../../services/cart";
 import "./Commerce.css";
 
 const money = (value) => Number(value || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+const PENDING_ORDER_KEY = "nexus_pending_commerce_order";
 
 export default function CheckoutPage() {
   const { user } = useContext(AuthContext);
@@ -27,6 +28,13 @@ export default function CheckoutPage() {
     payment_method: "pix",
     notes: "",
   });
+
+  useEffect(() => {
+    const pendingOrder = sessionStorage.getItem(PENDING_ORDER_KEY);
+    if (pendingOrder && cart?.items?.length) {
+      navigate(`/purchase/${encodeURIComponent(pendingOrder)}`, { replace: true });
+    }
+  }, [cart?.items?.length, navigate]);
 
   useEffect(() => {
     let active = true;
@@ -71,12 +79,15 @@ export default function CheckoutPage() {
       if (!order?.public_id) throw new Error("A API não retornou a identificação da compra.");
 
       sessionStorage.setItem(`nexus_payment_${order.public_id}`, JSON.stringify(payment || null));
-      clearCart();
+      sessionStorage.setItem(PENDING_ORDER_KEY, order.public_id);
 
       if (form.payment_method === "card" && payment?.checkout_url) {
         window.location.assign(payment.checkout_url);
         return;
       }
+
+      clearCart();
+      sessionStorage.removeItem(PENDING_ORDER_KEY);
       navigate(`/purchase/${order.public_id}`, { replace: true });
     } catch (requestError) {
       setError(requestError?.response?.data?.message || requestError?.message || "Não foi possível finalizar a compra.");
