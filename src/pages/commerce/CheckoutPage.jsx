@@ -11,12 +11,32 @@ import "./Commerce.css";
 
 const money = (value) => Number(value || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 const PENDING_ORDER_KEY = "nexus_pending_commerce_order";
+const ORDER_ATTEMPT_KEY = "nexus_commerce_order_attempt";
+
+const readOrderAttempt = () => {
+  try {
+    const value = sessionStorage.getItem(ORDER_ATTEMPT_KEY);
+    if (!value) return null;
+    const parsed = JSON.parse(value);
+    return parsed?.signature && parsed?.idempotencyKey ? parsed : null;
+  } catch {
+    return null;
+  }
+};
+
+const persistOrderAttempt = (attempt) => {
+  if (!attempt) {
+    sessionStorage.removeItem(ORDER_ATTEMPT_KEY);
+    return;
+  }
+  sessionStorage.setItem(ORDER_ATTEMPT_KEY, JSON.stringify(attempt));
+};
 
 export default function CheckoutPage() {
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
   const submittingRef = useRef(false);
-  const orderAttemptRef = useRef(null);
+  const orderAttemptRef = useRef(readOrderAttempt());
   const [cart, setCart] = useState(() => readCart());
   const [commerce, setCommerce] = useState(null);
   const [loadingConfig, setLoadingConfig] = useState(true);
@@ -43,6 +63,7 @@ export default function CheckoutPage() {
         if (status === "paid") {
           clearCart();
           sessionStorage.removeItem(PENDING_ORDER_KEY);
+          persistOrderAttempt(null);
           setCart(readCart());
         }
         navigate(`/purchase/${encodeURIComponent(pendingOrder)}`, { replace: true });
@@ -96,6 +117,7 @@ export default function CheckoutPage() {
         signature,
         idempotencyKey: createCommerceIdempotencyKey("order"),
       };
+      persistOrderAttempt(orderAttemptRef.current);
     }
 
     submittingRef.current = true;
@@ -110,6 +132,7 @@ export default function CheckoutPage() {
       if (!order?.public_id) throw new Error("A API não retornou a identificação da compra.");
 
       orderAttemptRef.current = null;
+      persistOrderAttempt(null);
       sessionStorage.setItem(`nexus_payment_${order.public_id}`, JSON.stringify(payment || null));
       sessionStorage.setItem(PENDING_ORDER_KEY, order.public_id);
 
