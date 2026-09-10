@@ -43,6 +43,29 @@ const idempotencyConfig = (key, scope) => ({
   },
 });
 
+const paymentRetryStorageKey = (publicId, paymentMethod) =>
+  `${appSlug}:commerce:payment-retry:${publicId}:${paymentMethod}`;
+
+const getPaymentRetryIdempotencyKey = (publicId, paymentMethod) => {
+  const scope = `payment:${publicId}`;
+  if (typeof window === "undefined" || !window.sessionStorage) {
+    return createCommerceIdempotencyKey(scope);
+  }
+
+  const storageKey = paymentRetryStorageKey(publicId, paymentMethod);
+  const existing = window.sessionStorage.getItem(storageKey);
+  if (existing) return existing;
+
+  const created = createCommerceIdempotencyKey(scope);
+  window.sessionStorage.setItem(storageKey, created);
+  return created;
+};
+
+const clearPaymentRetryIdempotencyKey = (publicId, paymentMethod) => {
+  if (typeof window === "undefined" || !window.sessionStorage) return;
+  window.sessionStorage.removeItem(paymentRetryStorageKey(publicId, paymentMethod));
+};
+
 export async function getCommerceCatalog(slug) {
   const { data } = await api.get(`${base}/catalog/${encodeURIComponent(slug)}`);
   return data?.data || null;
@@ -58,12 +81,26 @@ export async function createCommerceOrder(payload, options = {}) {
 }
 
 export async function retryCommercePayment(publicId, paymentMethod, options = {}) {
-  const { data } = await api.post(
-    `${base}/orders/${encodeURIComponent(publicId)}/payment`,
-    { payment_method: paymentMethod },
-    idempotencyConfig(options?.idempotencyKey, `payment:${publicId}`)
-  );
-  return data?.data || null;
+  const managedKey = !options?.idempotencyKey;
+  const idempotencyKey = options?.idempotencyKey || getPaymentRetryIdempotencyKey(publicId, paymentMethod);
+
+  try {
+    const { data } = await api.post(
+      `${base}/orders/${encodeURIComponent(publicId)}/payment`,
+      { payment_method: paymentMethod },
+      idempotencyConfig(idempotencyKey, `payment:${publicId}`)
+    );
+
+    if (managedKey) clearPaymentRetryIdempotencyKey(publicId, paymentMethod);
+    return data?.data || null;
+  } catch (error) {
+    // Preserve the identity only when no HTTP response arrived. A transport timeout may
+    // have reached the server, so the next attempt must replay the same operation.
+    if (managedKey && error?.response) {
+      clearPaymentRetryIdempotencyKey(publicId, paymentMethod);
+    }
+    throw error;
+  }
 }
 
 export async function getMyCommerceOrders(params = {}) {
