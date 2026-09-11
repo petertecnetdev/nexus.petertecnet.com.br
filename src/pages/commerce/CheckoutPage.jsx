@@ -7,6 +7,7 @@ import { AuthContext } from "../../App";
 import GlobalNav from "../../components/GlobalNav";
 import { createCommerceIdempotencyKey, createCommerceOrder, getCommerceCatalog, getCommerceOrder } from "../../services/commerce";
 import { clearCart, readCart, setCartItemQuantity } from "../../services/cart";
+import { trackExperienceEvent } from "../../services/experienceTelemetry";
 import "./Commerce.css";
 
 const money = (value) => Number(value || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
@@ -130,6 +131,28 @@ export default function CheckoutPage() {
       const order = result?.order;
       const payment = result?.payment;
       if (!order?.public_id) throw new Error("A API não retornou a identificação da compra.");
+
+      trackExperienceEvent("click", "order_created", `order:${order.public_id}`, {
+        application_id: cart?.establishment?.application_id,
+        establishment_id: cart?.establishment?.id,
+        establishment_slug: cart?.establishment?.slug,
+        order_id: order.public_id,
+        payment_method: form.payment_method,
+        fulfillment: form.fulfillment,
+        item_count: cart.items.reduce((sum, row) => sum + Number(row.quantity || 0), 0),
+        total: Number(order?.total ?? total),
+      });
+      if (payment) {
+        trackExperienceEvent("click", "payment_started", form.payment_method, {
+          application_id: cart?.establishment?.application_id,
+          establishment_id: cart?.establishment?.id,
+          establishment_slug: cart?.establishment?.slug,
+          order_id: order.public_id,
+          payment_method: form.payment_method,
+          payment_status: payment?.status,
+          total: Number(order?.total ?? total),
+        });
+      }
 
       orderAttemptRef.current = null;
       persistOrderAttempt(null);
