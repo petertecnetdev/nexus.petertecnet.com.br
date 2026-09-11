@@ -59,6 +59,13 @@ jobs:
 
             # Uploaded release archives are disposable after a run and are namespaced.
             find /tmp -maxdepth 1 -type f -name 'petertecnet-frontend-*.tgz' -mmin +120 -delete 2>/dev/null || true
+
+            # Automation/validation workspaces under /tmp are disposable clones. Reclaim
+            # only Nexus-namespaced directories that have been untouched for six hours,
+            # so concurrent runs and unrelated applications remain protected.
+            find /tmp -maxdepth 1 -type d \
+              \( -name 'nexus-*' -o -name 'automation-nexus-*' \) \
+              -mmin +360 -print -exec rm -rf {} + 2>/dev/null || true
           fi
 
           free_kb="$(df -Pk "$deploy_path" | awk 'NR==2 {print $4}')"
