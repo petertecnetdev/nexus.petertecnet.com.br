@@ -66,6 +66,11 @@ const clearPaymentRetryIdempotencyKey = (publicId, paymentMethod) => {
   window.sessionStorage.removeItem(paymentRetryStorageKey(publicId, paymentMethod));
 };
 
+const isDefinitivePaymentRetryRejection = (error) => {
+  const status = Number(error?.response?.status || 0);
+  return status >= 400 && status < 500 && status !== 408 && status !== 425 && status !== 429;
+};
+
 export async function getCommerceCatalog(slug) {
   const { data } = await api.get(`${base}/catalog/${encodeURIComponent(slug)}`);
   return data?.data || null;
@@ -94,7 +99,10 @@ export async function retryCommercePayment(publicId, paymentMethod, options = {}
     if (managedKey) clearPaymentRetryIdempotencyKey(publicId, paymentMethod);
     return data?.data || null;
   } catch (error) {
-    if (managedKey && error?.response) {
+    // A timeout, rate limit or 5xx does not prove that the provider failed to
+    // create the payment. Reuse the same key so a user retry cannot create a
+    // second charge after an ambiguous response.
+    if (managedKey && isDefinitivePaymentRetryRejection(error)) {
       clearPaymentRetryIdempotencyKey(publicId, paymentMethod);
     }
     throw error;
