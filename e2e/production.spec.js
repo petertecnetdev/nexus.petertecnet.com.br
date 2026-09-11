@@ -33,16 +33,8 @@ const establishmentFixture = {
     parking: true,
   },
   files: [
-    {
-      id: 1,
-      type: "background",
-      public_url: "uploads/empresa-e2e/capa.jpg",
-    },
-    {
-      id: 2,
-      type: "logo",
-      public_url: "uploads/empresa-e2e/logo.jpg",
-    },
+    { id: 1, type: "background", public_url: "uploads/empresa-e2e/capa.jpg" },
+    { id: 2, type: "logo", public_url: "uploads/empresa-e2e/logo.jpg" },
   ],
 };
 
@@ -66,44 +58,24 @@ const catalogPayload = {
   establishment: establishmentFixture,
   items: [
     {
-      id: 99,
-      entity_id: 10,
-      app_id: 2,
-      name: "Produto E2E",
-      slug: "produto-e2e",
-      description: "Produto de validação",
-      category: "Teste",
-      price: 19.9,
-      status: 1,
-      type: "product",
-      total_views: 10,
-      files: [],
+      id: 99, entity_id: 10, app_id: 2, name: "Produto E2E", slug: "produto-e2e",
+      description: "Produto de validação", category: "Teste", price: 19.9,
+      status: 1, type: "product", total_views: 10, files: [],
     },
     {
-      id: 101,
-      entity_id: 10,
-      app_id: 2,
-      name: "Martelo E2E",
-      slug: "martelo-e2e",
-      description: "Ferramenta para validar busca e categorias",
-      category: "Ferramentas",
-      price: 39.9,
-      status: 1,
-      type: "product",
-      total_views: 90,
-      files: [],
+      id: 101, entity_id: 10, app_id: 2, name: "Martelo E2E", slug: "martelo-e2e",
+      description: "Ferramenta para validar busca e categorias", category: "Ferramentas",
+      price: 39.9, status: 1, type: "product", total_views: 90, files: [],
     },
   ],
 };
 
 async function mockPublicApi(page) {
-  await page.route(`${storageBase}/**`, async (route) => {
-    return route.fulfill({
-      status: 200,
-      contentType: "image/png",
-      body: pixelPng,
-    });
-  });
+  await page.route(`${storageBase}/**`, async (route) => route.fulfill({
+    status: 200,
+    contentType: "image/png",
+    body: pixelPng,
+  }));
 
   await page.route(`${apiBase}/**`, async (route) => {
     const url = route.request().url();
@@ -133,31 +105,15 @@ async function mockPublicApi(page) {
           scope: { application_id: 2 },
           locations: [],
           establishments: [
-            {
-              ...establishmentFixture,
-              total_views: 120,
-              source_app: { id: 2, name: "Nexus", slug: "nexus" },
-            },
-            {
-              ...otherEstablishmentFixture,
-              source_app: { id: 2, name: "Nexus", slug: "nexus" },
-            },
+            { ...establishmentFixture, total_views: 120, source_app: { id: 2, name: "Nexus", slug: "nexus" } },
+            { ...otherEstablishmentFixture, source_app: { id: 2, name: "Nexus", slug: "nexus" } },
           ],
           items: [
             {
-              id: 100,
-              entity_id: 11,
-              establishment_id: 11,
-              app_id: 2,
-              name: "Outro Produto E2E",
-              slug: "outro-produto-e2e",
-              description: "Item de outro catálogo para descoberta.",
-              category: "Ferramentas",
-              price: 29.9,
-              status: 1,
-              type: "product",
-              total_views: 55,
-              files: [],
+              id: 100, entity_id: 11, establishment_id: 11, app_id: 2,
+              name: "Outro Produto E2E", slug: "outro-produto-e2e",
+              description: "Item de outro catálogo para descoberta.", category: "Ferramentas",
+              price: 29.9, status: 1, type: "product", total_views: 55, files: [],
               establishment: otherEstablishmentFixture,
             },
           ],
@@ -177,6 +133,10 @@ async function mockPublicApi(page) {
   });
 }
 
+// The app can load third-party resources that are irrelevant to these smoke assertions.
+// Waiting for DOMContentLoaded keeps navigation deterministic while each test still waits
+// for the exact UI state it needs before asserting.
+const gotoApp = (page, path) => page.goto(path, { waitUntil: "domcontentloaded" });
 const companyCard = (page) => page.getByRole("button", { name: /Empresa E2E/i }).first();
 
 test.beforeEach(async ({ page }) => {
@@ -184,27 +144,27 @@ test.beforeEach(async ({ page }) => {
 });
 
 test("public home is available without authentication", async ({ page }) => {
-  await page.goto("/");
+  await gotoApp(page, "/");
   await expect(page).toHaveURL(/\/$/);
   await expect(page.locator("body")).toContainText("Nexus");
   await expect(companyCard(page)).toBeVisible();
 });
 
 test("company discovery opens the public presentation instead of skipping to the catalog", async ({ page }) => {
-  await page.goto("/");
+  await gotoApp(page, "/");
   await companyCard(page).click();
   await expect(page).toHaveURL(/\/establishment\/view\/catalogo-e2e$/);
   await expect(page.getByRole("heading", { name: "Empresa E2E", exact: true })).toBeVisible();
 });
 
 test("protected company area redirects anonymous users to login", async ({ page }) => {
-  await page.goto("/establishment/my");
+  await gotoApp(page, "/establishment/my");
   await expect(page).toHaveURL(/\/login$/);
   await expect(page.getByRole("heading", { name: /Bem-vindo à Nexus/i })).toBeVisible();
 });
 
 test("public company presentation loads cover, status and commercial facts", async ({ page }) => {
-  await page.goto("/establishment/view/catalogo-e2e");
+  await gotoApp(page, "/establishment/view/catalogo-e2e");
   await expect(page).toHaveURL(/\/establishment\/view\/catalogo-e2e$/);
   await expect(page.getByRole("heading", { name: "Empresa E2E", exact: true })).toBeVisible();
   await expect(page.locator(".estv-presentation-hero.has-cover")).toBeVisible();
@@ -216,17 +176,12 @@ test("public company presentation loads cover, status and commercial facts", asy
 });
 
 test("public company presentation searches and filters items inside the establishment", async ({ page }) => {
-  await page.goto("/establishment/view/catalogo-e2e");
-
-  const search = page.getByRole("searchbox", {
-    name: "Buscar produtos e serviços de Empresa E2E",
-  });
+  await gotoApp(page, "/establishment/view/catalogo-e2e");
+  const search = page.getByRole("searchbox", { name: "Buscar produtos e serviços de Empresa E2E" });
   await expect(search).toBeVisible();
   await search.fill("Martelo");
-
   await expect(page.locator("#establishment-catalog")).toContainText("Martelo E2E");
   await expect(page.locator("#establishment-catalog")).not.toContainText("Produto E2E");
-
   await page.getByRole("button", { name: "Limpar busca" }).click();
   await page.getByRole("button", { name: "Teste", exact: true }).click();
   await expect(page.locator("#establishment-catalog")).toContainText("Produto E2E");
@@ -234,7 +189,7 @@ test("public company presentation searches and filters items inside the establis
 });
 
 test("each visible item can expose its own QR code", async ({ page }) => {
-  await page.goto("/establishment/view/catalogo-e2e");
+  await gotoApp(page, "/establishment/view/catalogo-e2e");
   await page.getByRole("button", { name: "Abrir QR Code de Produto E2E" }).click();
   await expect(page.getByRole("dialog")).toContainText("QR Code do item");
   await expect(page.getByRole("dialog")).toContainText("Produto E2E");
@@ -242,7 +197,7 @@ test("each visible item can expose its own QR code", async ({ page }) => {
 
 test("mobile establishment experience exposes the fixed action bar", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.goto("/establishment/view/catalogo-e2e");
+  await gotoApp(page, "/establishment/view/catalogo-e2e");
   await expect(page.locator(".estx-mobile-bar")).toBeVisible();
   await expect(page.locator(".estx-mobile-bar")).toContainText("Catálogo");
   await expect(page.locator(".estx-mobile-bar")).toContainText("WhatsApp");
@@ -251,7 +206,7 @@ test("mobile establishment experience exposes the fixed action bar", async ({ pa
 });
 
 test("public company presentation exposes contextual cross-catalog discovery links", async ({ page }) => {
-  await page.goto("/establishment/view/catalogo-e2e");
+  await gotoApp(page, "/establishment/view/catalogo-e2e");
   await expect(page.getByRole("heading", { name: "Continue descobrindo na Nexus" })).toBeVisible();
   await expect(page.locator(".estv-company-link").filter({ hasText: "Outra Empresa E2E" })).toBeVisible();
   await expect(page.locator(".estv-item-link").filter({ hasText: "Outro Produto E2E" })).toBeVisible();
@@ -259,26 +214,26 @@ test("public company presentation exposes contextual cross-catalog discovery lin
 });
 
 test("public company presentation direct navigation survives SPA server fallback", async ({ page }) => {
-  const response = await page.goto("/establishment/view/catalogo-e2e");
+  const response = await gotoApp(page, "/establishment/view/catalogo-e2e");
   expect(response.status()).toBe(200);
   await expect(page.getByRole("heading", { name: "Empresa E2E", exact: true })).toBeVisible();
 });
 
 test("public catalog loads without a token and exposes its item", async ({ page }) => {
-  await page.goto("/catalog/catalogo-e2e");
+  await gotoApp(page, "/catalog/catalogo-e2e");
   await expect(page.getByRole("heading", { name: "Empresa E2E" })).toBeVisible();
   await expect(page.locator("body")).toContainText("Produto E2E");
   await expect(page.locator("body")).toContainText("Compartilhe este catálogo");
 });
 
 test("unknown route renders a real 404 instead of silently redirecting", async ({ page }) => {
-  await page.goto("/rota-que-nao-existe");
+  await gotoApp(page, "/rota-que-nao-existe");
   await expect(page).toHaveURL(/\/rota-que-nao-existe$/);
   await expect(page.locator("body")).toContainText("Página não encontrada");
 });
 
 test("catalog direct navigation survives SPA server fallback", async ({ page }) => {
-  const response = await page.goto("/catalog/catalogo-e2e");
+  const response = await gotoApp(page, "/catalog/catalogo-e2e");
   expect(response.status()).toBe(200);
   await expect(page.getByRole("heading", { name: "Empresa E2E" })).toBeVisible();
 });
