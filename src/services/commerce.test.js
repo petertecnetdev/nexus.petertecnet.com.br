@@ -1,5 +1,9 @@
 import api from "./api";
-import { getEstablishmentCommerceOrders, getMyCommerceOrders } from "./commerce";
+import {
+  createCommerceOrder,
+  getEstablishmentCommerceOrders,
+  getMyCommerceOrders,
+} from "./commerce";
 
 jest.mock("./api", () => ({
   get: jest.fn(),
@@ -15,6 +19,23 @@ jest.mock("../config", () => ({
 describe("commerce order contracts", () => {
   beforeEach(() => {
     api.get.mockReset();
+    api.post.mockReset();
+  });
+
+  it("uses the canonical generic checkout route with idempotency", async () => {
+    api.post.mockResolvedValueOnce({ data: { data: { order: { id: 123 } } } });
+
+    await createCommerceOrder(
+      { establishment_id: 8, payment_method: "pix", items: [{ item_id: 10, quantity: 1 }] },
+      { idempotencyKey: "nexus:order:test-key" }
+    );
+
+    expect(api.post).toHaveBeenCalledWith(
+      "https://api.example.test/api/v1/apps/nexus/orders",
+      expect.objectContaining({ establishment_id: 8, payment_method: "pix" }),
+      { headers: { "Idempotency-Key": "nexus:order:test-key" } }
+    );
+    expect(api.post.mock.calls[0][0]).not.toContain("/commerce/orders");
   });
 
   it("uses the canonical generic establishment order route", async () => {
