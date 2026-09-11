@@ -44,6 +44,26 @@ const emitApiTelemetry = (type, config, extra = {}) => {
   );
 };
 
+const transientReadFailure = (error) => {
+  const status = Number(error?.response?.status || 0);
+  if (!status) return true;
+  return status === 408 || status === 425 || status === 429 || status >= 500;
+};
+
+const retryAfterMs = (error) => {
+  const value = error?.response?.headers?.["retry-after"];
+  if (!value) return 250;
+
+  const seconds = Number(value);
+  if (Number.isFinite(seconds)) return Math.min(5000, Math.max(0, seconds * 1000));
+
+  const retryAt = Date.parse(value);
+  if (!Number.isFinite(retryAt)) return 250;
+  return Math.min(5000, Math.max(0, retryAt - Date.now()));
+};
+
+const wait = (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds));
+
 async function refreshAccessToken() {
   const currentToken = readToken();
   if (!currentToken) throw new Error("Sessão indisponível.");
@@ -119,6 +139,22 @@ api.interceptors.response.use(
       } catch {
         // Fall through to a clean logout below.
       }
+    }
+
+    const safeReadRetry =
+      String(originalRequest?.method || "get").toLowerCase() === "get" &&
+      !originalRequest.__nexusSafeReadRetried &&
+      transientReadFailure(error);
+
+    if (safeReadRetry) {
+      originalRequest.__nexusSafeReadRetried = true;
+      const delayMs = retryAfterMs(error);
+      emitApiTelemetry("api_retry", originalRequest, {
+        status: status || 0,
+        retry_after_ms: delayMs,
+      });
+      await wait(delayMs);
+      return api(originalRequest);
     }
 
     emitApiTelemetry("api_error", originalRequest, {
