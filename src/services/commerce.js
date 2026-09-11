@@ -94,8 +94,6 @@ export async function retryCommercePayment(publicId, paymentMethod, options = {}
     if (managedKey) clearPaymentRetryIdempotencyKey(publicId, paymentMethod);
     return data?.data || null;
   } catch (error) {
-    // Preserve the identity only when no HTTP response arrived. A transport timeout may
-    // have reached the server, so the next attempt must replay the same operation.
     if (managedKey && error?.response) {
       clearPaymentRetryIdempotencyKey(publicId, paymentMethod);
     }
@@ -108,20 +106,25 @@ export async function getMyCommerceOrders(params = {}) {
   return data?.data || null;
 }
 
-export async function getCommerceOrder(publicId, options = {}) {
+export async function getCommerceOrder(orderId, options = {}) {
   const { data } = await api.get(
-    `${base}/orders/${encodeURIComponent(publicId)}`,
+    `${apiV1BaseUrl}/me/orders/${encodeURIComponent(orderId)}`,
     requestConfig(options)
   );
   return data?.data || null;
 }
 
-export async function getCommercePayment(publicId, options = {}) {
-  const { data } = await api.get(
-    `${base}/orders/${encodeURIComponent(publicId)}/payment`,
-    requestConfig(options)
-  );
-  return data?.data || null;
+export async function getCommercePayment(orderId, options = {}) {
+  const config = requestConfig(options);
+  const [{ data: paymentResponse }, { data: orderResponse }] = await Promise.all([
+    api.get(`${apiV1BaseUrl}/me/orders/${encodeURIComponent(orderId)}/payment`, config),
+    api.get(`${apiV1BaseUrl}/me/orders/${encodeURIComponent(orderId)}`, config),
+  ]);
+
+  return {
+    order: orderResponse?.data || null,
+    payment: paymentResponse?.data || null,
+  };
 }
 
 export async function getCommerceFulfillmentCredential(publicId, options = {}) {
