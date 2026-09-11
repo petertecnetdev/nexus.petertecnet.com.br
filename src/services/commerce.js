@@ -1,5 +1,5 @@
 import api from "./api";
-import { appSlug } from "../config";
+import { apiV1BaseUrl, appSlug } from "../config";
 
 const base = `/v1/apps/${encodeURIComponent(appSlug)}/commerce`;
 
@@ -133,7 +133,7 @@ export async function getCommerceFulfillmentCredential(publicId, options = {}) {
 }
 
 export async function getEstablishmentCommerceOrders(establishmentId, params = {}) {
-  const { data } = await api.get(`${base}/establishments/${establishmentId}/orders`, { params });
+  const { data } = await api.get(`${apiV1BaseUrl}/establishments/${establishmentId}/orders`, { params });
   return data?.data || null;
 }
 
