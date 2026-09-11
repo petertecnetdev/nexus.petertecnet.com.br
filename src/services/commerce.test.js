@@ -8,6 +8,7 @@ import {
   getEstablishmentCommerceOrders,
   getMyCommerceOrders,
   redeemCommerceOrder,
+  retryCommercePayment,
   updateCommerceFulfillmentStatus,
   updateCommerceOrderStatus,
   verifyCommerceFulfillment,
@@ -29,6 +30,7 @@ describe("commerce order contracts", () => {
     api.get.mockReset();
     api.post.mockReset();
     api.patch.mockReset();
+    window.sessionStorage.clear();
   });
 
   it("uses the canonical generic checkout route with idempotency", async () => {
@@ -43,6 +45,21 @@ describe("commerce order contracts", () => {
       { headers: { "Idempotency-Key": "nexus:order:test-key" } }
     );
     expect(api.post.mock.calls[0][0]).not.toContain("/commerce/orders");
+  });
+
+  it("reuses the payment retry idempotency key after an ambiguous 5xx", async () => {
+    api.post
+      .mockRejectedValueOnce({ response: { status: 502 } })
+      .mockResolvedValueOnce({ data: { data: { status: "pending" } } });
+
+    await expect(retryCommercePayment("payment-123", "pix")).rejects.toEqual({ response: { status: 502 } });
+    const firstKey = api.post.mock.calls[0][2].headers["Idempotency-Key"];
+
+    await retryCommercePayment("payment-123", "pix");
+    const secondKey = api.post.mock.calls[1][2].headers["Idempotency-Key"];
+
+    expect(firstKey).toBeTruthy();
+    expect(secondKey).toBe(firstKey);
   });
 
   it("uses the canonical generic establishment order route", async () => {
