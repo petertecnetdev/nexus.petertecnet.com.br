@@ -73,7 +73,7 @@ export async function getCommerceCatalog(slug) {
 
 export async function createCommerceOrder(payload, options = {}) {
   const { data } = await api.post(
-    `${base}/orders`,
+    `${apiV1BaseUrl}/orders`,
     payload,
     idempotencyConfig(options?.idempotencyKey, "order")
   );
