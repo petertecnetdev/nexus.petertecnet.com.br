@@ -1,5 +1,5 @@
 // src/pages/catalog/CatalogPage.jsx
-import React, { useContext, useEffect, useMemo, useState } from "react";
+import React, { useContext, useEffect, useMemo, useRef, useState } from "react";
 import { Alert, Badge, Button, Col, Container, Form, Row } from "react-bootstrap";
 import { useNavigate, useParams } from "react-router-dom";
 import { FaCartPlus, FaLink, FaShoppingCart, FaWhatsapp } from "react-icons/fa";
@@ -43,6 +43,7 @@ export default function CatalogPage() {
   const [cartItems, setCartItems] = useState(() => cartCount());
   const [ordering, setOrdering] = useState(null);
   const [orderingLoading, setOrderingLoading] = useState(true);
+  const catalogTrackedRef = useRef(null);
 
   useEffect(() => {
     const sync = () => setCartItems(cartCount());
@@ -113,6 +114,20 @@ export default function CatalogPage() {
     : undefined;
 
   useEffect(() => {
+    if (!establishment || !slug) return;
+    const trackingKey = `${appId}:${slug}`;
+    if (catalogTrackedRef.current === trackingKey) return;
+    catalogTrackedRef.current = trackingKey;
+    trackExperienceEvent("navigation", "catalog_viewed", "catalog", {
+      application_id: appId,
+      establishment_slug: slug,
+      establishment_id: establishment?.id,
+      item_count: activeItems.length,
+      referrer: document.referrer || undefined,
+    });
+  }, [activeItems.length, establishment, slug]);
+
+  useEffect(() => {
     if (!establishment) return undefined;
     const previousTitle = document.title;
     const description = establishment.description || `Confira o catálogo online de ${title} na Nexus.`;
@@ -126,7 +141,13 @@ export default function CatalogPage() {
     return () => { document.title = previousTitle; };
   }, [catalogUrl, establishment, socialLogo, title]);
 
-  const trackShare = (channel) => trackExperienceEvent("click", "catalog_shared", channel, { application_id: appId, establishment_slug: slug, channel });
+  const baseCommerceMetadata = () => ({
+    application_id: appId,
+    establishment_slug: slug,
+    establishment_id: establishment?.id,
+    cart_items: cartCount(),
+  });
+  const trackShare = (channel) => trackExperienceEvent("click", "catalog_shared", channel, { ...baseCommerceMetadata(), channel });
   const copyCatalogUrl = async () => {
     try { await navigator.clipboard.writeText(socialShareUrl); } catch { window.prompt("Copie o link do catálogo:", socialShareUrl); }
     trackShare("copy_link");
@@ -144,8 +165,13 @@ export default function CatalogPage() {
   };
   const shareWhatsapp = () => trackShare("whatsapp");
 
-  const goCheckout = () => {
+  const goCheckout = (source = "cart") => {
     if (!purchaseEnabled) return;
+    trackExperienceEvent("click", "checkout_started", source, {
+      ...baseCommerceMetadata(),
+      authenticated: Boolean(user),
+      source,
+    });
     if (user) navigate("/checkout");
     else navigate("/login", { state: { from: { pathname: "/checkout" } } });
   };
@@ -153,7 +179,14 @@ export default function CatalogPage() {
     if (!purchaseEnabled || Number(item?.status ?? 1) === 0) return;
     addToCart(item, establishment, 1);
     setCartItems(cartCount());
-    if (checkout) goCheckout();
+    trackExperienceEvent("click", checkout ? "buy_now_clicked" : "cart_item_added", `item:${item?.id || "unknown"}`, {
+      ...baseCommerceMetadata(),
+      item_id: item?.id,
+      item_name: item?.name,
+      item_price: Number(item?.price || 0),
+      category: item?.category,
+    });
+    if (checkout) goCheckout("buy_now");
   };
 
   if (loading) return <ProcessingIndicatorComponent messages={["Carregando catálogo…", "Organizando os itens…"]} />;
@@ -166,7 +199,7 @@ export default function CatalogPage() {
     <Container className="catalog-content py-4">
       {!orderingLoading && !purchaseEnabled && hasItems && <Alert variant="warning" className="mb-4"><strong>Compras pausadas.</strong> {purchaseUnavailableReason} O catálogo continua disponível apenas para consulta.</Alert>}
 
-      {hasItems && <section className="catalog-toolbar" aria-label="Filtros do catálogo"><Form.Control type="search" aria-label="Buscar itens no catálogo" placeholder="Buscar por nome, descrição, categoria ou marca" value={query} onChange={(event) => setQuery(event.target.value)} /><Form.Select aria-label="Filtrar itens por categoria" value={category} onChange={(event) => setCategory(event.target.value)}><option value="all">Todas as categorias</option>{categories.map((value) => <option key={value} value={value}>{value}</option>)}</Form.Select><span className="catalog-toolbar__count" aria-live="polite">{filteredItems.length} {filteredItems.length === 1 ? "item" : "itens"}</span>{cartItems > 0 && purchaseEnabled && <Button onClick={goCheckout}><FaShoppingCart /> Carrinho ({cartItems})</Button>}</section>}
+      {hasItems && <section className="catalog-toolbar" aria-label="Filtros do catálogo"><Form.Control type="search" aria-label="Buscar itens no catálogo" placeholder="Buscar por nome, descrição, categoria ou marca" value={query} onChange={(event) => setQuery(event.target.value)} /><Form.Select aria-label="Filtrar itens por categoria" value={category} onChange={(event) => setCategory(event.target.value)}><option value="all">Todas as categorias</option>{categories.map((value) => <option key={value} value={value}>{value}</option>)}</Form.Select><span className="catalog-toolbar__count" aria-live="polite">{filteredItems.length} {filteredItems.length === 1 ? "item" : "itens"}</span>{cartItems > 0 && purchaseEnabled && <Button onClick={() => goCheckout("catalog_cart")}><FaShoppingCart /> Carrinho ({cartItems})</Button>}</section>}
 
       {!hasItems ? <NexusFeedback type="neutral" title="Esta empresa ainda não possui itens cadastrados" className="mt-4">O catálogo de {title} já está disponível na Nexus, mas a empresa ainda não adicionou produtos ou serviços ativos para exibição.</NexusFeedback> : filteredItems.length === 0 && hasActiveFilters ? <NexusFeedback type="neutral" title="Nenhum item encontrado para esta busca" className="mt-4">Não encontramos itens que correspondam aos filtros informados. Tente remover algum filtro ou buscar por outro termo.</NexusFeedback> : <Row className="g-4 mt-1">{filteredItems.map((item) => <Col key={item.id} xs={12} sm={6} lg={4} xl={3}><GlobalCard item={item} fmtBRL={fmtBRL} navigate={navigate} actions={Number(item.price) > 0 ? <div className="d-grid gap-2"><Button size="sm" variant="outline-info" disabled={!purchaseEnabled} title={!purchaseEnabled ? purchaseUnavailableReason : undefined} onClick={() => addItem(item, false)}><FaCartPlus /> Adicionar ao carrinho</Button><Button size="sm" disabled={!purchaseEnabled} title={!purchaseEnabled ? purchaseUnavailableReason : undefined} onClick={() => addItem(item, true)}>Comprar agora</Button></div> : null} /></Col>)}</Row>}
 
