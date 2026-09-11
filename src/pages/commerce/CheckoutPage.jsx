@@ -41,6 +41,7 @@ export default function CheckoutPage() {
   const [cart, setCart] = useState(() => readCart());
   const [commerce, setCommerce] = useState(null);
   const [loadingConfig, setLoadingConfig] = useState(true);
+  const [configError, setConfigError] = useState(false);
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState("");
   const [form, setForm] = useState({
@@ -80,18 +81,52 @@ export default function CheckoutPage() {
     let active = true;
     if (!cart?.establishment?.slug) {
       setLoadingConfig(false);
+      setConfigError(true);
       return undefined;
     }
+    setConfigError(false);
     getCommerceCatalog(cart.establishment.slug)
-      .then((payload) => { if (active) setCommerce(payload?.commerce || null); })
-      .catch((requestError) => { if (active) setError(requestError?.response?.data?.message || "Não foi possível carregar as opções de compra."); })
+      .then((payload) => {
+        if (!active) return;
+        const nextCommerce = payload?.commerce || null;
+        if (!nextCommerce) {
+          setConfigError(true);
+          setError("Não foi possível validar as opções de compra deste catálogo.");
+          return;
+        }
+        setCommerce(nextCommerce);
+      })
+      .catch((requestError) => {
+        if (!active) return;
+        setConfigError(true);
+        setError(requestError?.response?.data?.message || "Não foi possível carregar as opções de compra.");
+      })
       .finally(() => { if (active) setLoadingConfig(false); });
     return () => { active = false; };
   }, [cart?.establishment?.slug]);
 
+  const paymentMethods = useMemo(() => Array.isArray(commerce?.payment_methods) ? commerce.payment_methods.filter((method) => ["pix", "card"].includes(method)) : [], [commerce]);
+  const fulfillmentMethods = useMemo(() => {
+    if (!commerce) return [];
+    const methods = [];
+    if (commerce?.fulfillment?.pickup !== false) methods.push("pickup");
+    if (commerce?.fulfillment?.delivery !== false) methods.push("delivery");
+    return methods;
+  }, [commerce]);
+
+  useEffect(() => {
+    if (!commerce) return;
+    setForm((current) => ({
+      ...current,
+      payment_method: paymentMethods.includes(current.payment_method) ? current.payment_method : (paymentMethods[0] || ""),
+      fulfillment: fulfillmentMethods.includes(current.fulfillment) ? current.fulfillment : (fulfillmentMethods[0] || ""),
+    }));
+  }, [commerce, paymentMethods, fulfillmentMethods]);
+
   const subtotal = useMemo(() => (cart?.items || []).reduce((sum, row) => sum + Number(row.item?.price || 0) * Number(row.quantity || 0), 0), [cart]);
   const deliveryFee = form.fulfillment === "delivery" ? Number(commerce?.delivery_fee || 0) : 0;
   const total = subtotal + deliveryFee;
+  const checkoutReady = !loadingConfig && !configError && commerce?.available !== false && paymentMethods.includes(form.payment_method) && fulfillmentMethods.includes(form.fulfillment);
 
   const changeQuantity = (itemId, next) => {
     const updated = setCartItemQuantity(itemId, next);
@@ -100,7 +135,7 @@ export default function CheckoutPage() {
 
   const submit = async (event) => {
     event.preventDefault();
-    if (!cart?.items?.length || processing || submittingRef.current) return;
+    if (!cart?.items?.length || processing || submittingRef.current || !checkoutReady) return;
 
     const payload = {
       establishment_id: cart.establishment.id,
@@ -115,10 +150,7 @@ export default function CheckoutPage() {
     };
     const signature = JSON.stringify(payload);
     if (orderAttemptRef.current?.signature !== signature) {
-      orderAttemptRef.current = {
-        signature,
-        idempotencyKey: createCommerceIdempotencyKey("order"),
-      };
+      orderAttemptRef.current = { signature, idempotencyKey: createCommerceIdempotencyKey("order") };
       persistOrderAttempt(orderAttemptRef.current);
     }
 
@@ -126,9 +158,7 @@ export default function CheckoutPage() {
     setError("");
     setProcessing(true);
     try {
-      const result = await createCommerceOrder(payload, {
-        idempotencyKey: orderAttemptRef.current.idempotencyKey,
-      });
+      const result = await createCommerceOrder(payload, { idempotencyKey: orderAttemptRef.current.idempotencyKey });
       const order = result?.order;
       const payment = result?.payment;
       const orderId = order?.id;
@@ -210,21 +240,23 @@ export default function CheckoutPage() {
             <Form.Group className="mb-3"><Form.Label>Telefone</Form.Label><Form.Control value={form.customer_phone} onChange={(e) => setForm({ ...form, customer_phone: e.target.value })} /></Form.Group>
 
             <div className="choice-grid">
-              {commerce?.fulfillment?.pickup !== false && <button type="button" className={form.fulfillment === "pickup" ? "choice active" : "choice"} onClick={() => setForm({ ...form, fulfillment: "pickup" })}>Retirar na loja</button>}
-              {commerce?.fulfillment?.delivery !== false && <button type="button" className={form.fulfillment === "delivery" ? "choice active" : "choice"} onClick={() => setForm({ ...form, fulfillment: "delivery" })}>Pedir entrega</button>}
+              {fulfillmentMethods.includes("pickup") && <button type="button" className={form.fulfillment === "pickup" ? "choice active" : "choice"} onClick={() => setForm({ ...form, fulfillment: "pickup" })}>Retirar na loja</button>}
+              {fulfillmentMethods.includes("delivery") && <button type="button" className={form.fulfillment === "delivery" ? "choice active" : "choice"} onClick={() => setForm({ ...form, fulfillment: "delivery" })}>Pedir entrega</button>}
             </div>
 
             {form.fulfillment === "delivery" && <Form.Group className="mb-3"><Form.Label>Endereço de entrega</Form.Label><Form.Control as="textarea" rows={3} required value={form.delivery_address} onChange={(e) => setForm({ ...form, delivery_address: e.target.value })} /></Form.Group>}
 
             <div className="choice-grid payment-choices">
-              {(commerce?.payment_methods || ["pix", "card"]).includes("pix") && <button type="button" className={form.payment_method === "pix" ? "choice active" : "choice"} onClick={() => setForm({ ...form, payment_method: "pix" })}><FaQrcode /> Pix</button>}
-              {(commerce?.payment_methods || ["pix", "card"]).includes("card") && <button type="button" className={form.payment_method === "card" ? "choice active" : "choice"} onClick={() => setForm({ ...form, payment_method: "card" })}><FaCreditCard /> Cartão</button>}
+              {paymentMethods.includes("pix") && <button type="button" className={form.payment_method === "pix" ? "choice active" : "choice"} onClick={() => setForm({ ...form, payment_method: "pix" })}><FaQrcode /> Pix</button>}
+              {paymentMethods.includes("card") && <button type="button" className={form.payment_method === "card" ? "choice active" : "choice"} onClick={() => setForm({ ...form, payment_method: "card" })}><FaCreditCard /> Cartão</button>}
             </div>
 
             <Form.Group className="mb-3"><Form.Label>Observações</Form.Label><Form.Control as="textarea" rows={2} value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} /></Form.Group>
 
             <div className="order-summary"><span>Subtotal <strong>{money(subtotal)}</strong></span>{form.fulfillment === "delivery" && <span>Entrega <strong>{money(deliveryFee)}</strong></span>}<span className="total">Total <strong>{money(total)}</strong></span></div>
-            <Button type="submit" className="w-100" disabled={processing || loadingConfig || commerce?.available === false}>{processing ? <><Spinner size="sm" /> Processando…</> : form.payment_method === "pix" ? "Gerar Pix" : "Pagar com cartão"}</Button>
+            <Button type="submit" className="w-100" disabled={processing || !checkoutReady}>{processing ? <><Spinner size="sm" /> Processando…</> : form.payment_method === "pix" ? "Gerar Pix" : "Pagar com cartão"}</Button>
+            {!loadingConfig && !configError && paymentMethods.length === 0 && <small className="text-warning d-block mt-2">Nenhuma forma de pagamento está disponível para este catálogo.</small>}
+            {!loadingConfig && !configError && fulfillmentMethods.length === 0 && <small className="text-warning d-block mt-2">Nenhuma forma de entrega ou retirada está disponível para este catálogo.</small>}
             {commerce?.available === false && <small className="text-warning d-block mt-2">{commerce?.unavailable_reason || "Compras online indisponíveis."}</small>}
           </Form>
         </div>
