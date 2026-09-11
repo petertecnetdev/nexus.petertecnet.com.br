@@ -89,6 +89,8 @@ const sanitizeMetadata = (metadata = {}) =>
       .slice(0, 30)
   );
 
+export const getAcquisitionAttribution = () => sanitizeMetadata(attributionMetadata());
+
 export const trackExperienceEvent = (type, label, target, metadata = {}) => {
   if (!allowedTypes.has(type) || typeof window === "undefined") return;
 

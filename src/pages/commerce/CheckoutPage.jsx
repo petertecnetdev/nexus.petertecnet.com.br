@@ -7,7 +7,7 @@ import { AuthContext } from "../../App";
 import GlobalNav from "../../components/GlobalNav";
 import { createCommerceIdempotencyKey, createCommerceOrder, getCommerceCatalog, getCommerceOrder } from "../../services/commerce";
 import { clearCart, readCart, setCartItemQuantity } from "../../services/cart";
-import { trackExperienceEvent } from "../../services/experienceTelemetry";
+import { getAcquisitionAttribution, trackExperienceEvent } from "../../services/experienceTelemetry";
 import "./Commerce.css";
 
 const money = (value) => Number(value || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
@@ -110,6 +110,7 @@ export default function CheckoutPage() {
       customer_phone: form.customer_phone || null,
       delivery_address: form.fulfillment === "delivery" ? form.delivery_address : null,
       notes: form.notes || null,
+      acquisition_attribution: getAcquisitionAttribution(),
       items: cart.items.map((row) => ({ item_id: row.item.id, quantity: Number(row.quantity) })),
     };
     const signature = JSON.stringify(payload);
