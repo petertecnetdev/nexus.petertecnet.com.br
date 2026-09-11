@@ -104,7 +104,7 @@ export async function retryCommercePayment(publicId, paymentMethod, options = {}
 }
 
 export async function getMyCommerceOrders(params = {}) {
-  const { data } = await api.get(`${base}/orders/mine`, { params });
+  const { data } = await api.get(`${apiV1BaseUrl}/me/orders`, { params });
   return data?.data || null;
 }
 

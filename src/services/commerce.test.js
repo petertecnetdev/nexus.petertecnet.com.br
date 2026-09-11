@@ -1,5 +1,5 @@
 import api from "./api";
-import { getEstablishmentCommerceOrders } from "./commerce";
+import { getEstablishmentCommerceOrders, getMyCommerceOrders } from "./commerce";
 
 jest.mock("./api", () => ({
   get: jest.fn(),
@@ -12,7 +12,7 @@ jest.mock("../config", () => ({
   apiV1BaseUrl: "https://api.example.test/api/v1/apps/nexus",
 }));
 
-describe("received commerce orders", () => {
+describe("commerce order contracts", () => {
   beforeEach(() => {
     api.get.mockReset();
   });
@@ -27,5 +27,17 @@ describe("received commerce orders", () => {
       { params: { per_page: 100 } }
     );
     expect(api.get.mock.calls[0][0]).not.toContain("/commerce/establishments/");
+  });
+
+  it("uses the canonical authenticated purchase history route", async () => {
+    api.get.mockResolvedValueOnce({ data: { data: { data: [] } } });
+
+    await getMyCommerceOrders({ per_page: 50 });
+
+    expect(api.get).toHaveBeenCalledWith(
+      "https://api.example.test/api/v1/apps/nexus/me/orders",
+      { params: { per_page: 50 } }
+    );
+    expect(api.get.mock.calls[0][0]).not.toContain("/commerce/orders/mine");
   });
 });
