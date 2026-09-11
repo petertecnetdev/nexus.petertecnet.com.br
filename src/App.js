@@ -16,6 +16,7 @@ import {
 } from "react-router-dom";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 
+import CommerceCartDrawer from "./components/CommerceCartDrawer";
 import ProcessingIndicatorComponent from "./components/ProcessingIndicatorComponent";
 import SeoManager from "./components/SeoManager";
 import { LoadingContext, LoadingProvider } from "./contexts/LoadingContext";
@@ -181,6 +182,7 @@ function AppInner() {
       {isLoading && <ProcessingIndicatorComponent messages={["Salvando suas alterações…", "Atualizando a Nexus…"]} />}
       <Router>
         <SeoManager />
+        <CommerceCartDrawer user={user} />
         <Suspense fallback={<RouteFallback />}>
           <Routes>
             <Route path="/" element={<HomePage />} />

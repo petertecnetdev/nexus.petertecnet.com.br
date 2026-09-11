@@ -1,5 +1,6 @@
 const CART_KEY = "nexus_commerce_cart_v1";
 const EVENT_NAME = "nexus:cart-changed";
+const OPEN_EVENT_NAME = "nexus:cart-open-requested";
 
 function normalize(raw) {
   if (!raw || typeof raw !== "object") return null;
@@ -24,6 +25,10 @@ function writeCart(cart) {
   return normalized;
 }
 
+export function requestOpenCart() {
+  window.dispatchEvent(new Event(OPEN_EVENT_NAME));
+}
+
 export function clearCart() {
   localStorage.removeItem(CART_KEY);
   window.dispatchEvent(new Event(EVENT_NAME));
@@ -37,7 +42,9 @@ export function addToCart(item, establishment, quantity = 1) {
   const index = next.items.findIndex((row) => Number(row.item.id) === Number(item.id));
   if (index >= 0) next.items[index] = { ...next.items[index], quantity: Math.min(99, Number(next.items[index].quantity || 0) + Number(quantity || 1)) };
   else next.items.push({ item, quantity: Math.min(99, Math.max(1, Number(quantity || 1))) });
-  return writeCart(next);
+  const updated = writeCart(next);
+  requestOpenCart();
+  return updated;
 }
 
 export function setCartItemQuantity(itemId, quantity) {
@@ -55,3 +62,4 @@ export function cartCount() {
 }
 
 export const CART_EVENT = EVENT_NAME;
+export const CART_OPEN_EVENT = OPEN_EVENT_NAME;
