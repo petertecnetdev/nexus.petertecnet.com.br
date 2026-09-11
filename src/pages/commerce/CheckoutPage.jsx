@@ -131,13 +131,14 @@ export default function CheckoutPage() {
       });
       const order = result?.order;
       const payment = result?.payment;
-      if (!order?.public_id) throw new Error("A API não retornou a identificação da compra.");
+      const orderId = order?.id;
+      if (!orderId) throw new Error("A API não retornou a identificação canônica da compra.");
 
-      trackExperienceEvent("click", "order_created", `order:${order.public_id}`, {
+      trackExperienceEvent("click", "order_created", `order:${orderId}`, {
         application_id: cart?.establishment?.application_id,
         establishment_id: cart?.establishment?.id,
         establishment_slug: cart?.establishment?.slug,
-        order_id: order.public_id,
+        order_id: orderId,
         payment_method: form.payment_method,
         fulfillment: form.fulfillment,
         item_count: cart.items.reduce((sum, row) => sum + Number(row.quantity || 0), 0),
@@ -148,7 +149,7 @@ export default function CheckoutPage() {
           application_id: cart?.establishment?.application_id,
           establishment_id: cart?.establishment?.id,
           establishment_slug: cart?.establishment?.slug,
-          order_id: order.public_id,
+          order_id: orderId,
           payment_method: form.payment_method,
           payment_status: payment?.status,
           total: Number(order?.total ?? total),
@@ -157,8 +158,8 @@ export default function CheckoutPage() {
 
       orderAttemptRef.current = null;
       persistOrderAttempt(null);
-      sessionStorage.setItem(`nexus_payment_${order.public_id}`, JSON.stringify(payment || null));
-      sessionStorage.setItem(PENDING_ORDER_KEY, order.public_id);
+      sessionStorage.setItem(`nexus_payment_${orderId}`, JSON.stringify(payment || null));
+      sessionStorage.setItem(PENDING_ORDER_KEY, String(orderId));
 
       if (form.payment_method === "card" && payment?.checkout_url) {
         window.location.assign(payment.checkout_url);
@@ -167,7 +168,7 @@ export default function CheckoutPage() {
 
       clearCart();
       sessionStorage.removeItem(PENDING_ORDER_KEY);
-      navigate(`/purchase/${order.public_id}`, { replace: true });
+      navigate(`/purchase/${encodeURIComponent(orderId)}`, { replace: true });
     } catch (requestError) {
       setError(requestError?.response?.data?.message || requestError?.message || "Não foi possível finalizar a compra.");
     } finally {
