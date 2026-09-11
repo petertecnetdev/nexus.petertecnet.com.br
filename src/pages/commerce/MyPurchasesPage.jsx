@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Alert, Badge, Button, Container, Spinner } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 
@@ -10,6 +10,7 @@ import "./Commerce.css";
 const money = (value) => Number(value || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 const RECOVERABLE_PAYMENT_STATUSES = new Set(["pending", "waiting", "processing", "failed", "rejected"]);
 const RECOVERY_EXPERIMENT = "pix_recovery_navbar_prominence_v1";
+const RECOVERY_REFRESH_MS = 30000;
 const isRecoverable = (order) => RECOVERABLE_PAYMENT_STATUSES.has(String(order?.payment_status || "").toLowerCase());
 const recoveryVariant = (publicId) => {
   const value = String(publicId || "");
@@ -21,6 +22,7 @@ const recoveryVariant = (publicId) => {
 export default function MyPurchasesPage() {
   const navigate = useNavigate();
   const exposureRef = useRef("");
+  const refreshInFlightRef = useRef(false);
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -28,14 +30,39 @@ export default function MyPurchasesPage() {
   const recoveryOrder = recoverableOrders[0] || null;
   const variant = recoveryOrder ? recoveryVariant(recoveryOrder.public_id) : null;
 
-  useEffect(() => {
-    let active = true;
-    getMyCommerceOrders({ per_page: 50 })
-      .then((payload) => { if (active) setOrders(Array.isArray(payload?.data) ? payload.data : []); })
-      .catch((requestError) => { if (active) setError(requestError?.response?.data?.message || "Não foi possível carregar suas compras."); })
-      .finally(() => { if (active) setLoading(false); });
-    return () => { active = false; };
+  const loadOrders = useCallback(async ({ background = false } = {}) => {
+    if (refreshInFlightRef.current) return;
+    refreshInFlightRef.current = true;
+    try {
+      const payload = await getMyCommerceOrders({ per_page: 50 });
+      setOrders(Array.isArray(payload?.data) ? payload.data : []);
+      setError("");
+    } catch (requestError) {
+      if (!background) setError(requestError?.response?.data?.message || "Não foi possível carregar suas compras.");
+    } finally {
+      refreshInFlightRef.current = false;
+      if (!background) setLoading(false);
+    }
   }, []);
+
+  useEffect(() => {
+    loadOrders();
+  }, [loadOrders]);
+
+  useEffect(() => {
+    if (loading || recoverableOrders.length === 0) return undefined;
+
+    const refreshIfVisible = () => {
+      if (document.visibilityState === "visible") loadOrders({ background: true });
+    };
+    const timer = window.setInterval(refreshIfVisible, RECOVERY_REFRESH_MS);
+    document.addEventListener("visibilitychange", refreshIfVisible);
+
+    return () => {
+      window.clearInterval(timer);
+      document.removeEventListener("visibilitychange", refreshIfVisible);
+    };
+  }, [loading, recoverableOrders.length, loadOrders]);
 
   useEffect(() => {
     if (loading || !recoveryOrder || !variant) return;
