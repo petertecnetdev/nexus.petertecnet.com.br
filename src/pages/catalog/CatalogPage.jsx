@@ -12,10 +12,10 @@ import LocalQrCode from "../../components/LocalQrCode";
 import NexusFeedback from "../../components/NexusFeedback";
 import ProcessingIndicatorComponent from "../../components/ProcessingIndicatorComponent";
 import useEstablishmentItemsByIdentifier from "../../hooks/useEstablishmentItemsByIdentifier";
-import useWhatsappLink from "../../hooks/useWhatsappLink";
 import { apiBaseUrl, appId, linkApp } from "../../config";
 import { addToCart, cartCount, CART_EVENT } from "../../services/cart";
 import { canStartPurchase, getPublicOrdering } from "../../services/ordering";
+import { trackExperienceEvent } from "../../services/experienceTelemetry";
 import "./CatalogPage.css";
 
 const fmtBRL = (value) => `R$ ${Number(value || 0).toFixed(2).replace(".", ",")}`;
@@ -43,7 +43,6 @@ export default function CatalogPage() {
   const [cartItems, setCartItems] = useState(() => cartCount());
   const [ordering, setOrdering] = useState(null);
   const [orderingLoading, setOrderingLoading] = useState(true);
-  const whatsappLink = useWhatsappLink(establishment);
 
   useEffect(() => {
     const sync = () => setCartItems(cartCount());
@@ -100,25 +99,17 @@ export default function CatalogPage() {
   const catalogUrl = `${linkApp}/catalog/${encodeURIComponent(slug || "")}`;
   const socialShareUrl = `${apiBaseUrl}/v1/apps/${encodeURIComponent(appId)}/directory/share/catalog/${encodeURIComponent(slug || "")}`;
   const title = establishment?.fantasy || establishment?.name || "Catálogo Nexus";
+  const shareText = `Confira o catálogo online de ${title}: ${socialShareUrl}`;
+  const whatsappShareUrl = `https://wa.me/?text=${encodeURIComponent(shareText)}`;
   const files = Array.isArray(establishment?.files) ? establishment.files : [];
   const logoCandidates = [establishment?.images?.logo, establishment?.logo, files.find((file) => file?.type === "logo")?.public_url, files.find((file) => file?.is_primary)?.public_url, files[0]?.public_url];
   const socialLogo = logoCandidates.find(Boolean) || null;
   const background = establishment?.images?.background || establishment?.background || files.find((file) => file?.type === "background")?.public_url;
   const pageBackgroundStyle = background
-    ? {
-        backgroundImage: `linear-gradient(rgba(3,10,20,.90), rgba(3,10,20,.96)), url("${background}")`,
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-        backgroundRepeat: "no-repeat",
-      }
+    ? { backgroundImage: `linear-gradient(rgba(3,10,20,.90), rgba(3,10,20,.96)), url("${background}")`, backgroundSize: "cover", backgroundPosition: "center", backgroundRepeat: "no-repeat" }
     : undefined;
   const heroBackgroundStyle = background
-    ? {
-        backgroundImage: `linear-gradient(rgba(2,8,18,.24), rgba(2,8,18,.58)), url("${background}")`,
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-        backgroundRepeat: "no-repeat",
-      }
+    ? { backgroundImage: `linear-gradient(rgba(2,8,18,.24), rgba(2,8,18,.58)), url("${background}")`, backgroundSize: "cover", backgroundPosition: "center", backgroundRepeat: "no-repeat" }
     : undefined;
 
   useEffect(() => {
@@ -135,11 +126,23 @@ export default function CatalogPage() {
     return () => { document.title = previousTitle; };
   }, [catalogUrl, establishment, socialLogo, title]);
 
-  const copyCatalogUrl = async () => { try { await navigator.clipboard.writeText(catalogUrl); } catch { window.prompt("Copie o link do catálogo:", catalogUrl); } };
-  const shareCatalog = async () => {
-    if (navigator.share) { try { await navigator.share({ title, text: "Confira nosso catálogo online na Nexus.", url: socialShareUrl }); return; } catch (error) { if (error?.name === "AbortError") return; } }
-    try { await navigator.clipboard.writeText(socialShareUrl); } catch { window.prompt("Copie o link para compartilhar:", socialShareUrl); }
+  const trackShare = (channel) => trackExperienceEvent("click", "catalog_shared", channel, { application_id: appId, establishment_slug: slug, channel });
+  const copyCatalogUrl = async () => {
+    try { await navigator.clipboard.writeText(socialShareUrl); } catch { window.prompt("Copie o link do catálogo:", socialShareUrl); }
+    trackShare("copy_link");
   };
+  const shareCatalog = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({ title, text: `Confira o catálogo online de ${title} na Nexus.`, url: socialShareUrl });
+        trackShare("native_share");
+        return;
+      } catch (error) { if (error?.name === "AbortError") return; }
+    }
+    try { await navigator.clipboard.writeText(socialShareUrl); } catch { window.prompt("Copie o link para compartilhar:", socialShareUrl); }
+    trackShare("share_fallback_copy");
+  };
+  const shareWhatsapp = () => trackShare("whatsapp");
 
   const goCheckout = () => {
     if (!purchaseEnabled) return;
@@ -167,7 +170,7 @@ export default function CatalogPage() {
 
       {!hasItems ? <NexusFeedback type="neutral" title="Esta empresa ainda não possui itens cadastrados" className="mt-4">O catálogo de {title} já está disponível na Nexus, mas a empresa ainda não adicionou produtos ou serviços ativos para exibição.</NexusFeedback> : filteredItems.length === 0 && hasActiveFilters ? <NexusFeedback type="neutral" title="Nenhum item encontrado para esta busca" className="mt-4">Não encontramos itens que correspondam aos filtros informados. Tente remover algum filtro ou buscar por outro termo.</NexusFeedback> : <Row className="g-4 mt-1">{filteredItems.map((item) => <Col key={item.id} xs={12} sm={6} lg={4} xl={3}><GlobalCard item={item} fmtBRL={fmtBRL} navigate={navigate} actions={Number(item.price) > 0 ? <div className="d-grid gap-2"><Button size="sm" variant="outline-info" disabled={!purchaseEnabled} title={!purchaseEnabled ? purchaseUnavailableReason : undefined} onClick={() => addItem(item, false)}><FaCartPlus /> Adicionar ao carrinho</Button><Button size="sm" disabled={!purchaseEnabled} title={!purchaseEnabled ? purchaseUnavailableReason : undefined} onClick={() => addItem(item, true)}>Comprar agora</Button></div> : null} /></Col>)}</Row>}
 
-      <section id="compartilhar" className="catalog-share" aria-labelledby="catalog-share-title"><div className="catalog-share__copy"><Badge bg="secondary">Divulgação</Badge><h2 id="catalog-share-title">Compartilhe este catálogo</h2><p>O QR Code é gerado dentro da própria Nexus. O compartilhamento social usa uma prévia renderizada pela API para WhatsApp e outros robôs de link.</p><div className="catalog-share__url">{catalogUrl}</div><div className="catalog-share__actions"><button type="button" onClick={copyCatalogUrl}><FaLink /> Copiar link</button><button type="button" onClick={shareCatalog}>Compartilhar</button>{whatsappLink && <a href={whatsappLink} target="_blank" rel="noreferrer"><FaWhatsapp /> WhatsApp</a>}</div></div><div className="catalog-share__qr"><LocalQrCode value={catalogUrl} title={title} /></div></section>
+      <section id="compartilhar" className="catalog-share" aria-labelledby="catalog-share-title"><div className="catalog-share__copy"><Badge bg="secondary">Divulgação</Badge><h2 id="catalog-share-title">Compartilhe este catálogo</h2><p>O QR Code é gerado dentro da própria Nexus. Os links de compartilhamento usam a prévia renderizada pela API para WhatsApp e outros robôs de link.</p><div className="catalog-share__url">{catalogUrl}</div><div className="catalog-share__actions"><button type="button" onClick={copyCatalogUrl}><FaLink /> Copiar link</button><button type="button" onClick={shareCatalog}>Compartilhar</button><a href={whatsappShareUrl} target="_blank" rel="noreferrer" onClick={shareWhatsapp}><FaWhatsapp /> WhatsApp</a></div></div><div className="catalog-share__qr"><LocalQrCode value={catalogUrl} title={title} /></div></section>
     </Container>
   </div>;
 }
