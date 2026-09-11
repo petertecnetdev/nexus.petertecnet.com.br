@@ -43,16 +43,16 @@ const idempotencyConfig = (key, scope) => ({
   },
 });
 
-const paymentRetryStorageKey = (publicId, paymentMethod) =>
-  `${appSlug}:commerce:payment-retry:${publicId}:${paymentMethod}`;
+const paymentRetryStorageKey = (orderId, paymentMethod) =>
+  `${appSlug}:commerce:payment-retry:${orderId}:${paymentMethod}`;
 
-const getPaymentRetryIdempotencyKey = (publicId, paymentMethod) => {
-  const scope = `payment:${publicId}`;
+const getPaymentRetryIdempotencyKey = (orderId, paymentMethod) => {
+  const scope = `payment:${orderId}`;
   if (typeof window === "undefined" || !window.sessionStorage) {
     return createCommerceIdempotencyKey(scope);
   }
 
-  const storageKey = paymentRetryStorageKey(publicId, paymentMethod);
+  const storageKey = paymentRetryStorageKey(orderId, paymentMethod);
   const existing = window.sessionStorage.getItem(storageKey);
   if (existing) return existing;
 
@@ -61,9 +61,9 @@ const getPaymentRetryIdempotencyKey = (publicId, paymentMethod) => {
   return created;
 };
 
-const clearPaymentRetryIdempotencyKey = (publicId, paymentMethod) => {
+const clearPaymentRetryIdempotencyKey = (orderId, paymentMethod) => {
   if (typeof window === "undefined" || !window.sessionStorage) return;
-  window.sessionStorage.removeItem(paymentRetryStorageKey(publicId, paymentMethod));
+  window.sessionStorage.removeItem(paymentRetryStorageKey(orderId, paymentMethod));
 };
 
 const isDefinitivePaymentRetryRejection = (error) => {
@@ -85,25 +85,29 @@ export async function createCommerceOrder(payload, options = {}) {
   return data?.data || null;
 }
 
-export async function retryCommercePayment(publicId, paymentMethod, options = {}) {
+export async function retryCommercePayment(orderId, paymentMethod, options = {}) {
   const managedKey = !options?.idempotencyKey;
-  const idempotencyKey = options?.idempotencyKey || getPaymentRetryIdempotencyKey(publicId, paymentMethod);
+  const idempotencyKey = options?.idempotencyKey || getPaymentRetryIdempotencyKey(orderId, paymentMethod);
 
   try {
+    const endpoint = paymentMethod === "pix"
+      ? `${apiV1BaseUrl}/me/orders/${encodeURIComponent(orderId)}/payment`
+      : `${base}/orders/${encodeURIComponent(orderId)}/payment`;
     const { data } = await api.post(
-      `${base}/orders/${encodeURIComponent(publicId)}/payment`,
+      endpoint,
       { payment_method: paymentMethod },
-      idempotencyConfig(idempotencyKey, `payment:${publicId}`)
+      idempotencyConfig(idempotencyKey, `payment:${orderId}`)
     );
 
-    if (managedKey) clearPaymentRetryIdempotencyKey(publicId, paymentMethod);
+    if (managedKey) clearPaymentRetryIdempotencyKey(orderId, paymentMethod);
+    if (paymentMethod === "pix") return { order: null, payment: data?.data || null };
     return data?.data || null;
   } catch (error) {
     // A timeout, rate limit or 5xx does not prove that the provider failed to
     // create the payment. Reuse the same key so a user retry cannot create a
     // second charge after an ambiguous response.
     if (managedKey && isDefinitivePaymentRetryRejection(error)) {
-      clearPaymentRetryIdempotencyKey(publicId, paymentMethod);
+      clearPaymentRetryIdempotencyKey(orderId, paymentMethod);
     }
     throw error;
   }
