@@ -2,6 +2,7 @@ import api from "./api";
 import { apiV1BaseUrl, appSlug } from "../config";
 
 const base = `/v1/apps/${encodeURIComponent(appSlug)}/commerce`;
+const paymentRetryMemory = new Map();
 
 const requestConfig = (options = {}) => {
   const config = {};
@@ -46,24 +47,60 @@ const idempotencyConfig = (key, scope) => ({
 const paymentRetryStorageKey = (orderId, paymentMethod) =>
   `${appSlug}:commerce:payment-retry:${orderId}:${paymentMethod}`;
 
+const getSessionStorage = () => {
+  try {
+    return typeof window !== "undefined" ? window.sessionStorage : null;
+  } catch {
+    return null;
+  }
+};
+
 const getPaymentRetryIdempotencyKey = (orderId, paymentMethod) => {
   const scope = `payment:${orderId}`;
-  if (typeof window === "undefined" || !window.sessionStorage) {
-    return createCommerceIdempotencyKey(scope);
+  const storageKey = paymentRetryStorageKey(orderId, paymentMethod);
+  const storage = getSessionStorage();
+
+  if (storage) {
+    try {
+      const existing = storage.getItem(storageKey);
+      if (existing) {
+        paymentRetryMemory.set(storageKey, existing);
+        return existing;
+      }
+    } catch {
+      // Storage can be blocked in private mode/WebViews. Keep checkout usable.
+    }
   }
 
-  const storageKey = paymentRetryStorageKey(orderId, paymentMethod);
-  const existing = window.sessionStorage.getItem(storageKey);
-  if (existing) return existing;
+  const memoryKey = paymentRetryMemory.get(storageKey);
+  if (memoryKey) return memoryKey;
 
   const created = createCommerceIdempotencyKey(scope);
-  window.sessionStorage.setItem(storageKey, created);
+  paymentRetryMemory.set(storageKey, created);
+
+  if (storage) {
+    try {
+      storage.setItem(storageKey, created);
+    } catch {
+      // The in-memory key still protects retries during the current runtime.
+    }
+  }
+
   return created;
 };
 
 const clearPaymentRetryIdempotencyKey = (orderId, paymentMethod) => {
-  if (typeof window === "undefined" || !window.sessionStorage) return;
-  window.sessionStorage.removeItem(paymentRetryStorageKey(orderId, paymentMethod));
+  const storageKey = paymentRetryStorageKey(orderId, paymentMethod);
+  paymentRetryMemory.delete(storageKey);
+
+  const storage = getSessionStorage();
+  if (!storage) return;
+
+  try {
+    storage.removeItem(storageKey);
+  } catch {
+    // Storage is optional; the in-memory retry state was already cleared.
+  }
 };
 
 const isDefinitivePaymentRetryRejection = (error) => {
