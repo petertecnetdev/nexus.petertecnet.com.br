@@ -55,7 +55,7 @@ export default function CheckoutPage() {
 
   useEffect(() => {
     const pendingOrder = sessionStorage.getItem(PENDING_ORDER_KEY);
-    if (!pendingOrder || !cart?.items?.length) return undefined;
+    if (!pendingOrder) return undefined;
 
     let active = true;
     getCommerceOrder(pendingOrder, { background: true, silent: true })
@@ -64,18 +64,20 @@ export default function CheckoutPage() {
         const status = String(order?.payment_status || "").toLowerCase();
         if (status === "paid") {
           clearCart();
-          sessionStorage.removeItem(PENDING_ORDER_KEY);
           persistOrderAttempt(null);
           setCart(readCart());
         }
+        sessionStorage.removeItem(PENDING_ORDER_KEY);
         navigate(`/purchase/${encodeURIComponent(pendingOrder)}`, { replace: true });
       })
       .catch(() => {
-        if (active) navigate(`/purchase/${encodeURIComponent(pendingOrder)}`, { replace: true });
+        if (!active) return;
+        sessionStorage.removeItem(PENDING_ORDER_KEY);
+        navigate(`/purchase/${encodeURIComponent(pendingOrder)}`, { replace: true });
       });
 
     return () => { active = false; };
-  }, [cart?.items?.length, navigate]);
+  }, [navigate]);
 
   useEffect(() => {
     let active = true;
@@ -105,10 +107,6 @@ export default function CheckoutPage() {
     return () => { active = false; };
   }, [cart?.establishment?.slug]);
 
-  // The canonical app-scoped Order contract currently creates provider-backed
-  // online payments only for Pix. Do not advertise `card` until the central API
-  // exposes a generic, app-scoped online-card contract; otherwise checkout ends
-  // in a deterministic 422 and loses a buyer at the highest-value funnel step.
   const paymentMethods = useMemo(
     () => Array.isArray(commerce?.payment_methods)
       ? commerce.payment_methods.filter((method) => method === "pix")
@@ -205,8 +203,12 @@ export default function CheckoutPage() {
       sessionStorage.setItem(PENDING_ORDER_KEY, String(orderId));
 
       clearCart();
-      sessionStorage.removeItem(PENDING_ORDER_KEY);
       navigate(`/purchase/${encodeURIComponent(orderId)}`, { replace: true });
+      window.setTimeout(() => {
+        if (sessionStorage.getItem(PENDING_ORDER_KEY) === String(orderId)) {
+          sessionStorage.removeItem(PENDING_ORDER_KEY);
+        }
+      }, 10000);
     } catch (requestError) {
       setError(requestError?.response?.data?.message || requestError?.message || "Não foi possível finalizar a compra.");
     } finally {
