@@ -62,6 +62,20 @@ describe("commerce order contracts", () => {
     expect(secondKey).toBe(firstKey);
   });
 
+  it("routes Pix payment retries through the canonical generic order payment contract", async () => {
+    api.post.mockResolvedValueOnce({ data: { data: { status: "pending" } } });
+
+    const result = await retryCommercePayment("order-123", "pix", { idempotencyKey: "pix-retry-key" });
+
+    expect(api.post).toHaveBeenCalledWith(
+      "https://api.example.test/api/v1/apps/nexus/me/orders/order-123/payment",
+      { payment_method: "pix" },
+      { headers: { "Idempotency-Key": "pix-retry-key" } }
+    );
+    expect(api.post.mock.calls[0][0]).not.toContain("/commerce/orders/");
+    expect(result).toEqual({ order: null, payment: { status: "pending" } });
+  });
+
   it("uses the canonical generic establishment order route", async () => {
     api.get.mockResolvedValueOnce({ data: { data: { data: [] } } });
     await getEstablishmentCommerceOrders(8, { per_page: 100 });
