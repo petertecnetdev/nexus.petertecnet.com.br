@@ -8,6 +8,7 @@ const appSlug = String(process.env.REACT_APP_SLUG || "nexus").trim().toLowerCase
 const outputPath = path.resolve(__dirname, "../public/sitemap.xml");
 const discoveryAttempts = Math.max(1, Number.parseInt(process.env.SITEMAP_DISCOVERY_ATTEMPTS || "4", 10) || 4);
 const discoveryTimeoutMs = Math.max(1000, Number.parseInt(process.env.SITEMAP_DISCOVERY_TIMEOUT_MS || "10000", 10) || 10000);
+const discoveryLimit = Math.min(100, Math.max(1, Number.parseInt(process.env.SITEMAP_DISCOVERY_LIMIT || "100", 10) || 100));
 
 const escapeXml = (value) => String(value)
   .replace(/&/g, "&amp;")
@@ -37,7 +38,7 @@ async function fetchDiscoveryOnce() {
   const timeout = setTimeout(() => controller.abort(), discoveryTimeoutMs);
 
   try {
-    const url = `${apiBaseUrl}/v1/apps/${encodeURIComponent(appSlug)}/discovery?limit=500`;
+    const url = `${apiBaseUrl}/v1/apps/${encodeURIComponent(appSlug)}/discovery?limit=${discoveryLimit}`;
     const response = await fetch(url, {
       headers: {
         Accept: "application/json",
