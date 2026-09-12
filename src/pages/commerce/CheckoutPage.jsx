@@ -6,7 +6,8 @@ import { FaMinus, FaPlus, FaQrcode, FaTrash } from "react-icons/fa";
 import { AuthContext } from "../../App";
 import GlobalNav from "../../components/GlobalNav";
 import { createCommerceIdempotencyKey, createCommerceOrder, getCommerceCatalog, getCommerceOrder } from "../../services/commerce";
-import { clearCart, readCart, setCartItemQuantity } from "../../services/cart";
+import { clearCart, readCart, reconcileCartWithCatalog, setCartItemQuantity } from "../../services/cart";
+import { getFromApiV1 } from "../../services/apiV1";
 import { getAcquisitionAttribution, trackExperienceEvent } from "../../services/experienceTelemetry";
 import "./Commerce.css";
 
@@ -48,6 +49,7 @@ export default function CheckoutPage() {
   const [configError, setConfigError] = useState(false);
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState("");
+  const [cartNotice, setCartNotice] = useState("");
   const [form, setForm] = useState({
     customer_name: `${user?.first_name || ""} ${user?.last_name || ""}`.trim(),
     customer_phone: user?.phone || "",
@@ -90,17 +92,51 @@ export default function CheckoutPage() {
       setConfigError(true);
       return undefined;
     }
+
+    const slug = cart.establishment.slug;
     setConfigError(false);
-    getCommerceCatalog(cart.establishment.slug)
-      .then((payload) => {
+    setCartNotice("");
+    setLoadingConfig(true);
+
+    Promise.allSettled([
+      getCommerceCatalog(slug),
+      getFromApiV1(`/catalog/${encodeURIComponent(slug)}`, { metadata: { background: true }, skipGlobalLoading: true }),
+    ])
+      .then(([commerceResult, catalogResult]) => {
         if (!active) return;
-        const nextCommerce = payload?.commerce || null;
+        if (commerceResult.status === "rejected") throw commerceResult.reason;
+
+        const nextCommerce = commerceResult.value?.commerce || null;
         if (!nextCommerce) {
           setConfigError(true);
           setError("Não foi possível validar as opções de compra deste catálogo.");
           return;
         }
         setCommerce(nextCommerce);
+
+        if (catalogResult.status !== "fulfilled") return;
+        const catalogPayload = catalogResult.value?.data?.data || catalogResult.value?.data || {};
+        const liveItems = Array.isArray(catalogPayload?.items) ? catalogPayload.items : [];
+        const reconciliation = reconcileCartWithCatalog(readCart(), liveItems);
+        setCart(reconciliation.cart);
+
+        if (reconciliation.removedCount > 0 || reconciliation.priceChangedCount > 0) {
+          const messages = [];
+          if (reconciliation.priceChangedCount > 0) {
+            messages.push(`${reconciliation.priceChangedCount} ${reconciliation.priceChangedCount === 1 ? "item teve o preço atualizado" : "itens tiveram os preços atualizados"}`);
+          }
+          if (reconciliation.removedCount > 0) {
+            messages.push(`${reconciliation.removedCount} ${reconciliation.removedCount === 1 ? "item indisponível foi removido" : "itens indisponíveis foram removidos"}`);
+          }
+          setCartNotice(`${messages.join(" e ")}. Revise o carrinho antes de pagar.`);
+          trackExperienceEvent("system", "cart_revalidated", "checkout", {
+            application_id: cart?.establishment?.application_id,
+            establishment_id: cart?.establishment?.id,
+            establishment_slug: slug,
+            removed_items: reconciliation.removedCount,
+            price_changes: reconciliation.priceChangedCount,
+          });
+        }
       })
       .catch((requestError) => {
         if (!active) return;
@@ -109,7 +145,7 @@ export default function CheckoutPage() {
       })
       .finally(() => { if (active) setLoadingConfig(false); });
     return () => { active = false; };
-  }, [cart?.establishment?.slug]);
+  }, [cart?.establishment?.application_id, cart?.establishment?.id, cart?.establishment?.slug]);
 
   const paymentMethods = useMemo(
     () => Array.isArray(commerce?.payment_methods)
@@ -232,6 +268,7 @@ export default function CheckoutPage() {
       <Container className="commerce-shell">
         <div className="commerce-heading"><span>Checkout seguro</span><h1>Finalizar compra</h1><p>{cart.establishment.fantasy || cart.establishment.name}</p></div>
         {error && <Alert variant="danger">{error}</Alert>}
+        {cartNotice && <Alert variant="warning">{cartNotice}</Alert>}
 
         <div className="commerce-grid">
           <section className="commerce-card">

@@ -69,6 +69,36 @@ export function setCartItemQuantity(itemId, quantity) {
   return writeCart({ ...current, items });
 }
 
+export function reconcileCartWithCatalog(cart, catalogItems = []) {
+  const current = normalize(cart);
+  if (!current || !Array.isArray(catalogItems)) {
+    return { cart: current, removedCount: 0, priceChangedCount: 0, changed: false };
+  }
+
+  const activeById = new Map(
+    catalogItems
+      .filter((item) => item?.id && Number(item.status ?? 1) !== 0)
+      .map((item) => [Number(item.id), item])
+  );
+  let removedCount = 0;
+  let priceChangedCount = 0;
+  const items = [];
+
+  current.items.forEach((row) => {
+    const liveItem = activeById.get(Number(row.item.id));
+    if (!liveItem) {
+      removedCount += 1;
+      return;
+    }
+    if (Number(row.item?.price || 0) !== Number(liveItem.price || 0)) priceChangedCount += 1;
+    items.push({ ...row, item: { ...row.item, ...liveItem } });
+  });
+
+  const changed = removedCount > 0 || priceChangedCount > 0;
+  const nextCart = writeCart({ ...current, items });
+  return { cart: nextCart, removedCount, priceChangedCount, changed };
+}
+
 export function cartCount() {
   return (readCart()?.items || []).reduce((sum, row) => sum + Number(row.quantity || 0), 0);
 }
