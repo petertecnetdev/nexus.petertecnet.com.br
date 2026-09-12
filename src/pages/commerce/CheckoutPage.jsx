@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useMemo, useRef, useState } from "react";
 import { Alert, Button, Container, Form, Spinner } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
-import { FaCreditCard, FaMinus, FaPlus, FaQrcode, FaTrash } from "react-icons/fa";
+import { FaMinus, FaPlus, FaQrcode, FaTrash } from "react-icons/fa";
 
 import { AuthContext } from "../../App";
 import GlobalNav from "../../components/GlobalNav";
@@ -105,7 +105,20 @@ export default function CheckoutPage() {
     return () => { active = false; };
   }, [cart?.establishment?.slug]);
 
-  const paymentMethods = useMemo(() => Array.isArray(commerce?.payment_methods) ? commerce.payment_methods.filter((method) => ["pix", "card"].includes(method)) : [], [commerce]);
+  // The canonical app-scoped Order contract currently creates provider-backed
+  // online payments only for Pix. Do not advertise `card` until the central API
+  // exposes a generic, app-scoped online-card contract; otherwise checkout ends
+  // in a deterministic 422 and loses a buyer at the highest-value funnel step.
+  const paymentMethods = useMemo(
+    () => Array.isArray(commerce?.payment_methods)
+      ? commerce.payment_methods.filter((method) => method === "pix")
+      : [],
+    [commerce]
+  );
+  const unsupportedOnlineCard = useMemo(
+    () => Array.isArray(commerce?.payment_methods) && commerce.payment_methods.includes("card"),
+    [commerce]
+  );
   const fulfillmentMethods = useMemo(() => {
     if (!commerce) return [];
     const methods = [];
@@ -191,11 +204,6 @@ export default function CheckoutPage() {
       sessionStorage.setItem(`nexus_payment_${orderId}`, JSON.stringify(payment || null));
       sessionStorage.setItem(PENDING_ORDER_KEY, String(orderId));
 
-      if (form.payment_method === "card" && payment?.checkout_url) {
-        window.location.assign(payment.checkout_url);
-        return;
-      }
-
       clearCart();
       sessionStorage.removeItem(PENDING_ORDER_KEY);
       navigate(`/purchase/${encodeURIComponent(orderId)}`, { replace: true });
@@ -248,14 +256,17 @@ export default function CheckoutPage() {
 
             <div className="choice-grid payment-choices">
               {paymentMethods.includes("pix") && <button type="button" className={form.payment_method === "pix" ? "choice active" : "choice"} onClick={() => setForm({ ...form, payment_method: "pix" })}><FaQrcode /> Pix</button>}
-              {paymentMethods.includes("card") && <button type="button" className={form.payment_method === "card" ? "choice active" : "choice"} onClick={() => setForm({ ...form, payment_method: "card" })}><FaCreditCard /> Cartão</button>}
             </div>
+
+            {unsupportedOnlineCard && paymentMethods.includes("pix") && (
+              <small className="text-muted d-block mb-3">Cartão online está temporariamente indisponível. Use Pix para concluir a compra com confirmação automática.</small>
+            )}
 
             <Form.Group className="mb-3"><Form.Label>Observações</Form.Label><Form.Control as="textarea" rows={2} value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} /></Form.Group>
 
             <div className="order-summary"><span>Subtotal <strong>{money(subtotal)}</strong></span>{form.fulfillment === "delivery" && <span>Entrega <strong>{money(deliveryFee)}</strong></span>}<span className="total">Total <strong>{money(total)}</strong></span></div>
-            <Button type="submit" className="w-100" disabled={processing || !checkoutReady}>{processing ? <><Spinner size="sm" /> Processando…</> : form.payment_method === "pix" ? "Gerar Pix" : "Pagar com cartão"}</Button>
-            {!loadingConfig && !configError && paymentMethods.length === 0 && <small className="text-warning d-block mt-2">Nenhuma forma de pagamento está disponível para este catálogo.</small>}
+            <Button type="submit" className="w-100" disabled={processing || !checkoutReady}>{processing ? <><Spinner size="sm" /> Processando…</> : "Gerar Pix"}</Button>
+            {!loadingConfig && !configError && paymentMethods.length === 0 && <small className="text-warning d-block mt-2">Nenhuma forma de pagamento online compatível está disponível para este catálogo.</small>}
             {!loadingConfig && !configError && fulfillmentMethods.length === 0 && <small className="text-warning d-block mt-2">Nenhuma forma de entrega ou retirada está disponível para este catálogo.</small>}
             {commerce?.available === false && <small className="text-warning d-block mt-2">{commerce?.unavailable_reason || "Compras online indisponíveis."}</small>}
           </Form>
