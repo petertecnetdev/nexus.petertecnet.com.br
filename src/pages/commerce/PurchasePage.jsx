@@ -19,6 +19,7 @@ import {
   getCommercePayment,
   retryCommercePayment,
 } from "../../services/commerce";
+import { getSessionStorageItem, setSessionStorageItem } from "../../utils/sessionStorageSafe";
 import {
   getPurchaseQrPurpose,
   getPurchaseStage,
@@ -52,12 +53,13 @@ export default function PurchasePage() {
   const [order, setOrder] = useState(null);
   const [claim, setClaim] = useState(null);
   const [payment, setPayment] = useState(() => {
-    try { return JSON.parse(sessionStorage.getItem(`nexus_payment_${publicId}`) || "null"); } catch { return null; }
+    try { return JSON.parse(getSessionStorageItem(`nexus_payment_${publicId}`) || "null"); } catch { return null; }
   });
   const [loading, setLoading] = useState(true);
   const [retrying, setRetrying] = useState(false);
   const [error, setError] = useState("");
   const refreshInFlightRef = useRef(false);
+  const readyNotificationRef = useRef(new Set());
 
   const refresh = useCallback(async ({ background = false } = {}) => {
     if (background && refreshInFlightRef.current) return;
@@ -152,9 +154,10 @@ export default function PurchasePage() {
   useEffect(() => {
     if (!order || stage !== 2) return;
     const notificationKey = `nexus_ready_notified_${order.public_id}`;
-    if (sessionStorage.getItem(notificationKey)) return;
+    if (readyNotificationRef.current.has(notificationKey) || getSessionStorageItem(notificationKey)) return;
 
-    sessionStorage.setItem(notificationKey, "1");
+    readyNotificationRef.current.add(notificationKey);
+    setSessionStorageItem(notificationKey, "1");
     if (typeof Notification !== "undefined" && Notification.permission === "granted") {
       new Notification(isDelivery ? "Pedido pronto para entrega" : "Pedido pronto para retirada", {
         body: `${order.establishment?.fantasy || order.establishment?.name || "O estabelecimento"} liberou o pedido #${order.order_number}.`,
@@ -187,7 +190,7 @@ export default function PurchasePage() {
       if (result?.order) setOrder(result.order);
       if (result?.payment) {
         setPayment(result.payment);
-        sessionStorage.setItem(`nexus_payment_${publicId}`, JSON.stringify(result.payment));
+        setSessionStorageItem(`nexus_payment_${publicId}`, JSON.stringify(result.payment));
         if (method === "card" && result.payment.checkout_url) window.location.assign(result.payment.checkout_url);
       }
     } catch (requestError) {
