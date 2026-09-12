@@ -7,6 +7,7 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import axios from "axios";
 import App from "./App";
+import GlobalImageInputEnhancer from "./components/GlobalImageInputEnhancer";
 import PeterTecnetSignature from "./components/PeterTecnetSignature";
 import PeterAccountGateway from "./components/PeterAccountGateway";
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -27,6 +28,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
     <PeterAccountGateway apiBaseUrl={apiBaseUrl} appSlug={appSlug}>
       <App />
       <PeterTecnetSignature />
+        <GlobalImageInputEnhancer />
     </PeterAccountGateway>
   </React.StrictMode>
 );
