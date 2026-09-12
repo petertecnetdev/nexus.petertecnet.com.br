@@ -144,6 +144,7 @@ export default function CheckoutPage() {
   const checkoutReady = !loadingConfig && !configError && commerce?.available !== false && paymentMethods.includes(form.payment_method) && fulfillmentMethods.includes(form.fulfillment);
 
   const changeQuantity = (itemId, next) => {
+    if (processing || submittingRef.current) return;
     const updated = setCartItemQuantity(itemId, next);
     setCart(updated);
   };
@@ -184,18 +185,18 @@ export default function CheckoutPage() {
         establishment_id: cart?.establishment?.id,
         establishment_slug: cart?.establishment?.slug,
         order_id: orderId,
-        payment_method: form.payment_method,
-        fulfillment: form.fulfillment,
-        item_count: cart.items.reduce((sum, row) => sum + Number(row.quantity || 0), 0),
+        payment_method: payload.payment_method,
+        fulfillment: payload.fulfillment,
+        item_count: payload.items.reduce((sum, row) => sum + Number(row.quantity || 0), 0),
         total: Number(order?.total ?? total),
       });
       if (payment) {
-        trackExperienceEvent("click", "payment_started", form.payment_method, {
+        trackExperienceEvent("click", "payment_started", payload.payment_method, {
           application_id: cart?.establishment?.application_id,
           establishment_id: cart?.establishment?.id,
           establishment_slug: cart?.establishment?.slug,
           order_id: orderId,
-          payment_method: form.payment_method,
+          payment_method: payload.payment_method,
           payment_status: payment?.status,
           total: Number(order?.total ?? total),
         });
@@ -239,10 +240,10 @@ export default function CheckoutPage() {
               <div className="cart-line" key={row.item.id}>
                 <div><strong>{row.item.name}</strong><small>{money(row.item.price)} cada</small></div>
                 <div className="cart-quantity">
-                  <button type="button" onClick={() => changeQuantity(row.item.id, Number(row.quantity) - 1)} aria-label="Diminuir"><FaMinus /></button>
+                  <button type="button" disabled={processing} onClick={() => changeQuantity(row.item.id, Number(row.quantity) - 1)} aria-label="Diminuir"><FaMinus /></button>
                   <span>{row.quantity}</span>
-                  <button type="button" onClick={() => changeQuantity(row.item.id, Number(row.quantity) + 1)} aria-label="Aumentar"><FaPlus /></button>
-                  <button type="button" className="danger" onClick={() => changeQuantity(row.item.id, 0)} aria-label="Remover"><FaTrash /></button>
+                  <button type="button" disabled={processing} onClick={() => changeQuantity(row.item.id, Number(row.quantity) + 1)} aria-label="Aumentar"><FaPlus /></button>
+                  <button type="button" disabled={processing} className="danger" onClick={() => changeQuantity(row.item.id, 0)} aria-label="Remover"><FaTrash /></button>
                 </div>
               </div>
             ))}
@@ -250,25 +251,25 @@ export default function CheckoutPage() {
 
           <Form className="commerce-card checkout-form" onSubmit={submit}>
             <h2>Entrega e pagamento</h2>
-            <Form.Group className="mb-3"><Form.Label>Nome</Form.Label><Form.Control required value={form.customer_name} onChange={(e) => setForm({ ...form, customer_name: e.target.value })} /></Form.Group>
-            <Form.Group className="mb-3"><Form.Label>Telefone</Form.Label><Form.Control value={form.customer_phone} onChange={(e) => setForm({ ...form, customer_phone: e.target.value })} /></Form.Group>
+            <Form.Group className="mb-3"><Form.Label>Nome</Form.Label><Form.Control required disabled={processing} value={form.customer_name} onChange={(e) => setForm({ ...form, customer_name: e.target.value })} /></Form.Group>
+            <Form.Group className="mb-3"><Form.Label>Telefone</Form.Label><Form.Control disabled={processing} value={form.customer_phone} onChange={(e) => setForm({ ...form, customer_phone: e.target.value })} /></Form.Group>
 
             <div className="choice-grid">
-              {fulfillmentMethods.includes("pickup") && <button type="button" className={form.fulfillment === "pickup" ? "choice active" : "choice"} onClick={() => setForm({ ...form, fulfillment: "pickup" })}>Retirar na loja</button>}
-              {fulfillmentMethods.includes("delivery") && <button type="button" className={form.fulfillment === "delivery" ? "choice active" : "choice"} onClick={() => setForm({ ...form, fulfillment: "delivery" })}>Pedir entrega</button>}
+              {fulfillmentMethods.includes("pickup") && <button type="button" disabled={processing} className={form.fulfillment === "pickup" ? "choice active" : "choice"} onClick={() => setForm({ ...form, fulfillment: "pickup" })}>Retirar na loja</button>}
+              {fulfillmentMethods.includes("delivery") && <button type="button" disabled={processing} className={form.fulfillment === "delivery" ? "choice active" : "choice"} onClick={() => setForm({ ...form, fulfillment: "delivery" })}>Pedir entrega</button>}
             </div>
 
-            {form.fulfillment === "delivery" && <Form.Group className="mb-3"><Form.Label>Endereço de entrega</Form.Label><Form.Control as="textarea" rows={3} required value={form.delivery_address} onChange={(e) => setForm({ ...form, delivery_address: e.target.value })} /></Form.Group>}
+            {form.fulfillment === "delivery" && <Form.Group className="mb-3"><Form.Label>Endereço de entrega</Form.Label><Form.Control as="textarea" rows={3} required disabled={processing} value={form.delivery_address} onChange={(e) => setForm({ ...form, delivery_address: e.target.value })} /></Form.Group>}
 
             <div className="choice-grid payment-choices">
-              {paymentMethods.includes("pix") && <button type="button" className={form.payment_method === "pix" ? "choice active" : "choice"} onClick={() => setForm({ ...form, payment_method: "pix" })}><FaQrcode /> Pix</button>}
+              {paymentMethods.includes("pix") && <button type="button" disabled={processing} className={form.payment_method === "pix" ? "choice active" : "choice"} onClick={() => setForm({ ...form, payment_method: "pix" })}><FaQrcode /> Pix</button>}
             </div>
 
             {unsupportedOnlineCard && paymentMethods.includes("pix") && (
               <small className="text-muted d-block mb-3">Cartão online está temporariamente indisponível. Use Pix para concluir a compra com confirmação automática.</small>
             )}
 
-            <Form.Group className="mb-3"><Form.Label>Observações</Form.Label><Form.Control as="textarea" rows={2} value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} /></Form.Group>
+            <Form.Group className="mb-3"><Form.Label>Observações</Form.Label><Form.Control as="textarea" rows={2} disabled={processing} value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} /></Form.Group>
 
             <div className="order-summary"><span>Subtotal <strong>{money(subtotal)}</strong></span>{form.fulfillment === "delivery" && <span>Entrega <strong>{money(deliveryFee)}</strong></span>}<span className="total">Total <strong>{money(total)}</strong></span></div>
             <Button type="submit" className="w-100" disabled={processing || !checkoutReady}>{processing ? <><Spinner size="sm" /> Processando…</> : "Gerar Pix"}</Button>
