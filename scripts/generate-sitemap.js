@@ -6,6 +6,8 @@ const publicUrl = trimTrailingSlash(process.env.REACT_APP_PUBLIC_URL || "https:/
 const apiBaseUrl = trimTrailingSlash(process.env.REACT_APP_API_BASE_URL || "https://api.petertecnet.com.br/api");
 const appSlug = String(process.env.REACT_APP_SLUG || "nexus").trim().toLowerCase();
 const outputPath = path.resolve(__dirname, "../public/sitemap.xml");
+const discoveryAttempts = Math.max(1, Number.parseInt(process.env.SITEMAP_DISCOVERY_ATTEMPTS || "4", 10) || 4);
+const discoveryTimeoutMs = Math.max(1000, Number.parseInt(process.env.SITEMAP_DISCOVERY_TIMEOUT_MS || "10000", 10) || 10000);
 
 const escapeXml = (value) => String(value)
   .replace(/&/g, "&amp;")
@@ -28,9 +30,11 @@ const baseEntries = [
   buildUrlEntry("/register", "monthly", "0.7"),
 ];
 
-async function fetchDiscovery() {
+const sleep = (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds));
+
+async function fetchDiscoveryOnce() {
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 10000);
+  const timeout = setTimeout(() => controller.abort(), discoveryTimeoutMs);
 
   try {
     const url = `${apiBaseUrl}/v1/apps/${encodeURIComponent(appSlug)}/discovery?limit=500`;
@@ -46,10 +50,34 @@ async function fetchDiscovery() {
       throw new Error(`Discovery respondeu HTTP ${response.status}`);
     }
 
-    return response.json();
+    const payload = await response.json();
+    if (!Array.isArray(payload?.establishments) || !Array.isArray(payload?.items)) {
+      throw new Error("Discovery respondeu sem establishments/items indexáveis");
+    }
+
+    return payload;
   } finally {
     clearTimeout(timeout);
   }
+}
+
+async function fetchDiscovery() {
+  let lastError = null;
+
+  for (let attempt = 1; attempt <= discoveryAttempts; attempt += 1) {
+    try {
+      return await fetchDiscoveryOnce();
+    } catch (error) {
+      lastError = error;
+      if (attempt >= discoveryAttempts) break;
+
+      const delayMs = Math.min(4000, 500 * (2 ** (attempt - 1)));
+      console.warn(`[sitemap] Discovery falhou na tentativa ${attempt}/${discoveryAttempts}: ${error.message}. Nova tentativa em ${delayMs}ms.`);
+      await sleep(delayMs);
+    }
+  }
+
+  throw lastError || new Error("Discovery indisponível");
 }
 
 function collectEntries(discovery) {
@@ -62,12 +90,12 @@ function collectEntries(discovery) {
     entries.push(buildUrlEntry(pathname, changefreq, priority));
   };
 
-  for (const establishment of Array.isArray(discovery?.establishments) ? discovery.establishments : []) {
+  for (const establishment of discovery.establishments) {
     const slug = safeSlug(establishment?.slug);
     if (slug) add(`/establishment/view/${slug}`, "weekly", "0.8");
   }
 
-  for (const item of Array.isArray(discovery?.items) ? discovery.items : []) {
+  for (const item of discovery.items) {
     const slug = safeSlug(item?.slug);
     if (slug) add(`/item/view/${slug}`, "weekly", "0.7");
   }
@@ -91,9 +119,11 @@ function writeSitemap(entries) {
 (async () => {
   try {
     const discovery = await fetchDiscovery();
-    writeSitemap(collectEntries(discovery));
+    const entries = collectEntries(discovery);
+    writeSitemap(entries);
+    console.log(`[sitemap] Discovery indexado com ${discovery.establishments.length} estabelecimentos e ${discovery.items.length} itens.`);
   } catch (error) {
-    console.warn(`[sitemap] Discovery indisponível: ${error.message}. Gerando sitemap base sem interromper o build.`);
+    console.warn(`[sitemap] Discovery indisponível após ${discoveryAttempts} tentativa(s): ${error.message}. Gerando sitemap base sem interromper o build.`);
     writeSitemap(baseEntries);
   }
 })();
