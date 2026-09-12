@@ -40,7 +40,10 @@ jobs:
 
           free_kb="$(df -Pk "$deploy_path" | awk 'NR==2 {print $4}')"
           warn_kb=$((5 * 1024 * 1024))
-          min_kb=$((3 * 1024 * 1024))
+          # Frontend compilation happens on the GitHub runner and production receives
+          # only the release artifact. Keep a conservative 2 GiB hard floor while
+          # allowing deploys on this shared VPS when cleanup cannot reach 3 GiB.
+          min_kb=$((2 * 1024 * 1024))
           echo "Nexus VPS free disk before recovery: $((free_kb / 1024)) MiB"
 
           if (( free_kb < warn_kb )); then
@@ -71,7 +74,7 @@ jobs:
           free_kb="$(df -Pk "$deploy_path" | awk 'NR==2 {print $4}')"
           echo "Nexus VPS free disk after recovery: $((free_kb / 1024)) MiB"
           if (( free_kb < min_kb )); then
-            echo 'VPS still has less than 3 GiB free after Nexus-safe cleanup.' >&2
+            echo 'VPS still has less than 2 GiB free after Nexus-safe cleanup.' >&2
             exit 28
           fi
           REMOTE
