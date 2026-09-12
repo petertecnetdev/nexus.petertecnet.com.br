@@ -2,6 +2,8 @@ const CART_KEY = "nexus_commerce_cart_v1";
 const EVENT_NAME = "nexus:cart-changed";
 const OPEN_EVENT_NAME = "nexus:cart-open-requested";
 
+let volatileCart = null;
+
 function normalize(raw) {
   if (!raw || typeof raw !== "object") return null;
   const items = Array.isArray(raw.items) ? raw.items.filter((row) => row?.item?.id && Number(row.quantity) > 0) : [];
@@ -11,16 +13,25 @@ function normalize(raw) {
 
 export function readCart() {
   try {
-    return normalize(JSON.parse(localStorage.getItem(CART_KEY) || "null"));
+    const stored = normalize(JSON.parse(localStorage.getItem(CART_KEY) || "null"));
+    if (stored) volatileCart = stored;
+    return stored || volatileCart;
   } catch {
-    return null;
+    return volatileCart;
   }
 }
 
 function writeCart(cart) {
   const normalized = normalize(cart);
-  if (!normalized) localStorage.removeItem(CART_KEY);
-  else localStorage.setItem(CART_KEY, JSON.stringify(normalized));
+  volatileCart = normalized;
+  try {
+    if (!normalized) localStorage.removeItem(CART_KEY);
+    else localStorage.setItem(CART_KEY, JSON.stringify(normalized));
+  } catch {
+    // Storage may be unavailable in private mode, embedded WebViews or under
+    // browser quota pressure. Keep the current session cart in memory instead
+    // of breaking the purchase funnel.
+  }
   window.dispatchEvent(new Event(EVENT_NAME));
   return normalized;
 }
@@ -30,7 +41,8 @@ export function requestOpenCart() {
 }
 
 export function clearCart() {
-  localStorage.removeItem(CART_KEY);
+  volatileCart = null;
+  try { localStorage.removeItem(CART_KEY); } catch { /* keep checkout usable without persistent storage */ }
   window.dispatchEvent(new Event(EVENT_NAME));
 }
 
