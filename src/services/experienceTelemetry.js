@@ -9,6 +9,7 @@ const allowedTypes = new Set([
   "search",
   "filter",
   "scroll",
+  "system",
   "frontend_error",
   "frontend_checkout_recovery_notification_cta_viewed",
   "frontend_checkout_recovery_notification_cta_clicked",
