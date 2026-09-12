@@ -14,9 +14,13 @@ const money = (value) => Number(value || 0).toLocaleString("pt-BR", { style: "cu
 const PENDING_ORDER_KEY = "nexus_pending_commerce_order";
 const ORDER_ATTEMPT_KEY = "nexus_commerce_order_attempt";
 
+const safeSessionGet = (key) => { try { return sessionStorage.getItem(key); } catch { return null; } };
+const safeSessionSet = (key, value) => { try { sessionStorage.setItem(key, value); return true; } catch { return false; } };
+const safeSessionRemove = (key) => { try { sessionStorage.removeItem(key); } catch { /* session storage is optional */ } };
+
 const readOrderAttempt = () => {
   try {
-    const value = sessionStorage.getItem(ORDER_ATTEMPT_KEY);
+    const value = safeSessionGet(ORDER_ATTEMPT_KEY);
     if (!value) return null;
     const parsed = JSON.parse(value);
     return parsed?.signature && parsed?.idempotencyKey ? parsed : null;
@@ -27,10 +31,10 @@ const readOrderAttempt = () => {
 
 const persistOrderAttempt = (attempt) => {
   if (!attempt) {
-    sessionStorage.removeItem(ORDER_ATTEMPT_KEY);
+    safeSessionRemove(ORDER_ATTEMPT_KEY);
     return;
   }
-  sessionStorage.setItem(ORDER_ATTEMPT_KEY, JSON.stringify(attempt));
+  safeSessionSet(ORDER_ATTEMPT_KEY, JSON.stringify(attempt));
 };
 
 export default function CheckoutPage() {
@@ -54,7 +58,7 @@ export default function CheckoutPage() {
   });
 
   useEffect(() => {
-    const pendingOrder = sessionStorage.getItem(PENDING_ORDER_KEY);
+    const pendingOrder = safeSessionGet(PENDING_ORDER_KEY);
     if (!pendingOrder) return undefined;
 
     let active = true;
@@ -67,12 +71,12 @@ export default function CheckoutPage() {
           persistOrderAttempt(null);
           setCart(readCart());
         }
-        sessionStorage.removeItem(PENDING_ORDER_KEY);
+        safeSessionRemove(PENDING_ORDER_KEY);
         navigate(`/purchase/${encodeURIComponent(pendingOrder)}`, { replace: true });
       })
       .catch(() => {
         if (!active) return;
-        sessionStorage.removeItem(PENDING_ORDER_KEY);
+        safeSessionRemove(PENDING_ORDER_KEY);
         navigate(`/purchase/${encodeURIComponent(pendingOrder)}`, { replace: true });
       });
 
@@ -199,14 +203,14 @@ export default function CheckoutPage() {
 
       orderAttemptRef.current = null;
       persistOrderAttempt(null);
-      sessionStorage.setItem(`nexus_payment_${orderId}`, JSON.stringify(payment || null));
-      sessionStorage.setItem(PENDING_ORDER_KEY, String(orderId));
+      safeSessionSet(`nexus_payment_${orderId}`, JSON.stringify(payment || null));
+      safeSessionSet(PENDING_ORDER_KEY, String(orderId));
 
       clearCart();
       navigate(`/purchase/${encodeURIComponent(orderId)}`, { replace: true });
       window.setTimeout(() => {
-        if (sessionStorage.getItem(PENDING_ORDER_KEY) === String(orderId)) {
-          sessionStorage.removeItem(PENDING_ORDER_KEY);
+        if (safeSessionGet(PENDING_ORDER_KEY) === String(orderId)) {
+          safeSessionRemove(PENDING_ORDER_KEY);
         }
       }, 10000);
     } catch (requestError) {
