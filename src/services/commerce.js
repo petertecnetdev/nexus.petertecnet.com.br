@@ -73,8 +73,14 @@ const isDefinitivePaymentRetryRejection = (error) => {
 };
 
 export async function getCommerceCatalog(slug) {
-  const { data } = await api.get(`${base}/catalog/${encodeURIComponent(slug)}`);
-  return data?.data || null;
+  const { data } = await api.get(`${apiV1BaseUrl}/establishments/${encodeURIComponent(slug)}/ordering`);
+  const payload = data?.data || null;
+  if (!payload) return null;
+
+  return {
+    ...payload,
+    commerce: payload.ordering || payload.commerce || null,
+  };
 }
 
 export async function createCommerceOrder(payload, options = {}) {
