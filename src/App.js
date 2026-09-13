@@ -22,6 +22,7 @@ import SeoManager from "./components/SeoManager";
 import { LoadingContext, LoadingProvider } from "./contexts/LoadingContext";
 import { appId } from "./config";
 import api from "./services/api";
+import { authReturnState, currentAuthReturn } from "./services/authReturn";
 
 // Critical public journey stays in the initial bundle so navigation from discovery
 // to company/catalog/item is immediate. Heavier/private flows are split by route.
@@ -169,10 +170,10 @@ function AppInner() {
 
   const protectedRoute = (element) => user
     ? (user.email_verified_at ? element : <Navigate to="/email-verify" replace />)
-    : <Navigate to="/login" replace />;
+    : <Navigate to="/login" replace state={authReturnState(currentAuthReturn())} />;
   const emailVerifiedRoute = (element) => user
     ? (!user.email_verified_at ? element : <Navigate to="/establishment/my" replace />)
-    : <Navigate to="/login" replace />;
+    : <Navigate to="/login" replace state={authReturnState(currentAuthReturn())} />;
   const restrictedRoute = (element) => user
     ? <Navigate to="/establishment/my" replace />
     : element;

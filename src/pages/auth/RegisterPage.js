@@ -1,16 +1,20 @@
 import React from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 import "./RegisterPage.css";
 
 import GlobalNav from "../../components/GlobalNav";
 import RegisterFormComponent from "../../components/auth/RegisterFormComponent";
+import { authReturnState, sanitizeAuthReturn } from "../../services/authReturn";
 
 export default function RegisterPage() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const from = sanitizeAuthReturn(location?.state?.from);
+  const returnState = authReturnState(from);
 
   const handleSuccess = () => {
-    navigate("/login", { replace: true });
+    navigate("/login", { replace: true, state: returnState });
   };
 
   return (
@@ -29,7 +33,7 @@ export default function RegisterPage() {
 
               <h1 id="register-title" className="rp-title">Criar conta</h1>
               <p className="rp-subtitle">
-                Crie sua conta para cadastrar empresas, itens e compartilhar seus catálogos pela Nexus.
+                Crie sua conta para continuar com segurança na Nexus.
               </p>
             </header>
 
@@ -39,7 +43,7 @@ export default function RegisterPage() {
 
             <footer className="rp-card__footer">
               <span>Já possui uma conta?</span>
-              <button type="button" className="rp-link" onClick={() => navigate("/login")}>
+              <button type="button" className="rp-link" onClick={() => navigate("/login", { state: returnState })}>
                 Entrar
               </button>
             </footer>
