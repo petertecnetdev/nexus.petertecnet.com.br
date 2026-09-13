@@ -1,8 +1,10 @@
 import React, { useState } from "react";
 import { Form, Button } from "react-bootstrap";
 import { GoogleLogin } from "@react-oauth/google";
+import { Link } from "react-router-dom";
 import PropTypes from "prop-types";
 import useLogin from "../../hooks/useLogin";
+import { authReturnState, sanitizeAuthReturn } from "../../services/authReturn";
 import NexusFeedback from "../NexusFeedback";
 import "./LoginFormComponent.css";
 
@@ -16,13 +18,14 @@ export default function LoginFormComponent({
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const safeRedirectTo = sanitizeAuthReturn(redirectTo);
 
   const { login, loginGoogle } = useLogin(
     (token) => {
       setErrorMessage("");
       onSuccess?.(token);
     },
-    redirectTo
+    safeRedirectTo
   );
 
   const handleSubmit = async (event) => {
@@ -118,7 +121,7 @@ export default function LoginFormComponent({
       </div>
 
       <div className="login-links">
-        <a href="/register">Registrar-se</a>
+        <Link to="/register" state={authReturnState(safeRedirectTo)}>Registrar-se</Link>
         <span className="sep">|</span>
         <a href="/password-email">Recuperar senha</a>
       </div>
