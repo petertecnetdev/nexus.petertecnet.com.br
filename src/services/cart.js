@@ -12,7 +12,12 @@ const normalizeQuantity = (value, fallback = 1) => {
 
 function normalize(raw) {
   if (!raw || typeof raw !== "object") return null;
-  const items = Array.isArray(raw.items) ? raw.items.filter((row) => row?.item?.id && Number(row.quantity) > 0) : [];
+  const items = Array.isArray(raw.items)
+    ? raw.items
+      .filter((row) => row?.item?.id)
+      .map((row) => ({ ...row, quantity: normalizeQuantity(row.quantity, 0) }))
+      .filter((row) => row.quantity > 0)
+    : [];
   if (!raw.establishment?.id || !items.length) return null;
   return { establishment: raw.establishment, items };
 }
