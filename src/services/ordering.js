@@ -28,7 +28,7 @@ export async function updateOrderingSettings(establishmentId, payload) {
 
 export function canStartPurchase(ordering) {
   if (!ordering?.available || !Array.isArray(ordering.payment_methods)) return false;
-  // Checkout currently renders only the canonical `pix` identifier. Do not
-  // advertise purchase readiness for aliases/casing the checkout cannot select.
-  return ordering.payment_methods.some((method) => CHECKOUT_PAYMENT_METHODS.has(String(method || "").trim()));
+  // Checkout currently renders only the canonical `pix` identifier. Keep this
+  // guard byte-for-byte aligned with the identifier the checkout can select.
+  return ordering.payment_methods.some((method) => CHECKOUT_PAYMENT_METHODS.has(String(method || "")));
 }
