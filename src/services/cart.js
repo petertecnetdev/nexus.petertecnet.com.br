@@ -4,6 +4,12 @@ const OPEN_EVENT_NAME = "nexus:cart-open-requested";
 
 let volatileCart = null;
 
+const normalizeQuantity = (value, fallback = 1) => {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed)) return fallback;
+  return Math.max(0, Math.min(99, Math.trunc(parsed)));
+};
+
 function normalize(raw) {
   if (!raw || typeof raw !== "object") return null;
   const items = Array.isArray(raw.items) ? raw.items.filter((row) => row?.item?.id && Number(row.quantity) > 0) : [];
@@ -48,12 +54,14 @@ export function clearCart() {
 
 export function addToCart(item, establishment, quantity = 1) {
   if (!item?.id || !establishment?.id) return null;
+  const amount = normalizeQuantity(quantity, 1);
+  if (amount < 1) return readCart();
   const current = readCart();
   const sameEstablishment = current && Number(current.establishment.id) === Number(establishment.id);
   const next = sameEstablishment ? { ...current, items: [...current.items] } : { establishment, items: [] };
   const index = next.items.findIndex((row) => Number(row.item.id) === Number(item.id));
-  if (index >= 0) next.items[index] = { ...next.items[index], quantity: Math.min(99, Number(next.items[index].quantity || 0) + Number(quantity || 1)) };
-  else next.items.push({ item, quantity: Math.min(99, Math.max(1, Number(quantity || 1))) });
+  if (index >= 0) next.items[index] = { ...next.items[index], quantity: Math.min(99, Number(next.items[index].quantity || 0) + amount) };
+  else next.items.push({ item, quantity: amount });
   const updated = writeCart(next);
   requestOpenCart();
   return updated;
@@ -62,7 +70,9 @@ export function addToCart(item, establishment, quantity = 1) {
 export function setCartItemQuantity(itemId, quantity) {
   const current = readCart();
   if (!current) return null;
-  const amount = Math.max(0, Math.min(99, Number(quantity || 0)));
+  const parsed = Number(quantity);
+  if (!Number.isFinite(parsed)) return current;
+  const amount = normalizeQuantity(parsed, 0);
   const items = current.items
     .map((row) => Number(row.item.id) === Number(itemId) ? { ...row, quantity: amount } : row)
     .filter((row) => row.quantity > 0);

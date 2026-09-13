@@ -1,4 +1,4 @@
-import { addToCart, clearCart, readCart, reconcileCartWithCatalog } from "./cart";
+import { addToCart, clearCart, readCart, reconcileCartWithCatalog, setCartItemQuantity } from "./cart";
 
 describe("commerce cart reconciliation", () => {
   const establishment = { id: 10, slug: "loja-teste", name: "Loja Teste" };
@@ -37,5 +37,22 @@ describe("commerce cart reconciliation", () => {
     expect(result.removedCount).toBe(0);
     expect(result.changed).toBe(false);
     expect(result.cart.items).toHaveLength(1);
+  });
+
+  test("does not lose an existing item when quantity input is malformed", () => {
+    addToCart({ id: 1, name: "Produto A", price: 10, status: 1 }, establishment, 2);
+
+    const updated = setCartItemQuantity(1, "not-a-number");
+
+    expect(updated.items).toHaveLength(1);
+    expect(updated.items[0].quantity).toBe(2);
+    expect(readCart().items[0].quantity).toBe(2);
+  });
+
+  test("normalizes malformed add quantities instead of dropping the purchase intent", () => {
+    const updated = addToCart({ id: 1, name: "Produto A", price: 10, status: 1 }, establishment, "not-a-number");
+
+    expect(updated.items).toHaveLength(1);
+    expect(updated.items[0].quantity).toBe(1);
   });
 });
