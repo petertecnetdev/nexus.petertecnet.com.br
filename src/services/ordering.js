@@ -1,6 +1,8 @@
 import api from "./api";
 import { apiV1BaseUrl } from "../config";
 
+const CHECKOUT_PAYMENT_METHODS = new Set(["pix"]);
+
 export async function getPublicOrdering(slug, options = {}) {
   const { data } = await api.get(
     `${apiV1BaseUrl}/establishments/${encodeURIComponent(slug)}/ordering`,
@@ -25,6 +27,6 @@ export async function updateOrderingSettings(establishmentId, payload) {
 }
 
 export function canStartPurchase(ordering) {
-  if (!ordering) return false;
-  return Boolean(ordering.available) && Array.isArray(ordering.payment_methods) && ordering.payment_methods.length > 0;
+  if (!ordering?.available || !Array.isArray(ordering.payment_methods)) return false;
+  return ordering.payment_methods.some((method) => CHECKOUT_PAYMENT_METHODS.has(String(method || "").toLowerCase()));
 }
