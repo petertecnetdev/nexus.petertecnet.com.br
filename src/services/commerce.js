@@ -20,6 +20,23 @@ export const normalizeCommerceOrder = (order) => {
   return order;
 };
 
+export const normalizeCommercePayment = (payment) => {
+  if (!payment) return payment;
+  const rawStatus = payment.payment_status ?? payment.status;
+  const paymentStatus = String(rawStatus || "").trim().toLowerCase();
+  const canonicalStatus = paymentStatus === "approved"
+    ? "paid"
+    : recoverablePaymentStatuses.has(paymentStatus)
+      ? "failed"
+      : paymentStatus;
+  if (!canonicalStatus || canonicalStatus === paymentStatus) return payment;
+  return {
+    ...payment,
+    ...(payment.payment_status != null ? { payment_status: canonicalStatus } : {}),
+    ...(payment.status != null ? { status: canonicalStatus } : {}),
+  };
+};
+
 const fulfillmentCredentialPayload = (credential) => {
   if (credential && typeof credential === "object") {
     return {
@@ -90,7 +107,7 @@ export async function createCommerceOrder(payload, options = {}) {
   const { data } = await api.post(`${apiV1BaseUrl}/orders`, payload, idempotencyConfig(options?.idempotencyKey, "order"));
   const result = data?.data || null;
   if (!result?.order) return result;
-  return { ...result, order: normalizeCommerceOrder(result.order) };
+  return { ...result, order: normalizeCommerceOrder(result.order), payment: normalizeCommercePayment(result.payment) };
 }
 
 export async function retryCommercePayment(orderId, paymentMethod, options = {}) {
@@ -102,10 +119,10 @@ export async function retryCommercePayment(orderId, paymentMethod, options = {})
       : `${base}/orders/${encodeURIComponent(orderId)}/payment`;
     const { data } = await api.post(endpoint, { payment_method: paymentMethod }, idempotencyConfig(idempotencyKey, `payment:${orderId}`));
     if (managedKey) clearPaymentRetryIdempotencyKey(orderId, paymentMethod);
-    if (paymentMethod === "pix") return { order: null, payment: data?.data || null };
+    if (paymentMethod === "pix") return { order: null, payment: normalizeCommercePayment(data?.data || null) };
     const result = data?.data || null;
     if (!result?.order) return result;
-    return { ...result, order: normalizeCommerceOrder(result.order) };
+    return { ...result, order: normalizeCommerceOrder(result.order), payment: normalizeCommercePayment(result.payment) };
   } catch (error) {
     if (managedKey && isDefinitivePaymentRetryRejection(error)) clearPaymentRetryIdempotencyKey(orderId, paymentMethod);
     throw error;
@@ -131,7 +148,7 @@ export async function getCommercePayment(orderId, options = {}) {
     api.get(`${apiV1BaseUrl}/me/orders/${encodeURIComponent(orderId)}/payment`, config),
     api.get(`${apiV1BaseUrl}/me/orders/${encodeURIComponent(orderId)}`, config),
   ]);
-  return { order: normalizeCommerceOrder(orderResponse?.data || null), payment: paymentResponse?.data || null };
+  return { order: normalizeCommerceOrder(orderResponse?.data || null), payment: normalizeCommercePayment(paymentResponse?.data || null) };
 }
 
 export async function getCommerceFulfillmentCredential(orderId, options = {}) {
