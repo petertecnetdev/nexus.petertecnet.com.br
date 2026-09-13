@@ -40,10 +40,10 @@ jobs:
 
           free_kb="$(df -Pk "$deploy_path" | awk 'NR==2 {print $4}')"
           warn_kb=$((5 * 1024 * 1024))
-          # Frontend compilation happens on the GitHub runner and production receives
-          # only the release artifact. Keep a conservative 2 GiB hard floor while
-          # allowing deploys on this shared VPS when cleanup cannot reach 3 GiB.
-          min_kb=$((2 * 1024 * 1024))
+          # Keep this hard floor aligned with the shared Peter Tecnet deploy contract.
+          # Falling below 3 GiB can put databases, queues, logs and payment-critical API
+          # writes at risk on the shared VPS, so Nexus must recover capacity first.
+          min_kb=$((3 * 1024 * 1024))
           echo "Nexus VPS free disk before recovery: $((free_kb / 1024)) MiB"
 
           if (( free_kb < warn_kb )); then
@@ -53,6 +53,34 @@ jobs:
               echo 'Removing regenerable Nexus node_modules from production checkout.'
               rm -rf "$deploy_path/node_modules" 2>/dev/null || sudo -n rm -rf "$deploy_path/node_modules"
             fi
+
+            # Mirror the shared deploy's safe capacity recovery before enforcing the same
+            # 3 GiB floor. Only stale dependency trees from non-production /var/www
+            # workspaces are eligible; source, Git history, live apps and uploads remain intact.
+            while IFS= read -r -d '' dependency_dir; do
+              workspace="$(dirname "$dependency_dir")"
+              workspace_name="$(basename "$workspace")"
+
+              [[ "$(dirname "$workspace")" == '/var/www' ]] || continue
+              [[ "$workspace" != "$deploy_path" ]] || continue
+              [[ ! -e "$workspace/.keep-dependencies" ]] || continue
+              case "$workspace_name" in
+                *.petertecnet.com.br|html|_deploy-quarantine) continue ;;
+              esac
+
+              recent_source="$(find "$workspace" -mindepth 1 -maxdepth 4 \
+                -path "$dependency_dir" -prune -o \
+                -path "$workspace/.git" -prune -o \
+                -type f -mmin -1440 -print -quit 2>/dev/null || true)"
+              [[ -z "$recent_source" ]] || continue
+
+              dependency_kb="$(du -sk "$dependency_dir" 2>/dev/null | awk '{print $1}' || true)"
+              echo "Reclaiming regenerable stale dependencies: $dependency_dir (${dependency_kb:-0} KiB)"
+              if ! rm -rf "$dependency_dir" 2>/dev/null; then
+                sudo -n rm -rf "$dependency_dir" 2>/dev/null || echo "Could not remove $dependency_dir; leaving it untouched."
+              fi
+            done < <(find /var/www -mindepth 2 -maxdepth 2 -type d \
+              \( -name node_modules -o -name vendor \) -mmin +1440 -print0 2>/dev/null)
 
             # Remove only interrupted atomic-release artifacts owned by this frontend.
             find "$deploy_path" -maxdepth 1 -type d \
@@ -74,7 +102,7 @@ jobs:
           free_kb="$(df -Pk "$deploy_path" | awk 'NR==2 {print $4}')"
           echo "Nexus VPS free disk after recovery: $((free_kb / 1024)) MiB"
           if (( free_kb < min_kb )); then
-            echo 'VPS still has less than 2 GiB free after Nexus-safe cleanup.' >&2
+            echo 'VPS still has less than 3 GiB free after Nexus-safe cleanup.' >&2
             exit 28
           fi
           REMOTE
