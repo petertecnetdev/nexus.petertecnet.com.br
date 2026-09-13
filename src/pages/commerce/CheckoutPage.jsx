@@ -9,6 +9,7 @@ import { createCommerceIdempotencyKey, createCommerceOrder, getCommerceCatalog, 
 import { clearCart, readCart, reconcileCartWithCatalog, setCartItemQuantity } from "../../services/cart";
 import { getFromApiV1 } from "../../services/apiV1";
 import { getAcquisitionAttribution, trackExperienceEvent } from "../../services/experienceTelemetry";
+import { isConfirmedPaymentStatus } from "./paymentRecovery";
 import "./Commerce.css";
 
 const money = (value) => Number(value || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
@@ -67,8 +68,7 @@ export default function CheckoutPage() {
     getCommerceOrder(pendingOrder, { background: true, silent: true })
       .then((order) => {
         if (!active) return;
-        const status = String(order?.payment_status || "").toLowerCase();
-        if (status === "paid") {
+        if (isConfirmedPaymentStatus(order?.payment_status)) {
           clearCart();
           persistOrderAttempt(null);
           setCart(readCart());
@@ -243,7 +243,9 @@ export default function CheckoutPage() {
       safeSessionSet(`nexus_payment_${orderId}`, JSON.stringify(payment || null));
       safeSessionSet(PENDING_ORDER_KEY, String(orderId));
 
-      clearCart();
+      if (isConfirmedPaymentStatus(payment?.status || order?.payment_status)) {
+        clearCart();
+      }
       navigate(`/purchase/${encodeURIComponent(orderId)}`, { replace: true });
       window.setTimeout(() => {
         if (safeSessionGet(PENDING_ORDER_KEY) === String(orderId)) {
