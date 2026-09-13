@@ -55,4 +55,21 @@ describe("commerce cart reconciliation", () => {
     expect(updated.items).toHaveLength(1);
     expect(updated.items[0].quantity).toBe(1);
   });
+
+  test("sanitizes persisted quantities before they reach checkout totals", () => {
+    localStorage.setItem("nexus_commerce_cart_v1", JSON.stringify({
+      establishment,
+      items: [
+        { item: { id: 1, name: "Produto A", price: 10, status: 1 }, quantity: 100000 },
+        { item: { id: 2, name: "Produto B", price: 20, status: 1 }, quantity: 2.9 },
+        { item: { id: 3, name: "Produto C", price: 30, status: 1 }, quantity: "invalid" },
+      ],
+    }));
+
+    const restored = readCart();
+
+    expect(restored.items).toHaveLength(2);
+    expect(restored.items[0].quantity).toBe(99);
+    expect(restored.items[1].quantity).toBe(2);
+  });
 });
