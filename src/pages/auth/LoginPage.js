@@ -4,6 +4,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import GlobalNav from "../../components/GlobalNav";
 import LoginFormComponent from "../../components/auth/LoginFormComponent";
 import ProcessingIndicatorComponent from "../../components/ProcessingIndicatorComponent";
+import { sanitizeAuthReturn } from "../../services/authReturn";
 
 import "./LoginPage.css";
 
@@ -12,7 +13,7 @@ export default function LoginPage() {
   const location = useLocation();
   const [processing, setProcessing] = useState(false);
 
-  const from = location?.state?.from?.pathname || "/establishment/my";
+  const from = sanitizeAuthReturn(location?.state?.from);
 
   const handleSuccess = () => {
     setProcessing(false);
@@ -23,7 +24,7 @@ export default function LoginPage() {
     <>
       {processing && (
         <ProcessingIndicatorComponent
-          messages={["Entrando na Nexus…", "Carregando seus catálogos…"]}
+          messages={["Entrando na Nexus…", "Retomando o que você estava fazendo…"]}
         />
       )}
 
@@ -41,7 +42,7 @@ export default function LoginPage() {
 
               <h1 id="login-title" className="lp-title">Bem-vindo à Nexus</h1>
               <p className="lp-subtitle">
-                Acesse sua conta para gerenciar empresas, itens e seus catálogos online.
+                Acesse sua conta para continuar com segurança.
               </p>
             </header>
 
