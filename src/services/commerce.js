@@ -12,9 +12,12 @@ const requestConfig = (options = {}) => {
   return config;
 };
 
-const normalizeRecoverableOrder = (order) => {
-  if (!order || !recoverablePaymentStatuses.has(String(order.payment_status || "").toLowerCase())) return order;
-  return { ...order, payment_status: "failed" };
+export const normalizeCommerceOrder = (order) => {
+  if (!order) return order;
+  const paymentStatus = String(order.payment_status || "").trim().toLowerCase();
+  if (paymentStatus === "approved") return { ...order, payment_status: "paid" };
+  if (recoverablePaymentStatuses.has(paymentStatus)) return { ...order, payment_status: "failed" };
+  return order;
 };
 
 const fulfillmentCredentialPayload = (credential) => {
@@ -85,7 +88,9 @@ export async function getCommerceCatalog(slug) {
 
 export async function createCommerceOrder(payload, options = {}) {
   const { data } = await api.post(`${apiV1BaseUrl}/orders`, payload, idempotencyConfig(options?.idempotencyKey, "order"));
-  return data?.data || null;
+  const result = data?.data || null;
+  if (!result?.order) return result;
+  return { ...result, order: normalizeCommerceOrder(result.order) };
 }
 
 export async function retryCommercePayment(orderId, paymentMethod, options = {}) {
@@ -98,7 +103,9 @@ export async function retryCommercePayment(orderId, paymentMethod, options = {})
     const { data } = await api.post(endpoint, { payment_method: paymentMethod }, idempotencyConfig(idempotencyKey, `payment:${orderId}`));
     if (managedKey) clearPaymentRetryIdempotencyKey(orderId, paymentMethod);
     if (paymentMethod === "pix") return { order: null, payment: data?.data || null };
-    return data?.data || null;
+    const result = data?.data || null;
+    if (!result?.order) return result;
+    return { ...result, order: normalizeCommerceOrder(result.order) };
   } catch (error) {
     if (managedKey && isDefinitivePaymentRetryRejection(error)) clearPaymentRetryIdempotencyKey(orderId, paymentMethod);
     throw error;
@@ -107,12 +114,15 @@ export async function retryCommercePayment(orderId, paymentMethod, options = {})
 
 export async function getMyCommerceOrders(params = {}) {
   const { data } = await api.get(`${apiV1BaseUrl}/me/orders`, { params });
-  return data?.data || null;
+  const payload = data?.data || null;
+  if (Array.isArray(payload)) return payload.map(normalizeCommerceOrder);
+  if (Array.isArray(payload?.data)) return { ...payload, data: payload.data.map(normalizeCommerceOrder) };
+  return payload;
 }
 
 export async function getCommerceOrder(orderId, options = {}) {
   const { data } = await api.get(`${apiV1BaseUrl}/me/orders/${encodeURIComponent(orderId)}`, requestConfig(options));
-  return normalizeRecoverableOrder(data?.data || null);
+  return normalizeCommerceOrder(data?.data || null);
 }
 
 export async function getCommercePayment(orderId, options = {}) {
@@ -121,7 +131,7 @@ export async function getCommercePayment(orderId, options = {}) {
     api.get(`${apiV1BaseUrl}/me/orders/${encodeURIComponent(orderId)}/payment`, config),
     api.get(`${apiV1BaseUrl}/me/orders/${encodeURIComponent(orderId)}`, config),
   ]);
-  return { order: normalizeRecoverableOrder(orderResponse?.data || null), payment: paymentResponse?.data || null };
+  return { order: normalizeCommerceOrder(orderResponse?.data || null), payment: paymentResponse?.data || null };
 }
 
 export async function getCommerceFulfillmentCredential(orderId, options = {}) {
@@ -131,17 +141,20 @@ export async function getCommerceFulfillmentCredential(orderId, options = {}) {
 
 export async function getEstablishmentCommerceOrders(establishmentId, params = {}) {
   const { data } = await api.get(`${apiV1BaseUrl}/establishments/${establishmentId}/orders`, { params });
-  return data?.data || null;
+  const payload = data?.data || null;
+  if (Array.isArray(payload)) return payload.map(normalizeCommerceOrder);
+  if (Array.isArray(payload?.data)) return { ...payload, data: payload.data.map(normalizeCommerceOrder) };
+  return payload;
 }
 
 export async function updateCommerceOrderStatus(orderId, status) {
   const { data } = await api.patch(`${apiV1BaseUrl}/orders/${encodeURIComponent(orderId)}/status`, { status });
-  return data?.data || null;
+  return normalizeCommerceOrder(data?.data || null);
 }
 
 export async function updateCommerceFulfillmentStatus(orderId, status) {
   const { data } = await api.patch(`${apiV1BaseUrl}/orders/${encodeURIComponent(orderId)}/fulfillment/status`, { status });
-  return data?.data || null;
+  return normalizeCommerceOrder(data?.data || null);
 }
 
 export async function getCommerceFulfillmentEvents(orderId, params = {}) {
