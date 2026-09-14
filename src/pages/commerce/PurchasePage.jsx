@@ -119,6 +119,7 @@ export default function PurchasePage() {
   }, [order, publicId]);
 
   const paymentStatus = String(order?.payment_status || "").toLowerCase();
+  const paymentFailed = ["failed", "rejected", "cancelled", "canceled"].includes(paymentStatus);
   const fulfillmentComplete = isFulfillmentComplete(order?.fulfillment_status);
 
   useEffect(() => {
@@ -207,17 +208,19 @@ export default function PurchasePage() {
     } finally { setRetrying(false); }
   };
 
-  const heading = !isPaid
-    ? "Aguardando pagamento"
-    : stage === 1
-      ? "Pagamento aprovado"
-      : stage === 2
-        ? (isDelivery ? "Pedido pronto para entrega" : "Pedido pronto para retirada")
-        : (isDelivery ? "Entrega concluída" : "Retirada concluída");
+  const heading = paymentFailed
+    ? "Pagamento não concluído"
+    : !isPaid
+      ? "Aguardando pagamento"
+      : stage === 1
+        ? "Pagamento aprovado"
+        : stage === 2
+          ? (isDelivery ? "Pedido pronto para entrega" : "Pedido pronto para retirada")
+          : (isDelivery ? "Entrega concluída" : "Retirada concluída");
 
   const steps = [
-    { label: "Pagamento", detail: isPaid ? "Confirmado" : "Pendente" },
-    { label: "Preparando", detail: stage >= 2 ? "Concluído" : "Em andamento" },
+    { label: "Pagamento", detail: paymentFailed ? "Tente novamente" : isPaid ? "Confirmado" : "Pendente" },
+    { label: "Preparando", detail: isPaid ? (stage >= 2 ? "Concluído" : "Em andamento") : "Aguardando pagamento" },
     { label: "Pronto", detail: stage >= 3 ? "Concluído" : stage === 2 ? "Liberado" : "Aguardando" },
     { label: isDelivery ? "Recebido" : "Retirado", detail: stage === 3 ? "Concluído" : "Aguardando" },
   ];
@@ -256,14 +259,16 @@ export default function PurchasePage() {
             {isPaid ? <FaCheckCircle size={28} /> : <FaClock size={28} />}
             <div>
               <strong>{!isPaid
-                ? (order?.payment_status === "failed" ? "Pagamento não concluído" : "Pagamento pendente")
+                ? (paymentFailed ? "Pagamento não concluído" : "Pagamento pendente")
                 : stage === 1
                   ? "Pagamento confirmado. O estabelecimento está preparando seu pedido."
                   : stage === 2
                     ? "Seu pedido está pronto. Use o comprovante de retirada/entrega abaixo."
                     : "Pedido concluído com sucesso."}</strong>
               <small>{!isPaid
-                ? "A confirmação acontece automaticamente, sem recarregar a página."
+                ? (paymentFailed
+                  ? "Escolha Pix ou cartão abaixo para tentar novamente sem refazer o pedido."
+                  : "A confirmação acontece automaticamente, sem recarregar a página.")
                 : stage === 1
                   ? "O QR de pagamento já foi encerrado. O comprovante de retirada só será liberado quando o pedido estiver pronto."
                   : stage === 2
@@ -348,8 +353,8 @@ export default function PurchasePage() {
           )}
 
           <div className="commerce-actions">
-            {!isPaid && payment?.method === "card" && payment?.checkout_url && <Button onClick={() => window.location.assign(payment.checkout_url)}><FaCreditCard /> Continuar pagamento</Button>}
-            {order?.payment_status === "failed" && <><Button disabled={retrying} onClick={() => retry("pix")}><FaQrcode /> Tentar Pix</Button><Button variant="outline-light" disabled={retrying} onClick={() => retry("card")}><FaCreditCard /> Tentar cartão</Button></>}
+            {!isPaid && !paymentFailed && payment?.method === "card" && payment?.checkout_url && <Button onClick={() => window.location.assign(payment.checkout_url)}><FaCreditCard /> Continuar pagamento</Button>}
+            {paymentFailed && <><Button disabled={retrying} onClick={() => retry("pix")}><FaQrcode /> Tentar Pix novamente</Button><Button variant="outline-light" disabled={retrying} onClick={() => retry("card")}><FaCreditCard /> Tentar cartão novamente</Button></>}
             <Button variant="outline-light" onClick={() => navigate("/purchases")}>Minhas compras</Button>
             {order?.establishment?.slug && <Button variant="outline-info" onClick={() => navigate(`/catalog/${order.establishment.slug}`)}>Voltar ao catálogo</Button>}
           </div>
