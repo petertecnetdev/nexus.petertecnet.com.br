@@ -13,5 +13,11 @@ Disallow: /establishment/item/
 Disallow: /item/create/
 Disallow: /item/update/
 Disallow: /dashboard
+Disallow: /checkout
+Disallow: /purchase/
+Disallow: /purchases
+Disallow: /orders/
+Disallow: /redeem/
+Disallow: /invite-complete
 
 Sitemap: https://nexus.petertecnet.com.br/sitemap.xml
