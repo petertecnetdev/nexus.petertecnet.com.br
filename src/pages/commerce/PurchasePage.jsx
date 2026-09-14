@@ -134,15 +134,24 @@ export default function PurchasePage() {
     let active = true;
     let timer = null;
 
+    const refreshOnReturn = () => {
+      if (!active || document.visibilityState !== "visible") return;
+      refresh({ background: true });
+    };
+
     const poll = async () => {
       if (!active) return;
       if (document.visibilityState === "visible") await refresh({ background: true });
       if (active) timer = window.setTimeout(poll, 4000);
     };
 
+    document.addEventListener("visibilitychange", refreshOnReturn);
+    window.addEventListener("focus", refreshOnReturn);
     timer = window.setTimeout(poll, 4000);
     return () => {
       active = false;
+      document.removeEventListener("visibilitychange", refreshOnReturn);
+      window.removeEventListener("focus", refreshOnReturn);
       if (timer) window.clearTimeout(timer);
     };
   }, [order, paymentStatus, fulfillmentComplete, refresh]);
