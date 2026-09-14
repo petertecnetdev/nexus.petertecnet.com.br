@@ -26,9 +26,10 @@ const buildUrlEntry = (pathname, changefreq, priority) => (
   `  <url><loc>${escapeXml(`${publicUrl}${pathname}`)}</loc><changefreq>${changefreq}</changefreq><priority>${priority}</priority></url>`
 );
 
+// Keep only indexable public acquisition surfaces in the sitemap. Auth/private
+// routes such as /register intentionally stay out because SeoManager marks them noindex.
 const baseEntries = [
   buildUrlEntry("/", "daily", "1.0"),
-  buildUrlEntry("/register", "monthly", "0.7"),
 ];
 
 const sleep = (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds));
@@ -83,7 +84,7 @@ async function fetchDiscovery() {
 
 function collectEntries(discovery) {
   const entries = [...baseEntries];
-  const seen = new Set(["/", "/register"]);
+  const seen = new Set(["/"]);
 
   const add = (pathname, changefreq, priority) => {
     if (!pathname || seen.has(pathname)) return;
@@ -93,12 +94,17 @@ function collectEntries(discovery) {
 
   for (const establishment of discovery.establishments) {
     const slug = safeSlug(establishment?.slug);
-    if (slug) add(`/establishment/view/${slug}`, "weekly", "0.8");
+    if (!slug) continue;
+
+    // Company pages support discovery; catalog pages are the highest-intent
+    // public surface because they lead directly to item selection and checkout.
+    add(`/establishment/view/${slug}`, "weekly", "0.8");
+    add(`/catalog/${slug}`, "daily", "0.9");
   }
 
   for (const item of discovery.items) {
     const slug = safeSlug(item?.slug);
-    if (slug) add(`/item/view/${slug}`, "weekly", "0.7");
+    if (slug) add(`/item/view/${slug}`, "weekly", "0.8");
   }
 
   return entries;
