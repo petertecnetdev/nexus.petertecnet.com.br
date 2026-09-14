@@ -9,6 +9,7 @@ const outputPath = path.resolve(__dirname, "../public/sitemap.xml");
 const discoveryAttempts = Math.max(1, Number.parseInt(process.env.SITEMAP_DISCOVERY_ATTEMPTS || "4", 10) || 4);
 const discoveryTimeoutMs = Math.max(1000, Number.parseInt(process.env.SITEMAP_DISCOVERY_TIMEOUT_MS || "10000", 10) || 10000);
 const discoveryLimit = Math.min(100, Math.max(1, Number.parseInt(process.env.SITEMAP_DISCOVERY_LIMIT || "100", 10) || 100));
+const discoveryConcurrency = Math.min(8, Math.max(1, Number.parseInt(process.env.SITEMAP_DISCOVERY_CONCURRENCY || "4", 10) || 4));
 
 const escapeXml = (value) => String(value)
   .replace(/&/g, "&amp;")
@@ -34,12 +35,16 @@ const baseEntries = [
 
 const sleep = (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds));
 
-async function fetchDiscoveryOnce() {
+async function fetchDiscoveryOnce(filters = {}) {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), discoveryTimeoutMs);
 
   try {
-    const url = `${apiBaseUrl}/v1/apps/${encodeURIComponent(appSlug)}/discovery?limit=${discoveryLimit}`;
+    const params = new URLSearchParams({ limit: String(discoveryLimit) });
+    if (filters.target_city) params.set("target_city", filters.target_city);
+    if (filters.target_uf) params.set("target_uf", filters.target_uf);
+
+    const url = `${apiBaseUrl}/v1/apps/${encodeURIComponent(appSlug)}/discovery?${params.toString()}`;
     const response = await fetch(url, {
       headers: {
         Accept: "application/json",
@@ -63,12 +68,12 @@ async function fetchDiscoveryOnce() {
   }
 }
 
-async function fetchDiscovery() {
+async function fetchDiscovery(filters = {}) {
   let lastError = null;
 
   for (let attempt = 1; attempt <= discoveryAttempts; attempt += 1) {
     try {
-      return await fetchDiscoveryOnce();
+      return await fetchDiscoveryOnce(filters);
     } catch (error) {
       lastError = error;
       if (attempt >= discoveryAttempts) break;
@@ -80,6 +85,53 @@ async function fetchDiscovery() {
   }
 
   throw lastError || new Error("Discovery indisponível");
+}
+
+const resourceKey = (resource) => String(resource?.id || resource?.slug || "").trim();
+
+function mergeResources(target, resources) {
+  for (const resource of resources || []) {
+    const key = resourceKey(resource);
+    if (key && !target.has(key)) target.set(key, resource);
+  }
+}
+
+async function fetchDiscoveryAcrossLocations() {
+  const initial = await fetchDiscovery();
+  const establishments = new Map();
+  const items = new Map();
+  mergeResources(establishments, initial.establishments);
+  mergeResources(items, initial.items);
+
+  const locations = Array.isArray(initial.locations)
+    ? initial.locations.filter((location) => location?.city && location?.uf)
+    : [];
+
+  let cursor = 0;
+  const workers = Array.from({ length: Math.min(discoveryConcurrency, locations.length) }, async () => {
+    while (cursor < locations.length) {
+      const location = locations[cursor];
+      cursor += 1;
+
+      try {
+        const scoped = await fetchDiscovery({ target_city: location.city, target_uf: location.uf });
+        mergeResources(establishments, scoped.establishments);
+        mergeResources(items, scoped.items);
+      } catch (error) {
+        // A single location must not erase the rest of the sitemap. Keep the
+        // successful discovery set and surface the incomplete scope in build logs.
+        console.warn(`[sitemap] Falha ao indexar ${location.city}/${location.uf}: ${error.message}`);
+      }
+    }
+  });
+
+  await Promise.all(workers);
+
+  return {
+    ...initial,
+    establishments: [...establishments.values()],
+    items: [...items.values()],
+  };
 }
 
 function collectEntries(discovery) {
@@ -125,10 +177,10 @@ function writeSitemap(entries) {
 
 (async () => {
   try {
-    const discovery = await fetchDiscovery();
+    const discovery = await fetchDiscoveryAcrossLocations();
     const entries = collectEntries(discovery);
     writeSitemap(entries);
-    console.log(`[sitemap] Discovery indexado com ${discovery.establishments.length} estabelecimentos e ${discovery.items.length} itens.`);
+    console.log(`[sitemap] Discovery indexado com ${discovery.establishments.length} estabelecimentos e ${discovery.items.length} itens em ${discovery.locations?.length || 0} localidades.`);
   } catch (error) {
     console.warn(`[sitemap] Discovery indisponível após ${discoveryAttempts} tentativa(s): ${error.message}. Gerando sitemap base sem interromper o build.`);
     writeSitemap(baseEntries);
