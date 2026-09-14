@@ -10,6 +10,7 @@ const discoveryAttempts = Math.max(1, Number.parseInt(process.env.SITEMAP_DISCOV
 const discoveryTimeoutMs = Math.max(1000, Number.parseInt(process.env.SITEMAP_DISCOVERY_TIMEOUT_MS || "10000", 10) || 10000);
 const discoveryLimit = Math.min(100, Math.max(1, Number.parseInt(process.env.SITEMAP_DISCOVERY_LIMIT || "100", 10) || 100));
 const discoveryConcurrency = Math.min(8, Math.max(1, Number.parseInt(process.env.SITEMAP_DISCOVERY_CONCURRENCY || "4", 10) || 4));
+const discoveryMaxPages = Math.min(1000, Math.max(1, Number.parseInt(process.env.SITEMAP_DISCOVERY_MAX_PAGES || "100", 10) || 100));
 
 const escapeXml = (value) => String(value)
   .replace(/&/g, "&amp;")
@@ -43,6 +44,7 @@ async function fetchDiscoveryOnce(filters = {}) {
     const params = new URLSearchParams({ limit: String(discoveryLimit) });
     if (filters.target_city) params.set("target_city", filters.target_city);
     if (filters.target_uf) params.set("target_uf", filters.target_uf);
+    if (Number.isInteger(filters.offset) && filters.offset > 0) params.set("offset", String(filters.offset));
 
     const url = `${apiBaseUrl}/v1/apps/${encodeURIComponent(appSlug)}/discovery?${params.toString()}`;
     const response = await fetch(url, {
@@ -96,6 +98,28 @@ function mergeResources(target, resources) {
   }
 }
 
+async function fetchDiscoveryPages(filters, establishments, items) {
+  let offset = 0;
+  const seenOffsets = new Set();
+
+  for (let page = 0; page < discoveryMaxPages; page += 1) {
+    if (seenOffsets.has(offset)) break;
+    seenOffsets.add(offset);
+
+    const payload = await fetchDiscovery({ ...filters, offset });
+    mergeResources(establishments, payload.establishments);
+    mergeResources(items, payload.items);
+
+    // Backward compatible with API versions that predate pagination metadata:
+    // one successful page is still indexed and no duplicate requests are made.
+    const pagination = payload?.pagination;
+    if (!pagination?.has_more || !Number.isInteger(pagination?.next_offset)) break;
+    if (pagination.next_offset <= offset) break;
+
+    offset = pagination.next_offset;
+  }
+}
+
 async function fetchDiscoveryAcrossLocations() {
   const initial = await fetchDiscovery();
   const establishments = new Map();
@@ -114,9 +138,11 @@ async function fetchDiscoveryAcrossLocations() {
       cursor += 1;
 
       try {
-        const scoped = await fetchDiscovery({ target_city: location.city, target_uf: location.uf });
-        mergeResources(establishments, scoped.establishments);
-        mergeResources(items, scoped.items);
+        await fetchDiscoveryPages(
+          { target_city: location.city, target_uf: location.uf },
+          establishments,
+          items,
+        );
       } catch (error) {
         // A single location must not erase the rest of the sitemap. Keep the
         // successful discovery set and surface the incomplete scope in build logs.
