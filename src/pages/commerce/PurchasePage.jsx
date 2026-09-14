@@ -20,6 +20,7 @@ import {
   retryCommercePayment,
 } from "../../services/commerce";
 import { getSessionStorageItem, setSessionStorageItem } from "../../utils/sessionStorageSafe";
+import { isTerminalPaymentStatus } from "./paymentRecovery";
 import {
   getPurchaseQrPurpose,
   getPurchaseStage,
@@ -125,10 +126,9 @@ export default function PurchasePage() {
   useEffect(() => {
     if (!order) return undefined;
 
-    const terminalPayments = ["refunded", "failed", "cancelled", "canceled"];
     const shouldKeepPolling = paymentStatus === "paid"
       ? !fulfillmentComplete && order?.fulfillment_status !== "blocked"
-      : !terminalPayments.includes(paymentStatus);
+      : !isTerminalPaymentStatus(paymentStatus);
 
     if (!shouldKeepPolling) return undefined;
 
@@ -217,7 +217,6 @@ export default function PurchasePage() {
         : stage === 2
           ? (isDelivery ? "Pedido pronto para entrega" : "Pedido pronto para retirada")
           : (isDelivery ? "Entrega concluída" : "Retirada concluída");
-
   const steps = [
     { label: "Pagamento", detail: paymentFailed ? "Tente novamente" : isPaid ? "Confirmado" : "Pendente" },
     { label: "Preparando", detail: isPaid ? (stage >= 2 ? "Concluído" : "Em andamento") : "Aguardando pagamento" },
