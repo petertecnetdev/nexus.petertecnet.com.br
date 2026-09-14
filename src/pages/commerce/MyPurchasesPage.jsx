@@ -97,6 +97,7 @@ export default function MyPurchasesPage() {
           order_id: order.id,
           payment_status: order.payment_status,
           payment_method: order.payment_method,
+          amount: order.total_price,
           order_total: order.total_price,
         }
       );
