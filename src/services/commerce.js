@@ -119,7 +119,16 @@ export async function retryCommercePayment(orderId, paymentMethod, options = {})
       : `${base}/orders/${encodeURIComponent(orderId)}/payment`;
     const { data } = await api.post(endpoint, { payment_method: paymentMethod }, idempotencyConfig(idempotencyKey, `payment:${orderId}`));
     if (managedKey) clearPaymentRetryIdempotencyKey(orderId, paymentMethod);
-    if (paymentMethod === "pix") return { order: null, payment: normalizeCommercePayment(data?.data || null) };
+    if (paymentMethod === "pix") {
+      const { data: orderResponse } = await api.get(
+        `${apiV1BaseUrl}/me/orders/${encodeURIComponent(orderId)}`,
+        requestConfig({ background: true, silent: true }),
+      );
+      return {
+        order: normalizeCommerceOrder(orderResponse?.data || null),
+        payment: normalizeCommercePayment(data?.data || null),
+      };
+    }
     const result = data?.data || null;
     if (!result?.order) return result;
     return { ...result, order: normalizeCommerceOrder(result.order), payment: normalizeCommercePayment(result.payment) };

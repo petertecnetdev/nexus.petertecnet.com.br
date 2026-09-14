@@ -51,6 +51,7 @@ describe("commerce order contracts", () => {
     api.post
       .mockRejectedValueOnce({ response: { status: 502 } })
       .mockResolvedValueOnce({ data: { data: { status: "pending" } } });
+    api.get.mockResolvedValueOnce({ data: { data: { id: "payment-123", payment_status: "pending" } } });
 
     await expect(retryCommercePayment("payment-123", "pix")).rejects.toEqual({ response: { status: 502 } });
     const firstKey = api.post.mock.calls[0][2].headers["Idempotency-Key"];
@@ -64,6 +65,7 @@ describe("commerce order contracts", () => {
 
   it("routes Pix payment retries through the canonical generic order payment contract", async () => {
     api.post.mockResolvedValueOnce({ data: { data: { status: "pending" } } });
+    api.get.mockResolvedValueOnce({ data: { data: { id: "order-123", payment_status: "pending" } } });
 
     const result = await retryCommercePayment("order-123", "pix", { idempotencyKey: "pix-retry-key" });
 
@@ -72,8 +74,15 @@ describe("commerce order contracts", () => {
       { payment_method: "pix" },
       { headers: { "Idempotency-Key": "pix-retry-key" } }
     );
+    expect(api.get).toHaveBeenCalledWith(
+      "https://api.example.test/api/v1/apps/nexus/me/orders/order-123",
+      { metadata: { background: true }, skipGlobalLoading: true }
+    );
     expect(api.post.mock.calls[0][0]).not.toContain("/commerce/orders/");
-    expect(result).toEqual({ order: null, payment: { status: "pending" } });
+    expect(result).toEqual({
+      order: { id: "order-123", payment_status: "pending" },
+      payment: { status: "pending" },
+    });
   });
 
   it("uses the canonical generic establishment order route", async () => {
