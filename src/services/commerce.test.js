@@ -76,7 +76,7 @@ describe("commerce order contracts", () => {
     );
     expect(api.get).toHaveBeenCalledWith(
       "https://api.example.test/api/v1/apps/nexus/me/orders/order-123",
-      { background: true, silent: true }
+      { metadata: { background: true }, skipGlobalLoading: true }
     );
     expect(api.post.mock.calls[0][0]).not.toContain("/commerce/orders/");
     expect(result).toEqual({
