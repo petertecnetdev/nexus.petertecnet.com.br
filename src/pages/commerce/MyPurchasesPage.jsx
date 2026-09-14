@@ -87,10 +87,24 @@ export default function MyPurchasesPage() {
   }, [loading, recoveryOrder, variant]);
 
   const continuePayment = (order) => {
+    const retry = needsRetry(order);
+    if (retry) {
+      trackExperienceEvent(
+        "frontend_payment_recovery_opened",
+        "Recuperar pagamento",
+        `/purchase/${order.id}`,
+        {
+          order_id: order.id,
+          payment_status: order.payment_status,
+          payment_method: order.payment_method,
+          order_total: order.total_price,
+        }
+      );
+    }
     if (recoveryOrder?.id === order.id && variant) {
       trackExperienceEvent(
         "frontend_checkout_recovery_notification_cta_clicked",
-        needsRetry(order) ? "Tentar pagamento novamente" : "Continuar pagamento",
+        retry ? "Tentar pagamento novamente" : "Continuar pagamento",
         `/purchase/${order.id}`,
         {
           order_id: order.id,
