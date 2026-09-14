@@ -13,6 +13,7 @@ const allowedTypes = new Set([
   "frontend_error",
   "frontend_checkout_recovery_notification_cta_viewed",
   "frontend_checkout_recovery_notification_cta_clicked",
+  "frontend_payment_recovery_opened",
 ]);
 
 const randomId = (prefix) => {
