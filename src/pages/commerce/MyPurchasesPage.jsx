@@ -8,10 +8,14 @@ import { trackExperienceEvent } from "../../services/experienceTelemetry";
 import "./Commerce.css";
 
 const money = (value) => Number(value || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
-const RECOVERABLE_PAYMENT_STATUSES = new Set(["pending", "waiting", "processing", "failed", "rejected"]);
+const ACTIVE_PAYMENT_STATUSES = new Set(["pending", "waiting", "processing"]);
+const RETRYABLE_PAYMENT_STATUSES = new Set(["failed", "rejected"]);
+const RECOVERABLE_PAYMENT_STATUSES = new Set([...ACTIVE_PAYMENT_STATUSES, ...RETRYABLE_PAYMENT_STATUSES]);
 const RECOVERY_EXPERIMENT = "pix_recovery_navbar_prominence_v1";
 const RECOVERY_REFRESH_MS = 30000;
-const isRecoverable = (order) => RECOVERABLE_PAYMENT_STATUSES.has(String(order?.payment_status || "").toLowerCase());
+const paymentStatus = (order) => String(order?.payment_status || "").toLowerCase();
+const isRecoverable = (order) => RECOVERABLE_PAYMENT_STATUSES.has(paymentStatus(order));
+const needsRetry = (order) => RETRYABLE_PAYMENT_STATUSES.has(paymentStatus(order));
 const recoveryVariant = (orderId) => {
   const value = String(orderId || "");
   let hash = 0;
@@ -27,8 +31,12 @@ export default function MyPurchasesPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const recoverableOrders = useMemo(() => orders.filter(isRecoverable), [orders]);
-  const recoveryOrder = recoverableOrders[0] || null;
+  const recoveryOrder = useMemo(
+    () => recoverableOrders.find((order) => ACTIVE_PAYMENT_STATUSES.has(paymentStatus(order))) || recoverableOrders[0] || null,
+    [recoverableOrders]
+  );
   const variant = recoveryOrder ? recoveryVariant(recoveryOrder.id) : null;
+  const recoveryNeedsRetry = recoveryOrder ? needsRetry(recoveryOrder) : false;
 
   const loadOrders = useCallback(async ({ background = false } = {}) => {
     if (refreshInFlightRef.current) return;
@@ -82,7 +90,7 @@ export default function MyPurchasesPage() {
     if (recoveryOrder?.id === order.id && variant) {
       trackExperienceEvent(
         "frontend_checkout_recovery_notification_cta_clicked",
-        "Continuar pagamento",
+        needsRetry(order) ? "Tentar pagamento novamente" : "Continuar pagamento",
         `/purchase/${order.id}`,
         {
           order_id: order.id,
@@ -98,7 +106,7 @@ export default function MyPurchasesPage() {
   return <div className="commerce-page"><GlobalNav /><Container className="commerce-shell">
     <div className="commerce-heading"><span>Histórico</span><h1>Minhas compras</h1><p>Acompanhe pagamentos, retirada e entrega.</p></div>
     {error && <Alert variant="danger">{error}</Alert>}
-    {!loading && recoveryOrder && variant === "prominent" && <Alert variant="warning" className="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3"><div><strong>Você tem {recoverableOrders.length === 1 ? "uma compra aguardando pagamento" : `${recoverableOrders.length} compras aguardando pagamento`}.</strong><div>Continue de onde parou sem criar um novo pedido.</div></div><Button variant="warning" onClick={() => continuePayment(recoveryOrder)}>Continuar pagamento</Button></Alert>}
-    {loading ? <div className="text-center"><Spinner animation="border" /></div> : orders.length === 0 ? <Alert variant="info">Você ainda não realizou compras pela Nexus.</Alert> : <div className="orders-list">{orders.map((order) => { const recoverable = isRecoverable(order); return <article className={`order-card${recoverable ? " border border-warning" : ""}`} key={order.id}><div className="order-card__top"><div><strong>Compra #{order.order_number}</strong>{recoverable && <Badge bg="warning" text="dark" className="ms-2">Pagamento pendente</Badge>}<div>{order.establishment?.fantasy || order.establishment?.name}</div></div><strong>{money(order.total_price)}</strong></div><div className="order-card__meta"><span>Pagamento: {order.payment_status}</span><span>{order.fulfillment === "delivery" ? "Entrega" : "Retirada"}: {order.fulfillment_status || "pendente"}</span></div><div className="commerce-actions">{recoverable ? <Button size="sm" variant="warning" onClick={() => continuePayment(order)}>Continuar pagamento</Button> : <Button size="sm" onClick={() => navigate(`/purchase/${order.id}`)}>Ver compra e QR</Button>}{order.establishment?.slug && <Button size="sm" variant="outline-light" onClick={() => navigate(`/catalog/${order.establishment.slug}`)}>Ver catálogo</Button>}</div></article>; })}</div>}
+    {!loading && recoveryOrder && variant === "prominent" && <Alert variant={recoveryNeedsRetry ? "danger" : "warning"} className="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3"><div><strong>{recoveryNeedsRetry ? "Uma compra não teve o pagamento concluído." : (recoverableOrders.length === 1 ? "Você tem uma compra aguardando pagamento." : `Você tem ${recoverableOrders.length} compras aguardando pagamento.`)}</strong><div>{recoveryNeedsRetry ? "Tente novamente sem refazer o pedido ou perder os itens selecionados." : "Continue de onde parou sem criar um novo pedido."}</div></div><Button variant={recoveryNeedsRetry ? "danger" : "warning"} onClick={() => continuePayment(recoveryOrder)}>{recoveryNeedsRetry ? "Tentar pagamento novamente" : "Continuar pagamento"}</Button></Alert>}
+    {loading ? <div className="text-center"><Spinner animation="border" /></div> : orders.length === 0 ? <Alert variant="info">Você ainda não realizou compras pela Nexus.</Alert> : <div className="orders-list">{orders.map((order) => { const recoverable = isRecoverable(order); const retryable = needsRetry(order); return <article className={`order-card${recoverable ? ` border border-${retryable ? "danger" : "warning"}` : ""}`} key={order.id}><div className="order-card__top"><div><strong>Compra #{order.order_number}</strong>{recoverable && <Badge bg={retryable ? "danger" : "warning"} text={retryable ? undefined : "dark"} className="ms-2">{retryable ? "Pagamento não concluído" : "Pagamento pendente"}</Badge>}<div>{order.establishment?.fantasy || order.establishment?.name}</div></div><strong>{money(order.total_price)}</strong></div><div className="order-card__meta"><span>Pagamento: {order.payment_status}</span><span>{order.fulfillment === "delivery" ? "Entrega" : "Retirada"}: {order.fulfillment_status || "pendente"}</span></div><div className="commerce-actions">{recoverable ? <Button size="sm" variant={retryable ? "danger" : "warning"} onClick={() => continuePayment(order)}>{retryable ? "Tentar pagamento novamente" : "Continuar pagamento"}</Button> : <Button size="sm" onClick={() => navigate(`/purchase/${order.id}`)}>Ver compra e QR</Button>}{order.establishment?.slug && <Button size="sm" variant="outline-light" onClick={() => navigate(`/catalog/${order.establishment.slug}`)}>Ver catálogo</Button>}</div></article>; })}</div>}
   </Container></div>;
 }
