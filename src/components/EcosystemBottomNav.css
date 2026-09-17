@@ -1,0 +1,83 @@
+.ecosystem-bottom-nav {
+  --ecosystem-nav-accent: #65d1ff;
+  --ecosystem-nav-surface: rgba(5, 12, 24, .88);
+  --ecosystem-nav-border: rgba(101, 209, 255, .18);
+  display: none;
+}
+
+@media (max-width: 900px) {
+  body {
+    padding-bottom: calc(76px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .ecosystem-bottom-nav {
+    position: fixed;
+    z-index: 1190;
+    left: max(10px, env(safe-area-inset-left, 0px));
+    right: max(10px, env(safe-area-inset-right, 0px));
+    bottom: max(8px, env(safe-area-inset-bottom, 0px));
+    min-height: 64px;
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    align-items: stretch;
+    padding: 5px;
+    background: var(--ecosystem-nav-surface);
+    border: 1px solid var(--ecosystem-nav-border);
+    border-radius: 20px;
+    box-shadow: 0 18px 48px rgba(0, 0, 0, .34), inset 0 1px 0 rgba(255, 255, 255, .05);
+    backdrop-filter: blur(22px) saturate(155%);
+    -webkit-backdrop-filter: blur(22px) saturate(155%);
+  }
+
+  .ecosystem-bottom-nav__item {
+    position: relative;
+    min-width: 0;
+    min-height: 54px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 5px 2px;
+    color: #9fb5c8;
+    border-radius: 15px;
+    text-decoration: none;
+    font-size: .64rem;
+    font-weight: 800;
+    line-height: 1;
+    transition: color .16s ease, background .16s ease, transform .16s ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .ecosystem-bottom-nav__item svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .ecosystem-bottom-nav__item:hover,
+  .ecosystem-bottom-nav__item:focus-visible,
+  .ecosystem-bottom-nav__item.active {
+    color: #fff;
+    background: rgba(101, 209, 255, .11);
+    outline: 0;
+  }
+
+  .ecosystem-bottom-nav__item.active::after {
+    content: "";
+    position: absolute;
+    top: 3px;
+    width: 22px;
+    height: 2px;
+    border-radius: 999px;
+    background: var(--ecosystem-nav-accent);
+    box-shadow: 0 0 12px rgba(101, 209, 255, .72);
+  }
+
+  .ecosystem-bottom-nav__item:active {
+    transform: scale(.96);
+  }
+}
+
+@media (min-width: 901px) {
+  body { padding-bottom: 0; }
+}
