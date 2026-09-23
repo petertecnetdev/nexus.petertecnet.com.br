@@ -6,6 +6,7 @@ import ProcessingIndicatorComponent from "../../components/ProcessingIndicatorCo
 import EstablishmentHero from "../../components/establishment/EstablishmentHero";
 import ItemCreateForm from "../../components/item/ItemCreateForm";
 import useItemCreate from "../../hooks/useItemCreate";
+import { takeCatalogProfileFromForm } from "../../utils/catalogForm";
 
 export default function ItemCreatePage() {
   const navigate = useNavigate();
@@ -23,6 +24,11 @@ export default function ItemCreatePage() {
     defaultValues: {
       status: 1,
       availability: "available",
+      type: "service",
+      pricing_model: "fixed",
+      sort_order: 100,
+      is_quote_enabled: true,
+      is_checkout_enabled: true,
     },
   });
 
@@ -41,6 +47,7 @@ export default function ItemCreatePage() {
   }
 
   const est = establishmentFromState || establishment;
+  const handleCreate = (values) => submitCreate(takeCatalogProfileFromForm(values));
 
   return (
     <div className="item-root">
@@ -66,7 +73,7 @@ export default function ItemCreatePage() {
           setValue={setValue}
           watch={watch}
           isSubmitting={isSubmitting || loading}
-          onSubmit={submitCreate}
+          onSubmit={handleCreate}
         />
       </div>
     </div>
