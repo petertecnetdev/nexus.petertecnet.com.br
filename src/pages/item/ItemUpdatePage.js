@@ -11,6 +11,7 @@ import ItemUpdateForm from "../../components/item/ItemUpdateForm";
 import useItemUpdate from "../../hooks/useItemUpdate";
 import api from "../../services/api";
 import { appId } from "../../config";
+import { catalogProfileToFormValues, takeCatalogProfileFromForm } from "../../utils/catalogForm";
 
 const DEFAULT_EDITOR_CONFIG = {
   short_description: "",
@@ -76,6 +77,21 @@ function itemFormValues(data) {
     status: Number(data.status ?? 1),
     duration: data.duration ?? "",
     description: data.description ?? "",
+    short_description: data.short_description ?? "",
+    pricing_model: data.pricing_model || "fixed",
+    price_min: data.price_min ?? "",
+    price_max: data.price_max ?? "",
+    setup_price: data.setup_price ?? "",
+    recurring_price: data.recurring_price ?? "",
+    billing_interval: data.billing_interval ?? "",
+    sort_order: data.sort_order ?? 100,
+    is_quote_enabled: data.is_quote_enabled ?? true,
+    is_checkout_enabled: data.is_checkout_enabled ?? true,
+    seo_title: data.seo_title ?? "",
+    seo_description: data.seo_description ?? "",
+    canonical_url: data.canonical_url ?? "",
+    og_image: data.og_image ?? "",
+    ...catalogProfileToFormValues(data.catalog_profile),
     category: data.category ?? "",
     subcategory: data.subcategory ?? "",
     brand: data.brand ?? "",
@@ -113,8 +129,8 @@ function normalizeApiNumber(value) {
   return Number.isFinite(number) ? number : value;
 }
 
-function cleanValues(values, editorConfig) {
-  const payload = { ...values };
+function cleanValues(values, editorConfig, existingProfile = {}) {
+  let payload = takeCatalogProfileFromForm({ ...values }, existingProfile);
   const tags = String(payload.tags_input || "")
     .split(",")
     .map((tag) => tag.trim())
@@ -126,6 +142,10 @@ function cleanValues(values, editorConfig) {
     ...payload,
     type: payload.type || "product",
     price: normalizeApiNumber(payload.price),
+    price_min: payload.price_min === "" ? "" : normalizeApiNumber(payload.price_min),
+    price_max: payload.price_max === "" ? "" : normalizeApiNumber(payload.price_max),
+    setup_price: payload.setup_price === "" ? "" : normalizeApiNumber(payload.setup_price),
+    recurring_price: payload.recurring_price === "" ? "" : normalizeApiNumber(payload.recurring_price),
     discount: payload.discount === "" ? "" : normalizeApiNumber(payload.discount),
     tags,
     editor_config: editorConfig,
@@ -389,7 +409,7 @@ export default function ItemUpdatePage() {
 
   const onSubmit = async (values) => {
     if (imageUrl.trim() && imageUrlStatus === "error") return;
-    const payload = cleanValues(values, editorConfig);
+    const payload = cleanValues(values, editorConfig, item?.catalog_profile);
 
     const response = await updateItem(payload, imageFile, removeImage, imageUrl);
     if (!response) return;
@@ -424,7 +444,7 @@ export default function ItemUpdatePage() {
     if (!result.isConfirmed) return;
 
     try {
-      const values = cleanValues(watch(), editorConfig);
+      const values = cleanValues(watch(), editorConfig, item?.catalog_profile);
       const formData = new FormData();
       const clone = {
         ...values,
@@ -567,7 +587,7 @@ export default function ItemUpdatePage() {
           onImageUrlLoad={() => setImageUrlStatus("loaded")}
           onImageUrlError={() => setImageUrlStatus("error")}
           onRemoveImage={handleRemoveImage}
-          onPreview={() => item.slug && navigate("/item/" + encodeURIComponent(item.slug))}
+          onPreview={() => item.slug && navigate("/item/view/" + encodeURIComponent(item.slug))}
           onDuplicate={duplicateItem}
           onCancel={() => navigate(-1)}
           onDelete={deleteItem}
