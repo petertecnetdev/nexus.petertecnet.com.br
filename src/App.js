@@ -197,6 +197,7 @@ function AppInner() {
             <Route path="/logout" element={<LogoutPage />} />
 
             <Route path="/catalog/:slug" element={<CatalogPage />} />
+            <Route path="/catalog/:slug/categoria/:categorySlug" element={<CatalogPage />} />
             <Route path="/catalogo/:slug" element={<CatalogRedirect />} />
             <Route path="/establishment/view/:slug" element={<EstablishmentViewPage />} />
             <Route path="/empresa/:slug" element={<EstablishmentViewPage />} />
