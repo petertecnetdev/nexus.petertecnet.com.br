@@ -31,7 +31,7 @@ export default function useItemView(slug) {
         const encodedSlug = encodeURIComponent(slug);
         const encodedApp = encodeURIComponent(appId);
         const { data } = await api.get(
-          `/v1/apps/${encodedApp}/directory/items/${encodedSlug}`,
+          `/v1/apps/${encodedApp}/catalog-items/${encodedSlug}`,
           { signal: controller.signal }
         );
 
