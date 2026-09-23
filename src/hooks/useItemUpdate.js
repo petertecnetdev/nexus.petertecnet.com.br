@@ -18,7 +18,7 @@ const getApiMessage = (error, fallback) =>
 function appendValue(formData, key, value) {
   if (value === undefined) return;
 
-  if (key === "editor_config") {
+  if (key === "editor_config" || key === "catalog_profile") {
     formData.append(key, JSON.stringify(value || {}));
     return;
   }
@@ -33,7 +33,7 @@ function appendValue(formData, key, value) {
     return;
   }
 
-  if (key === "status" || key === "is_featured" || key === "limited_by_user") {
+  if (["status", "is_featured", "limited_by_user", "is_quote_enabled", "is_checkout_enabled"].includes(key)) {
     const normalized = normalizeBoolean(value);
     if (normalized !== null) formData.append(key, normalized);
     return;
