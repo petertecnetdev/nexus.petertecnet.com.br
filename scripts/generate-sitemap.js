@@ -23,6 +23,14 @@ const safeSlug = (value) => {
   return slug && !slug.includes("/") ? encodeURIComponent(slug) : null;
 };
 
+const slugifyCategory = (value) => String(value || "")
+  .trim()
+  .toLowerCase()
+  .normalize("NFD")
+  .replace(/[\u0300-\u036f]/g, "")
+  .replace(/[^a-z0-9]+/g, "-")
+  .replace(/^-|-$/g, "");
+
 const buildUrlEntry = (pathname, changefreq, priority) => (
   `  <url><loc>${escapeXml(`${publicUrl}${pathname}`)}</loc><changefreq>${changefreq}</changefreq><priority>${priority}</priority></url>`
 );
@@ -111,6 +119,16 @@ function collectEntries({ establishments, items }) {
 
     add(`/establishment/view/${slug}`, "weekly", "0.8");
     add(`/catalog/${slug}`, "daily", "0.9");
+
+    const establishmentId = Number(establishment?.id || 0);
+    const categories = [...new Set(items
+      .filter((item) => Number(item?.entity_id || 0) === establishmentId && item?.category)
+      .map((item) => slugifyCategory(item.category))
+      .filter(Boolean))];
+
+    for (const category of categories) {
+      add(`/catalog/${slug}/categoria/${encodeURIComponent(category)}`, "weekly", "0.75");
+    }
   }
 
   for (const item of items) {
