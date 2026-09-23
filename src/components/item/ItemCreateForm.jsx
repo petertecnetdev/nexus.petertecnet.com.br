@@ -317,6 +317,19 @@ export default function ItemCreateForm({
 
           <Col xs={12}>
             <div className="form-group">
+              <label htmlFor="item-short-description">Resumo comercial</label>
+              <input
+                id="item-short-description"
+                type="text"
+                maxLength={1000}
+                placeholder="Uma frase objetiva para o card, SEO e primeira leitura."
+                {...register("short_description")}
+              />
+            </div>
+          </Col>
+
+          <Col xs={12}>
+            <div className="form-group">
               <label htmlFor="item-description">Descrição</label>
               <textarea
                 id="item-description"
@@ -326,6 +339,55 @@ export default function ItemCreateForm({
               />
             </div>
           </Col>
+
+          <Col xs={12}><hr /><h2 className="h5 mb-1">Oferta comercial</h2><p className="text-body-secondary">Defina como o investimento deve aparecer no catálogo e qual ação o cliente pode realizar.</p></Col>
+
+          <Col xs={12} md={4}>
+            <div className="form-group">
+              <label htmlFor="item-pricing-model">Modelo de preço</label>
+              <select id="item-pricing-model" {...register("pricing_model")}>
+                <option value="fixed">Preço fixo</option>
+                <option value="starting_at">A partir de</option>
+                <option value="range">Faixa de preço</option>
+                <option value="quote">Sob orçamento</option>
+                <option value="recurring">Recorrente</option>
+                <option value="setup_recurring">Implantação + recorrência</option>
+              </select>
+            </div>
+          </Col>
+
+          <Col xs={12} md={4}><div className="form-group"><label htmlFor="item-price-min">Valor inicial</label><input id="item-price-min" type="text" inputMode="decimal" {...register("price_min")} /></div></Col>
+          <Col xs={12} md={4}><div className="form-group"><label htmlFor="item-price-max">Valor máximo</label><input id="item-price-max" type="text" inputMode="decimal" {...register("price_max")} /></div></Col>
+          <Col xs={12} md={4}><div className="form-group"><label htmlFor="item-setup-price">Implantação</label><input id="item-setup-price" type="text" inputMode="decimal" {...register("setup_price")} /></div></Col>
+          <Col xs={12} md={4}><div className="form-group"><label htmlFor="item-recurring-price">Mensalidade/recorrência</label><input id="item-recurring-price" type="text" inputMode="decimal" {...register("recurring_price")} /></div></Col>
+          <Col xs={12} md={4}><div className="form-group"><label htmlFor="item-billing-interval">Periodicidade</label><select id="item-billing-interval" {...register("billing_interval")}><option value="">Não se aplica</option><option value="monthly">Mensal</option><option value="quarterly">Trimestral</option><option value="yearly">Anual</option><option value="once">Projeto</option></select></div></Col>
+          <Col xs={12} md={4}><div className="form-group"><label htmlFor="item-sort-order">Ordem no catálogo</label><input id="item-sort-order" type="number" min="0" {...register("sort_order")} /></div></Col>
+          <Col xs={12} md={8} className="d-flex flex-wrap align-items-end gap-4">
+            <Form.Check type="switch" id="item-quote-enabled" label="Permitir solicitar orçamento" {...register("is_quote_enabled")} />
+            <Form.Check type="switch" id="item-checkout-enabled" label="Permitir checkout direto" {...register("is_checkout_enabled")} />
+            <Form.Check type="switch" id="item-featured" label="Destacar no catálogo" {...register("is_featured")} />
+          </Col>
+
+          <Col xs={12}><hr /><h2 className="h5 mb-1">Super view</h2><p className="text-body-secondary">Uma informação por linha nos campos de lista. A página pública transforma isso em seções comerciais.</p></Col>
+          <Col xs={12}><div className="form-group"><label htmlFor="catalog-headline">Headline</label><input id="catalog-headline" type="text" placeholder="Resultado principal que o cliente deve entender em poucos segundos." {...register("catalog_headline")} /></div></Col>
+          <Col xs={12}><div className="form-group"><label htmlFor="catalog-problem">Problema que resolve</label><textarea id="catalog-problem" rows={3} {...register("catalog_problem")} /></div></Col>
+          <Col xs={12} md={6}><div className="form-group"><label htmlFor="catalog-audience">Para quem é</label><textarea id="catalog-audience" rows={5} placeholder={"Empresas com processos manuais\nTimes que precisam integrar sistemas"} {...register("catalog_audience")} /></div></Col>
+          <Col xs={12} md={6}><div className="form-group"><label htmlFor="catalog-benefits">Benefícios</label><textarea id="catalog-benefits" rows={5} placeholder={"Menos retrabalho\nMais rastreabilidade\nOperação escalável"} {...register("catalog_benefits")} /></div></Col>
+          <Col xs={12} md={6}><div className="form-group"><label htmlFor="catalog-deliverables">Entregáveis</label><textarea id="catalog-deliverables" rows={5} {...register("catalog_deliverables")} /></div></Col>
+          <Col xs={12} md={6}><div className="form-group"><label htmlFor="catalog-use-cases">Casos de uso</label><textarea id="catalog-use-cases" rows={5} {...register("catalog_use_cases")} /></div></Col>
+          <Col xs={12} md={6}><div className="form-group"><label htmlFor="catalog-process">Como funciona</label><textarea id="catalog-process" rows={5} placeholder={"Diagnóstico\nArquitetura\nImplementação\nValidação e evolução"} {...register("catalog_process")} /></div></Col>
+          <Col xs={12} md={6}><div className="form-group"><label htmlFor="catalog-technologies">Tecnologias relevantes</label><textarea id="catalog-technologies" rows={5} {...register("catalog_technologies")} /></div></Col>
+          <Col xs={12} md={6}><div className="form-group"><label htmlFor="catalog-proof">Provas de capacidade</label><textarea id="catalog-proof" rows={5} {...register("catalog_proof_points")} /></div></Col>
+          <Col xs={12} md={6}><div className="form-group"><label htmlFor="catalog-faq">FAQ</label><textarea id="catalog-faq" rows={5} placeholder={"Quanto tempo leva? | Depende do escopo e das integrações.\nO projeto pode evoluir? | Sim, a arquitetura é preparada para evolução."} {...register("catalog_faq")} /></div></Col>
+          <Col xs={12} md={4}><div className="form-group"><label htmlFor="catalog-duration">Prazo comercial</label><input id="catalog-duration" type="text" placeholder="Ex.: 3 a 8 semanas" {...register("catalog_duration_text")} /></div></Col>
+          <Col xs={12} md={4}><div className="form-group"><label htmlFor="catalog-price-note">Nota de preço</label><input id="catalog-price-note" type="text" placeholder="O valor final depende do escopo." {...register("catalog_price_note")} /></div></Col>
+          <Col xs={12} md={4}><div className="form-group"><label htmlFor="catalog-cta-label">Texto do CTA</label><input id="catalog-cta-label" type="text" placeholder="Solicitar diagnóstico" {...register("catalog_cta_label")} /></div></Col>
+
+          <Col xs={12}><hr /><h2 className="h5 mb-1">SEO</h2></Col>
+          <Col xs={12} md={6}><div className="form-group"><label htmlFor="item-seo-title">Título SEO</label><input id="item-seo-title" type="text" maxLength={255} {...register("seo_title")} /></div></Col>
+          <Col xs={12} md={6}><div className="form-group"><label htmlFor="item-canonical">URL canônica</label><input id="item-canonical" type="url" {...register("canonical_url")} /></div></Col>
+          <Col xs={12}><div className="form-group"><label htmlFor="item-seo-description">Meta description</label><textarea id="item-seo-description" rows={3} maxLength={320} {...register("seo_description")} /></div></Col>
+          <Col xs={12}><div className="form-group"><label htmlFor="item-og-image">Imagem Open Graph</label><input id="item-og-image" type="url" {...register("og_image")} /></div></Col>
 
           <Col xs={12} className="text-end">
             <button
