@@ -5,9 +5,8 @@ import { FaEye, FaMapMarkerAlt } from "react-icons/fa";
 import useImageUtils from "../hooks/useImageUtils";
 import EntityImage from "./EntityImage";
 import GlobalButton from "./GlobalButton";
+import { pricingPresentation } from "../utils/catalogExperience";
 import "./GlobalCard.css";
-
-const hasPrice = (value) => value !== null && value !== undefined && value !== "" && Number.isFinite(Number(value));
 
 const firstFileUrl = (files) => {
   if (!Array.isArray(files) || files.length === 0) return null;
@@ -15,7 +14,7 @@ const firstFileUrl = (files) => {
   return preferred?.public_url || preferred?.url || preferred?.path || null;
 };
 
-export default function GlobalCard({ item, fmtBRL, navigate, actions }) {
+export default function GlobalCard({ item, navigate, actions }) {
   const { imageUrl, handleImgError: baseHandleImgError } = useImageUtils();
   const cardRef = useRef(null);
   const [broken, setBroken] = useState(false);
@@ -55,6 +54,7 @@ export default function GlobalCard({ item, fmtBRL, navigate, actions }) {
   const itemTypeLabel = normalizedType === "service" ? "Serviço" : normalizedType === "product" ? "Produto" : "Item";
   const itemTypeIcon = normalizedType === "service" ? "fa-screwdriver-wrench" : "fa-box";
   const totalViews = Number(safeItem.total_views || 0);
+  const pricing = pricingPresentation(safeItem);
 
   const placeholderSvg = useMemo(() => {
     const initials = getInitials();
@@ -84,8 +84,8 @@ export default function GlobalCard({ item, fmtBRL, navigate, actions }) {
         )}
 
         {(safeItem.city || safeItem.uf) && <div className="globalcard-location d-flex align-items-center gap-1 mt-1"><FaMapMarkerAlt size={12} aria-hidden="true" /><span className="text-light-50">{safeItem.city}{safeItem.uf ? ` - ${safeItem.uf}` : ""}</span></div>}
-        {hasPrice(safeItem.price) && <div className="carousel-item-price">{fmtBRL(safeItem.price)}</div>}
-        {safeItem.description && !isEstablishment && <div className="text-light-50 small mt-1">{safeItem.description.length > 110 ? `${safeItem.description.slice(0, 110).trim()}…` : safeItem.description}</div>}
+        {!isEstablishment && <div className="carousel-item-price">{pricing.primary}</div>}
+        {(safeItem.short_description || safeItem.description) && !isEstablishment && <div className="text-light-50 small mt-1">{String(safeItem.short_description || safeItem.description).length > 110 ? `${String(safeItem.short_description || safeItem.description).slice(0, 110).trim()}…` : (safeItem.short_description || safeItem.description)}</div>}
         <div className="d-flex flex-wrap gap-2 mt-2">{safeItem.category && <Badge bg="secondary">{safeItem.category}</Badge>}{safeItem.brand && <Badge bg="secondary">{safeItem.brand}</Badge>}</div>
         {navigate && safeItem.slug && <div className="mt-2"><GlobalButton type="button" size="sm" variant="outline" stopPropagation className="px-4" onClick={handleDetails}>{isEstablishment ? "Ver catálogo" : "Ver item"}</GlobalButton></div>}
         {actions && <div className="mt-3 establishment-actions-slot">{actions}</div>}
@@ -94,5 +94,4 @@ export default function GlobalCard({ item, fmtBRL, navigate, actions }) {
   );
 }
 
-GlobalCard.propTypes = { item: PropTypes.object, fmtBRL: PropTypes.func, navigate: PropTypes.func, actions: PropTypes.node };
-GlobalCard.defaultProps = { fmtBRL: (value) => value };
+GlobalCard.propTypes = { item: PropTypes.object, navigate: PropTypes.func, actions: PropTypes.node };
