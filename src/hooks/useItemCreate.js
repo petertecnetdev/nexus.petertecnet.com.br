@@ -25,10 +25,6 @@ export default function useItemCreate(
 
     const setupFromEstablishment = (est) => {
       if (!est?.id) throw new Error("Estabelecimento inválido.");
-      if (est.app_id != null && Number(est.app_id) !== Number(appId)) {
-        throw new Error("Este estabelecimento não pertence à Nexus.");
-      }
-
       setEstablishment(est);
       setValue("app_id", appId);
       setValue("entity_id", est.id);
@@ -89,9 +85,24 @@ export default function useItemCreate(
       };
 
       Object.entries(payload).forEach(([key, value]) => {
-        if (value !== undefined && value !== null && value !== "") {
-          formData.append(key, value);
+        if (value === undefined || value === null || value === "") return;
+
+        if (key === "catalog_profile" || key === "editor_config") {
+          formData.append(key, JSON.stringify(value || {}));
+          return;
         }
+
+        if (key === "tags" && Array.isArray(value)) {
+          value.forEach((tag) => formData.append("tags[]", tag));
+          return;
+        }
+
+        if (["status", "is_featured", "limited_by_user", "is_quote_enabled", "is_checkout_enabled"].includes(key)) {
+          formData.append(key, value === true || value === 1 || value === "1" || value === "true" ? "1" : "0");
+          return;
+        }
+
+        formData.append(key, value instanceof File ? value : String(value));
       });
 
       const { data: response } = await api.post("/item", formData);
