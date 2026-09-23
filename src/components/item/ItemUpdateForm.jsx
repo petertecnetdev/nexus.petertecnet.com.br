@@ -12,6 +12,7 @@ import {
   FaLayerGroup,
   FaLink,
   FaPlus,
+  FaRocket,
   FaSave,
   FaSearch,
   FaShoppingCart,
@@ -38,6 +39,7 @@ const NAV_ITEMS = [
   ["availability", "Disponibilidade", FaClock],
   ["variants", "Variações", FaLayerGroup],
   ["addons", "Adicionais", FaPlus],
+  ["offer", "Oferta comercial", FaRocket],
   ["catalog", "Catálogo", FaShoppingCart],
   ["seo", "SEO e compartilhamento", FaSearch],
   ["advanced", "Avançado", FaSlidersH],
@@ -982,6 +984,81 @@ export default function ItemUpdateForm({
               )}
             </section>
 
+            <section id="item-editor-offer" className="item-editor-card">
+              <SectionTitle
+                icon={FaRocket}
+                title="Oferta comercial"
+                description="Posicionamento, preço, conversão e conteúdo da super view pública."
+              />
+
+              <div className="item-fields-grid">
+                <div className="item-field item-field-span-2">
+                  <label htmlFor="item-short-description">Resumo comercial</label>
+                  <textarea id="item-short-description" rows={3} maxLength={1000} {...register("short_description")} />
+                  <small>Use uma frase objetiva para explicar resultado e contexto.</small>
+                </div>
+                <div className="item-field">
+                  <label htmlFor="item-pricing-model">Modelo de preço</label>
+                  <select id="item-pricing-model" {...register("pricing_model")}>
+                    <option value="fixed">Preço fixo</option>
+                    <option value="starting_at">A partir de</option>
+                    <option value="range">Faixa estimada</option>
+                    <option value="quote">Sob orçamento</option>
+                    <option value="recurring">Recorrente</option>
+                    <option value="setup_recurring">Implantação + recorrência</option>
+                  </select>
+                </div>
+                <div className="item-field"><label htmlFor="item-price-min">Preço inicial</label><input id="item-price-min" type="text" inputMode="decimal" {...register("price_min")} /></div>
+                <div className="item-field"><label htmlFor="item-price-max">Preço máximo</label><input id="item-price-max" type="text" inputMode="decimal" {...register("price_max")} /></div>
+                <div className="item-field"><label htmlFor="item-setup-price">Implantação</label><input id="item-setup-price" type="text" inputMode="decimal" {...register("setup_price")} /></div>
+                <div className="item-field"><label htmlFor="item-recurring-price">Recorrência</label><input id="item-recurring-price" type="text" inputMode="decimal" {...register("recurring_price")} /></div>
+                <div className="item-field">
+                  <label htmlFor="item-billing-interval">Periodicidade</label>
+                  <select id="item-billing-interval" {...register("billing_interval")}>
+                    <option value="">Não se aplica</option>
+                    <option value="monthly">Mensal</option>
+                    <option value="quarterly">Trimestral</option>
+                    <option value="yearly">Anual</option>
+                    <option value="once">Projeto</option>
+                  </select>
+                </div>
+                <div className="item-field item-field-span-2"><label htmlFor="catalog-headline-update">Headline</label><input id="catalog-headline-update" type="text" {...register("catalog_headline")} /></div>
+                <div className="item-field item-field-span-2"><label htmlFor="catalog-problem-update">Problema que resolve</label><textarea id="catalog-problem-update" rows={4} {...register("catalog_problem")} /></div>
+                {[
+                  ["catalog_audience", "Para quem é", "Um perfil por linha"],
+                  ["catalog_benefits", "Benefícios", "Um benefício por linha"],
+                  ["catalog_deliverables", "Entregáveis", "Um entregável por linha"],
+                  ["catalog_use_cases", "Casos de uso", "Um caso por linha"],
+                  ["catalog_process", "Como funciona", "Uma etapa por linha"],
+                  ["catalog_technologies", "Tecnologias relevantes", "Uma tecnologia por linha"],
+                  ["catalog_proof_points", "Provas de capacidade", "Uma prova por linha"],
+                ].map(([field, label, placeholder]) => (
+                  <div className="item-field" key={field}>
+                    <label htmlFor={"update-" + field}>{label}</label>
+                    <textarea id={"update-" + field} rows={5} placeholder={placeholder} {...register(field)} />
+                  </div>
+                ))}
+                <div className="item-field item-field-span-2">
+                  <label htmlFor="catalog-faq-update">Perguntas frequentes</label>
+                  <textarea id="catalog-faq-update" rows={5} placeholder={"Pergunta | Resposta\nOutra pergunta | Outra resposta"} {...register("catalog_faq")} />
+                </div>
+                <div className="item-field"><label htmlFor="catalog-duration-update">Prazo comercial</label><input id="catalog-duration-update" type="text" {...register("catalog_duration_text")} /></div>
+                <div className="item-field"><label htmlFor="catalog-price-note-update">Nota de preço</label><input id="catalog-price-note-update" type="text" {...register("catalog_price_note")} /></div>
+                <div className="item-field"><label htmlFor="catalog-cta-update">Texto do CTA</label><input id="catalog-cta-update" type="text" {...register("catalog_cta_label")} /></div>
+              </div>
+
+              <div className="item-toggle-grid">
+                <label className="item-toggle-row">
+                  <span><strong>Solicitação de orçamento</strong><small>Ativa briefing, diagnóstico e criação de oportunidade.</small></span>
+                  <span className="item-switch"><input type="checkbox" {...register("is_quote_enabled")} /><span aria-hidden="true" /></span>
+                </label>
+                <label className="item-toggle-row">
+                  <span><strong>Checkout direto</strong><small>Ative apenas quando a oferta puder ser comprada imediatamente.</small></span>
+                  <span className="item-switch"><input type="checkbox" {...register("is_checkout_enabled")} /><span aria-hidden="true" /></span>
+                </label>
+              </div>
+            </section>
+
             <section id="item-editor-catalog" className="item-editor-card">
               <SectionTitle
                 icon={FaShoppingCart}
@@ -1005,8 +1082,7 @@ export default function ItemUpdateForm({
                     id="item-sort-order"
                     type="number"
                     min="0"
-                    value={catalog.sort_order ?? 0}
-                    onChange={(event) => setConfigValue("catalog", "sort_order", Number(event.target.value))}
+                    {...register("sort_order", { valueAsNumber: true })}
                   />
                   <small>Menores números podem ser priorizados por catálogos compatíveis.</small>
                 </div>
@@ -1073,6 +1149,23 @@ export default function ItemUpdateForm({
                   </div>
                   {publicPath && <small>Prévia: {publicPath}</small>}
                   <FieldError name="slug" errors={errors} apiErrors={apiErrors} />
+                </div>
+
+                <div className="item-field item-field-span-2">
+                  <label htmlFor="item-seo-title-published">Título SEO publicado</label>
+                  <input id="item-seo-title-published" type="text" maxLength={255} {...register("seo_title")} placeholder={name} />
+                </div>
+                <div className="item-field item-field-span-2">
+                  <label htmlFor="item-seo-description-published">Meta description publicada</label>
+                  <textarea id="item-seo-description-published" rows={3} maxLength={320} {...register("seo_description")} />
+                </div>
+                <div className="item-field item-field-span-2">
+                  <label htmlFor="item-canonical-url-published">URL canônica</label>
+                  <input id="item-canonical-url-published" type="url" {...register("canonical_url")} placeholder="Deixe vazio para usar a URL pública da Nexus" />
+                </div>
+                <div className="item-field item-field-span-2">
+                  <label htmlFor="item-og-image-published">Imagem Open Graph publicada</label>
+                  <input id="item-og-image-published" type="url" {...register("og_image")} placeholder="Deixe vazio para usar a imagem principal" />
                 </div>
 
                 <div className="item-field item-field-span-2">
